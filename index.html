@@ -115,8 +115,14 @@
     <h2>4. TOP画像URL取得テスト</h2>
     <label for="jobId">求人管理番号</label>
     <input id="jobId" value="25205292" />
+
+    <label for="knownImageUrl">既知のTOP画像URL（診断用）</label>
+    <input id="knownImageUrl" value="https://ten.1049.cc/images/uploads/company/corp_211237/corp_20260406165251560706.png" />
+
     <div class="actions">
-      <button onclick="runImage()">画像URL取得</button>
+      <button onclick="runImage()">UrlFetchで画像URL取得</button>
+      <button class="secondary" onclick="runTenichiDiagnostic()">ten.1049.cc接続診断</button>
+      <button class="secondary" onclick="runImportXml()">IMPORTXML代替テスト</button>
     </div>
   </div>
 
@@ -255,6 +261,24 @@ function runImage() {
     setResult(await postJson(makeRequest('resolveImage', { jobId })));
   });
 }
+
+function runTenichiDiagnostic() {
+  busy(async () => {
+    const jobId = document.getElementById('jobId').value.trim();
+    const imageUrl = document.getElementById('knownImageUrl').value.trim();
+    setResult('ten.1049.cc 接続診断中...');
+    setResult(await postJson(makeRequest('diagnoseTenichi', { jobId, imageUrl })));
+  });
+}
+
+function runImportXml() {
+  busy(async () => {
+    const jobId = document.getElementById('jobId').value.trim();
+    setResult('IMPORTXML代替テスト中...');
+    setResult(await postJson(makeRequest('importXmlImage', { jobId })));
+  });
+}
+
 </script>
 </body>
 </html>
