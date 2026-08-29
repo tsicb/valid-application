@@ -59,6 +59,91 @@
             font-weight: 700;
         }
         .reload:hover { background: #f8fafc; }
+        .share-guard {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 14px;
+            padding: 13px 15px;
+            margin-bottom: 14px;
+        }
+        .share-guard-label {
+            color: #92400e;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 3px;
+        }
+        .share-guard-name {
+            color: #78350f;
+            font-size: 16px;
+            font-weight: 850;
+            overflow-wrap: anywhere;
+        }
+        .share-ok {
+            flex: 0 0 auto;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+        .share-warning {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            border-radius: 13px;
+            padding: 12px 15px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .analysis-nav {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            padding: 2px 0 10px;
+            margin: 2px 0 5px;
+        }
+        .analysis-nav button {
+            flex: 0 0 auto;
+            text-decoration: none;
+            color: #1d4ed8;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 750;
+        }
+        .cross-table {
+            min-width: 1320px;
+        }
+        .cross-table th:first-child,
+        .cross-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #fff;
+            box-shadow: 1px 0 0 #e5e7eb;
+        }
+        .cross-table th:first-child {
+            z-index: 3;
+            background: #f8fafc;
+        }
+        .total-row td {
+            font-weight: 800;
+            background: #f1f5f9 !important;
+        }
+        .composition-row td {
+            font-weight: 700;
+            background: #f8fafc !important;
+            color: #475569;
+        }
         .notice {
             background: var(--blue-soft);
             border: 1px solid #bfdbfe;
@@ -186,6 +271,16 @@
             <button id="reloadBtn" type="button" class="reload">データを再読み込み</button>
         </div>
 
+        <div class="share-guard">
+            <div>
+                <div class="share-guard-label">共有先確認</div>
+                <div id="shareTargetName" class="share-guard-name">確認中...</div>
+            </div>
+            <div class="share-ok">企業共有用</div>
+        </div>
+
+        <div id="shareNameWarning" class="share-warning hidden"></div>
+
         <div class="notice">
             このページは閲覧専用です。表示データは企業別Google Sheetに保存された正規化データを読み込み、
             ブラウザ内で集計しています。
@@ -239,25 +334,16 @@
         <section class="card section">
             <div class="section-head">
                 <div>
-                    <h2>応募媒体別</h2>
-                    <div class="section-note">応募数の多い順</div>
+                    <h2>基本分析</h2>
+                    <div class="section-note">
+                        Google Sheets版の主要クロス集計をブラウザ側へ移植中です。
+                    </div>
                 </div>
             </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>応募媒体</th>
-                            <th>応募数</th>
-                            <th>応募構成比</th>
-                            <th>ターゲット応募数</th>
-                            <th>ターゲット率</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mediaTableBody"></tbody>
-                </table>
-            </div>
+            <nav id="analysisNav" class="analysis-nav"></nav>
         </section>
+
+        <div id="basicCrossTables"></div>
 
         <div class="footer">有効応募分析・企業向け閲覧Pages MVP</div>
     </main>
@@ -269,11 +355,18 @@
         const VIEWER_API_URL = "https://script.google.com/macros/s/AKfycbwS_-ptDyhVk5yrNtRB8I32WUJen-xdjKUtp-Rf7Dbdhhg4V9Vw3gneD9K7ErZgP_Y/exec";
         const VIEWER_TIMEOUT_MS = 90000;
 
-        function getViewerToken() {
-            const params = new URLSearchParams(
+        function getViewerHashParams() {
+            return new URLSearchParams(
                 window.location.hash.replace(/^#/, "")
             );
-            return (params.get("r") || "").trim();
+        }
+
+        function getViewerToken() {
+            return (getViewerHashParams().get("r") || "").trim();
+        }
+
+        function getViewerUrlName() {
+            return (getViewerHashParams().get("name") || "").trim();
         }
 
         async function fetchViewerData(token) {
@@ -363,75 +456,197 @@
                 .replace(/'/g, "&#039;");
         }
 
-        function renderReport(data) {
-            const core = window.ValidApplicationAnalysisCore;
-            const result = core.aggregateViewerMvp(data);
-            const metadata = data.metadata || {};
-            const settings = data.settings || {};
 
-            document.title =
-                `${metadata.reportTitle || "有効応募分析"} | 分析レポート`;
+function renderCrossTable(table, core) {
+    const agg = table.aggregate;
+    const ageCols = agg.ageCols;
+    const totalAge = Object.fromEntries(
+        ageCols.map(age => [age, 0])
+    );
 
-            document.getElementById("reportTitle").textContent =
-                metadata.reportTitle || "有効応募分析レポート";
+    agg.groups.forEach(group => {
+        ageCols.forEach(age => {
+            totalAge[age] += group.ageCounts[age] || 0;
+        });
+    });
 
-            const start = displaySettingDate(settings["集計開始日"]);
-            const end = displaySettingDate(settings["集計終了日"]);
+    const headerHtml = [
+        "<th>区分</th>",
+        ...ageCols.map(age => `<th>${escapeHtml(age)}</th>`),
+        "<th>総応募数</th>",
+        "<th>応募構成比</th>",
+        "<th>ターゲット応募数</th>",
+        "<th>ターゲット率</th>",
+        "<th>ターゲット応募構成比</th>"
+    ].join("");
 
-            document.getElementById("reportSubtitle").textContent =
-                `集計期間：${start} ～ ${end} ／ 最終データ更新：${formatDateLabel(metadata.lastDataUpdateAt)}`;
+    const rowsHtml = agg.groups.map(group => {
+        const ageCells = ageCols
+            .map(age => `<td>${core.formatNumber(group.ageCounts[age] || 0)}</td>`)
+            .join("");
 
-            document.getElementById("kpiTotal").textContent =
-                core.formatNumber(result.totalCount);
+        return `
+            <tr>
+                <td>${escapeHtml(group.label)}</td>
+                ${ageCells}
+                <td>${core.formatNumber(group.total)}</td>
+                <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
+                <td>${core.formatNumber(group.target)}</td>
+                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
+                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
+            </tr>
+        `;
+    }).join("");
 
-            document.getElementById("kpiTarget").textContent =
-                core.formatNumber(result.targetCount);
+    const totalAgeCells = ageCols
+        .map(age => `<td>${core.formatNumber(totalAge[age] || 0)}</td>`)
+        .join("");
 
-            document.getElementById("kpiTargetLabel").textContent =
-                `ターゲット：${result.targetLabel}`;
+    const compositionCells = ageCols
+        .map(age => `<td>${core.formatPercent(agg.baseTotal ? (totalAge[age] || 0) / agg.baseTotal : 0)}</td>`)
+        .join("");
 
-            document.getElementById("kpiTargetRate").textContent =
-                core.formatPercent(result.targetRate);
+    return `
+        <section id="analysis-${escapeHtml(table.id)}" class="card section">
+            <div class="section-head">
+                <div>
+                    <h2>${escapeHtml(table.label)}</h2>
+                    <div class="section-note">
+                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件
+                    </div>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="cross-table">
+                    <thead>
+                        <tr>${headerHtml}</tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                        <tr class="total-row">
+                            <td>【総計】</td>
+                            ${totalAgeCells}
+                            <td>${core.formatNumber(agg.baseTotal)}</td>
+                            <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
+                            <td>${core.formatNumber(agg.baseTarget)}</td>
+                            <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
+                            <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
+                        </tr>
+                        <tr class="composition-row">
+                            <td>年齢構成比</td>
+                            ${compositionCells}
+                            <td></td><td></td><td></td><td></td><td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    `;
+}
 
-            document.getElementById("kpiMatchedRate").textContent =
-                core.formatPercent(result.matchedRate);
+function renderReport(data) {
+    const core = window.ValidApplicationAnalysisCore;
+    const result = core.aggregateViewer(data);
+    const metadata = data.metadata || {};
+    const settings = data.settings || {};
+    const actualName = metadata.reportTitle || "有効応募分析レポート";
+    const urlName = getViewerUrlName();
 
-            document.getElementById("kpiMatched").textContent =
-                `${core.formatNumber(result.matchedCount)} / ${core.formatNumber(result.totalCount)} 応募`;
+    document.title =
+        `${actualName} | 分析レポート`;
 
-            document.getElementById("ageModeNote").textContent =
-                `年齢区分：${result.ageMode}`;
+    document.getElementById("reportTitle").textContent =
+        actualName;
 
-            const ageBody = document.getElementById("ageTableBody");
-            ageBody.innerHTML = result.ageRows.map(row => `
-                <tr>
-                    <td>${escapeHtml(row.label)}</td>
-                    <td>${core.formatNumber(row.count)}</td>
-                    <td>${core.formatPercent(row.share)}</td>
-                    <td>
-                        <div class="bar">
-                            <span style="width:${Math.max(0, Math.min(100, row.share * 100))}%"></span>
-                        </div>
-                    </td>
-                </tr>
-            `).join("");
+    document.getElementById("shareTargetName").textContent =
+        actualName;
 
-            const mediaBody = document.getElementById("mediaTableBody");
-            mediaBody.innerHTML = result.mediaRows.map(row => `
-                <tr>
-                    <td>${escapeHtml(row.label)}</td>
-                    <td>${core.formatNumber(row.count)}</td>
-                    <td>${core.formatPercent(row.share)}</td>
-                    <td>${core.formatNumber(row.targetCount)}</td>
-                    <td>${core.formatPercent(row.targetRate)}</td>
-                </tr>
-            `).join("");
+    const shareWarning =
+        document.getElementById("shareNameWarning");
 
-            document.getElementById("loadingView").classList.add("hidden");
-            document.getElementById("errorView").classList.add("hidden");
-            document.getElementById("reportView").classList.remove("hidden");
-        }
+    if (
+        urlName &&
+        urlName !== actualName
+    ) {
+        shareWarning.textContent =
+            `共有URLに表示されている名称「${urlName}」と、実際に保存されているレポート名「${actualName}」が一致しません。共有前に対象をご確認ください。`;
+        shareWarning.classList.remove("hidden");
+    } else {
+        shareWarning.classList.add("hidden");
+        shareWarning.textContent = "";
+    }
 
+    const start =
+        displaySettingDate(settings["集計開始日"]);
+    const end =
+        displaySettingDate(settings["集計終了日"]);
+
+    document.getElementById("reportSubtitle").textContent =
+        `集計期間：${start} ～ ${end} ／ 最終データ更新：${formatDateLabel(metadata.lastDataUpdateAt)}`;
+
+    document.getElementById("kpiTotal").textContent =
+        core.formatNumber(result.totalCount);
+
+    document.getElementById("kpiTarget").textContent =
+        core.formatNumber(result.targetCount);
+
+    document.getElementById("kpiTargetLabel").textContent =
+        `ターゲット：${result.targetLabel}`;
+
+    document.getElementById("kpiTargetRate").textContent =
+        core.formatPercent(result.targetRate);
+
+    document.getElementById("kpiMatchedRate").textContent =
+        core.formatPercent(result.matchedRate);
+
+    document.getElementById("kpiMatched").textContent =
+        `${core.formatNumber(result.matchedCount)} / ${core.formatNumber(result.totalCount)} 応募`;
+
+    document.getElementById("ageModeNote").textContent =
+        `年齢区分：${result.ageMode}`;
+
+    const ageBody =
+        document.getElementById("ageTableBody");
+
+    ageBody.innerHTML =
+        result.ageRows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.label)}</td>
+                <td>${core.formatNumber(row.count)}</td>
+                <td>${core.formatPercent(row.share)}</td>
+                <td>
+                    <div class="bar">
+                        <span style="width:${Math.max(0, Math.min(100, row.share * 100))}%"></span>
+                    </div>
+                </td>
+            </tr>
+        `).join("");
+
+    const nav =
+        document.getElementById("analysisNav");
+
+    nav.innerHTML =
+        result.basicCrossTables.map(table => `
+            <a href="#analysis-${escapeHtml(table.id)}">${escapeHtml(table.label)}</a>
+        `).join("");
+
+    const container =
+        document.getElementById("basicCrossTables");
+
+    container.innerHTML =
+        result.basicCrossTables
+            .map(table => renderCrossTable(table, core))
+            .join("");
+
+    document.getElementById("loadingView")
+        .classList.add("hidden");
+
+    document.getElementById("errorView")
+        .classList.add("hidden");
+
+    document.getElementById("reportView")
+        .classList.remove("hidden");
+}
         function showError(message) {
             document.getElementById("loadingView").classList.add("hidden");
             document.getElementById("reportView").classList.add("hidden");
@@ -443,6 +658,14 @@
 
         async function loadReport() {
             const token = getViewerToken();
+            const urlName = getViewerUrlName();
+
+            if (urlName) {
+                const loading = document.getElementById("loadingView");
+                loading.innerHTML =
+                    `<strong>共有先確認：${escapeHtml(urlName)}</strong>` +
+                    `<div style="margin-top:8px;color:#64748b;font-size:12px;">保存済みデータを取得し、ブラウザ内で集計しています。</div>`;
+            }
 
             if (!token) {
                 showError(

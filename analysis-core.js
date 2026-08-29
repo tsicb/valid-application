@@ -13,6 +13,15 @@
         return Number.isFinite(num) ? num : null;
     }
 
+    function truthy(value) {
+        return (
+            value === true ||
+            value === 1 ||
+            value === "1" ||
+            String(value).toUpperCase() === "TRUE"
+        );
+    }
+
     function datasetObjects(dataset) {
         const headers = Array.isArray(dataset?.headers) ? dataset.headers : [];
         const rows = Array.isArray(dataset?.rows) ? dataset.rows : [];
@@ -41,6 +50,22 @@
 
         const text = s(value);
         if (!text) return null;
+
+        const match = text.match(
+            /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/
+        );
+
+        if (match) {
+            const d = new Date(
+                Number(match[1]),
+                Number(match[2]) - 1,
+                Number(match[3]),
+                Number(match[4] || 0),
+                Number(match[5] || 0),
+                Number(match[6] || 0)
+            );
+            return Number.isNaN(d.getTime()) ? null : d;
+        }
 
         const d = new Date(text);
         return Number.isNaN(d.getTime()) ? null : d;
@@ -128,125 +153,444 @@
         return "全年齢";
     }
 
-    function filterBySettings(records, settings) {
-        const start = parseDate(settings?.["集計開始日"]);
-        const end = parseDate(settings?.["集計終了日"]);
-        const startKey = dateKey(start);
-        const endKey = dateKey(end);
+    function monthSortValue(label, dateObj) {
+        const text = s(label);
+        const m = text.match(/(\d{2,4})年(\d{1,2})月/);
 
-        return records.filter(record => {
-            const date = parseDate(record["応募日時"]);
-            const key = dateKey(date);
+        if (m) {
+            let year = Number(m[1]);
+            if (year < 100) year += 2000;
+            return year * 100 + Number(m[2]);
+        }
 
-            if (startKey !== null && (key === null || key < startKey)) return false;
-            if (endKey !== null && (key === null || key > endKey)) return false;
-            return true;
-        });
+        if (dateObj instanceof Date && !Number.isNaN(dateObj.getTime())) {
+            return dateObj.getFullYear() * 100 + (dateObj.getMonth() + 1);
+        }
+
+        return 999999;
     }
 
-    function aggregateAge(records, settings) {
-        const mode =
-            s(settings?.["年齢区分"]) === "年代（5歳ずらし）"
+    function yesNoMatchLabel(value) {
+        if (
+            value === true ||
+            value === 1 ||
+            value === "1" ||
+            value === "TRUE"
+        ) {
+            return "一致";
+        }
+
+        if (
+            value === false ||
+            value === 0 ||
+            value === "0" ||
+            value === "FALSE"
+        ) {
+            return "不一致";
+        }
+
+        return "（不明）";
+    }
+
+    function buildEnterpriseInfo(dataset) {
+        const rows = datasetObjects(dataset);
+        const map = {};
+        let hasAnyDisplayName = false;
+
+        rows.forEach(row => {
+            const id = s(row["企業ID"]);
+            const label = s(row["表示名"]);
+            if (!id || !label) return;
+            map[id] = label;
+            hasAnyDisplayName = true;
+        });
+
+        return { map, hasAnyDisplayName };
+    }
+
+    function buildViewerContext(viewerResponse) {
+        const settings = viewerResponse?.settings || {};
+        const ageMode =
+            s(settings["年齢区分"]) === "年代（5歳ずらし）"
                 ? "年代（5歳ずらし）"
                 : "年代";
 
-        const buckets = ageBuckets(mode);
-        const counts = Object.fromEntries(buckets.map(label => [label, 0]));
+        const startKey = dateKey(parseDate(settings["集計開始日"]));
+        const endKey = dateKey(parseDate(settings["集計終了日"]));
+        const targetAgeMin = settings["ターゲット年齢下限"];
+        const targetAgeMax = settings["ターゲット年齢上限"];
 
-        records.forEach(record => {
-            const label = ageBucket(record["年齢"], mode);
-            counts[label] = (counts[label] || 0) + 1;
+        const apps = datasetObjects(
+            viewerResponse?.datasets?.applicationData || {}
+        );
+        const jobs = datasetObjects(
+            viewerResponse?.datasets?.jobAnalysisMaster || {}
+        );
+
+        const jobMap = new Map();
+        jobs.forEach(job => {
+            const ref = s(job["求人参照ID"]);
+            if (ref) jobMap.set(ref, job);
         });
 
-        const total = records.length || 0;
+        const enterpriseInfo = buildEnterpriseInfo(
+            viewerResponse?.datasets?.enterpriseMaster || {}
+        );
 
-        return buckets.map(label => ({
-            label,
-            count: counts[label] || 0,
-            share: total ? (counts[label] || 0) / total : 0
-        }));
+        const recordsAll = [];
+        const recordsMatched = [];
+
+        apps.forEach(app => {
+            const appDate = parseDate(app["応募日時"]);
+            const key = dateKey(appDate);
+
+            if (startKey !== null && (key === null || key < startKey)) return;
+            if (endKey !== null && (key === null || key > endKey)) return;
+
+            const age = n(app["年齢"]);
+            const jobRefId = s(app["求人参照ID"]);
+            const matchedFlag = truthy(app["求人データ突合フラグ"]);
+            const job = matchedFlag && jobRefId
+                ? (jobMap.get(jobRefId) || null)
+                : null;
+
+            const enterpriseId = s(app["企業ID"]);
+            let enterpriseLabel = enterpriseId;
+
+            if (enterpriseInfo.hasAnyDisplayName) {
+                enterpriseLabel =
+                    enterpriseInfo.map[enterpriseId] ||
+                    (enterpriseId
+                        ? `${enterpriseId}（名称未登録）`
+                        : "（企業IDなし）");
+            }
+
+            const record = {
+                app,
+                job,
+                matched: !!job,
+                jobRefId,
+                appDate,
+                age,
+                ageBucket: ageBucket(age, ageMode),
+                isTarget: isTargetAge(age, targetAgeMin, targetAgeMax),
+                enterpriseId,
+                enterpriseLabel
+            };
+
+            recordsAll.push(record);
+            if (record.matched) recordsMatched.push(record);
+        });
+
+        return {
+            settings,
+            ageMode,
+            ageCols: ageBuckets(ageMode),
+            targetAgeMin,
+            targetAgeMax,
+            enterpriseInfo,
+            recordsAll,
+            recordsMatched
+        };
     }
 
-    function aggregateMedia(records, settings) {
-        const minAge = settings?.["ターゲット年齢下限"];
-        const maxAge = settings?.["ターゲット年齢上限"];
-        const map = new Map();
+    function category(label, sortValue = null) {
+        return {
+            label: s(label) || "（未設定）",
+            sortValue
+        };
+    }
+
+    function sortCrossGroups(groups, config) {
+        if (config.sort === "fixed") {
+            const orderMap = new Map(
+                (config.order || []).map((label, index) => [label, index])
+            );
+
+            groups.sort((a, b) => {
+                const ai = orderMap.has(a.label)
+                    ? orderMap.get(a.label)
+                    : 99999;
+                const bi = orderMap.has(b.label)
+                    ? orderMap.get(b.label)
+                    : 99999;
+
+                if (ai !== bi) return ai - bi;
+                return a.label.localeCompare(b.label, "ja");
+            });
+            return;
+        }
+
+        if (config.sort === "numericAsc") {
+            groups.sort((a, b) => {
+                const av =
+                    a.sortValue === null || a.sortValue === undefined
+                        ? 999999999999
+                        : Number(a.sortValue);
+                const bv =
+                    b.sortValue === null || b.sortValue === undefined
+                        ? 999999999999
+                        : Number(b.sortValue);
+
+                if (av !== bv) return av - bv;
+                return a.label.localeCompare(b.label, "ja");
+            });
+            return;
+        }
+
+        groups.sort((a, b) => {
+            if (a.total !== b.total) return b.total - a.total;
+            if (a.target !== b.target) return b.target - a.target;
+            return a.label.localeCompare(b.label, "ja");
+        });
+    }
+
+    function aggregateCross(records, categoryFn, context, config = {}) {
+        const ageCols = context.ageCols;
+        const groups = new Map();
 
         records.forEach(record => {
-            const label = s(record["応募媒体"]) || "（未設定）";
+            let cat = categoryFn(record);
 
-            if (!map.has(label)) {
-                map.set(label, {
+            if (cat === null || cat === undefined) {
+                cat = category("（未設定）");
+            } else if (typeof cat !== "object") {
+                cat = category(cat);
+            }
+
+            const label = s(cat.label) || "（未設定）";
+
+            if (!groups.has(label)) {
+                groups.set(label, {
                     label,
-                    count: 0,
-                    targetCount: 0
+                    sortValue:
+                        cat.sortValue !== undefined
+                            ? cat.sortValue
+                            : null,
+                    ageCounts: Object.fromEntries(
+                        ageCols.map(age => [age, 0])
+                    ),
+                    total: 0,
+                    target: 0
                 });
             }
 
-            const item = map.get(label);
-            item.count += 1;
+            const group = groups.get(label);
+            group.total += 1;
+            group.ageCounts[record.ageBucket] =
+                (group.ageCounts[record.ageBucket] || 0) + 1;
 
-            if (isTargetAge(record["年齢"], minAge, maxAge)) {
-                item.targetCount += 1;
+            if (record.isTarget) {
+                group.target += 1;
             }
         });
 
-        const total = records.length || 0;
+        const resultGroups = Array.from(groups.values());
+        sortCrossGroups(resultGroups, config);
 
-        return Array.from(map.values())
-            .map(item => ({
-                ...item,
-                share: total ? item.count / total : 0,
-                targetRate: item.count ? item.targetCount / item.count : 0
-            }))
-            .sort((a, b) => {
-                if (a.count !== b.count) return b.count - a.count;
-                return a.label.localeCompare(b.label, "ja");
-            });
-    }
-
-    function aggregateViewerMvp(viewerResponse) {
-        const settings = viewerResponse?.settings || {};
-        const appDataset = viewerResponse?.datasets?.applicationData || {
-            headers: [],
-            rows: []
-        };
-
-        const allRecords = datasetObjects(appDataset);
-        const records = filterBySettings(allRecords, settings);
-
-        const minAge = settings["ターゲット年齢下限"];
-        const maxAge = settings["ターゲット年齢上限"];
-
-        const targetCount = records.reduce(
-            (sum, record) =>
-                sum +
-                (isTargetAge(record["年齢"], minAge, maxAge) ? 1 : 0),
-            0
-        );
-
-        const matchedCount = records.reduce(
-            (sum, record) =>
-                sum +
-                (String(record["求人データ突合フラグ"]).trim() === "1" ? 1 : 0),
+        const baseTarget = records.reduce(
+            (sum, record) => sum + (record.isTarget ? 1 : 0),
             0
         );
 
         return {
-            settings,
-            records,
+            ageCols,
+            groups: resultGroups,
+            baseTotal: records.length,
+            baseTarget
+        };
+    }
+
+    function buildBasicTableDefinitions(context) {
+        const all = context.recordsAll;
+        const matched = context.recordsMatched;
+        const definitions = [];
+
+        definitions.push({
+            id: "status",
+            label: "対応状況別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.app["対応状況"] || "（未設定）")
+        });
+
+        definitions.push({
+            id: "month",
+            label: "応募月別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "numericAsc",
+            categoryFn: record => {
+                const label = s(record.app["応募年月"]) || "（不明）";
+                return category(
+                    label,
+                    monthSortValue(label, record.appDate)
+                );
+            }
+        });
+
+        definitions.push({
+            id: "media",
+            label: "応募媒体別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.app["応募媒体"] || "（未設定）")
+        });
+
+        if (context.enterpriseInfo.hasAnyDisplayName) {
+            definitions.push({
+                id: "enterprise",
+                label: "企業ID別",
+                baseLabel: "全応募",
+                records: all,
+                sort: "countDesc",
+                categoryFn: record =>
+                    category(record.enterpriseLabel || "（企業IDなし）")
+            });
+        }
+
+        definitions.push({
+            id: "name-script",
+            label: "氏名文字種区分別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "fixed",
+            order: ["漢字を含む", "漢字を含まない", "（不明）"],
+            categoryFn: record =>
+                category(record.app["氏名文字種区分"] || "（不明）")
+        });
+
+        definitions.push({
+            id: "residence",
+            label: "居住都道府県別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.app["居住都道府県"] || "（不明）")
+        });
+
+        definitions.push({
+            id: "job-category",
+            label: "職種別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.job?.["職種"] || "（未設定）")
+        });
+
+        definitions.push({
+            id: "employment",
+            label: "雇用形態別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.job?.["雇用形態"] || "（未設定）")
+        });
+
+        definitions.push({
+            id: "job-location-name",
+            label: "求人勤務地名称別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.job?.["求人勤務地名称"] || "（未設定）")
+        });
+
+        definitions.push({
+            id: "job-prefecture",
+            label: "勤務地都道府県別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.job?.["勤務地都道府県"] || "（未設定）")
+        });
+
+        definitions.push({
+            id: "prefecture-match",
+            label: "勤務地・居住都道府県一致別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "fixed",
+            order: ["一致", "不一致", "（不明）"],
+            categoryFn: record =>
+                category(
+                    yesNoMatchLabel(
+                        record.app["勤務地・居住都道府県一致"]
+                    )
+                )
+        });
+
+        return definitions;
+    }
+
+    function buildBasicCrossTables(context) {
+        return buildBasicTableDefinitions(context)
+            .filter(def => def.records.length > 0)
+            .map(def => ({
+                ...def,
+                aggregate: aggregateCross(
+                    def.records,
+                    def.categoryFn,
+                    context,
+                    def
+                )
+            }));
+    }
+
+    function aggregateViewer(viewerResponse) {
+        const context = buildViewerContext(viewerResponse);
+        const records = context.recordsAll;
+
+        const targetCount = records.reduce(
+            (sum, record) => sum + (record.isTarget ? 1 : 0),
+            0
+        );
+
+        const ageCountMap = Object.fromEntries(
+            context.ageCols.map(label => [label, 0])
+        );
+
+        records.forEach(record => {
+            ageCountMap[record.ageBucket] =
+                (ageCountMap[record.ageBucket] || 0) + 1;
+        });
+
+        const ageRows = context.ageCols.map(label => ({
+            label,
+            count: ageCountMap[label] || 0,
+            share: records.length
+                ? (ageCountMap[label] || 0) / records.length
+                : 0
+        }));
+
+        return {
+            context,
+            settings: context.settings,
             totalCount: records.length,
             targetCount,
-            targetRate: records.length ? targetCount / records.length : 0,
-            matchedCount,
-            matchedRate: records.length ? matchedCount / records.length : 0,
-            targetLabel: targetLabel(minAge, maxAge),
-            ageMode:
-                s(settings["年齢区分"]) === "年代（5歳ずらし）"
-                    ? "年代（5歳ずらし）"
-                    : "年代",
-            ageRows: aggregateAge(records, settings),
-            mediaRows: aggregateMedia(records, settings)
+            targetRate: records.length
+                ? targetCount / records.length
+                : 0,
+            matchedCount: context.recordsMatched.length,
+            matchedRate: records.length
+                ? context.recordsMatched.length / records.length
+                : 0,
+            targetLabel: targetLabel(
+                context.targetAgeMin,
+                context.targetAgeMax
+            ),
+            ageMode: context.ageMode,
+            ageRows,
+            basicCrossTables: buildBasicCrossTables(context)
         };
     }
 
@@ -261,16 +605,21 @@
     }
 
     global.ValidApplicationAnalysisCore = {
+        s,
+        n,
+        truthy,
         datasetObjects,
         parseDate,
+        dateKey,
         ageBuckets,
         ageBucket,
         isTargetAge,
         targetLabel,
-        filterBySettings,
-        aggregateAge,
-        aggregateMedia,
-        aggregateViewerMvp,
+        buildViewerContext,
+        aggregateCross,
+        buildBasicCrossTables,
+        aggregateViewer,
+        aggregateViewerMvp: aggregateViewer,
         formatNumber,
         formatPercent
     };

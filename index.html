@@ -370,6 +370,10 @@
                             <div id="sheetsCreateSuccess" class="hidden rounded-xl border border-emerald-200 bg-white p-4">
                                 <div id="sheetsCreateSuccessTitle" class="font-bold text-emerald-800 text-sm">スプレッドシートを作成しました</div>
                                 <div id="sheetsCreateSuccessMeta" class="text-xs text-gray-600 mt-1"></div>
+                                <div id="viewerShareTarget" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                                    <span class="font-extrabold">共有先確認：</span>
+                                    <span id="viewerShareTargetName"></span>
+                                </div>
                                 <a
                                     id="openCreatedSheetLink"
                                     href="#"
@@ -388,6 +392,14 @@
                                 >
                                     企業向けWebレポートを開く
                                 </a>
+                                <button
+                                    id="copyViewerShareBtn"
+                                    type="button"
+                                    class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-800 text-sm font-bold transition"
+                                >
+                                    企業共有用リンクをコピー
+                                </button>
+                                <div id="viewerShareCopyStatus" class="hidden mt-2 text-[11px] text-emerald-700"></div>
                             </div>
                         </div>
                     </div>
@@ -1338,7 +1350,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-viewer-mvp-manage-v1";
+const SHEETS_APP_VERSION = "2026.08.30-viewer-migration-v2";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2061,6 +2073,10 @@ function showCreatedSheetSuccess(result) {
     const meta = document.getElementById("sheetsCreateSuccessMeta");
     const link = document.getElementById("openCreatedSheetLink");
     const viewerLink = document.getElementById("openViewerReportLink");
+    const shareTarget = document.getElementById("viewerShareTarget");
+    const shareTargetName = document.getElementById("viewerShareTargetName");
+    const copyBtn = document.getElementById("copyViewerShareBtn");
+    const copyStatus = document.getElementById("viewerShareCopyStatus");
     if (!wrap || !meta || !link) return;
 
     const isUpdate = normalizeString(result.operationMode).toUpperCase() === "UPDATE";
@@ -2080,6 +2096,22 @@ function showCreatedSheetSuccess(result) {
             viewerLink.classList.add("hidden");
             viewerLink.href = "#";
         }
+    }
+
+    if (shareTarget && shareTargetName) {
+        shareTargetName.textContent = result.fileName || "有効応募分析";
+        shareTarget.classList.toggle("hidden", !result.viewerUrl);
+    }
+
+    if (copyBtn) {
+        copyBtn.classList.toggle("hidden", !result.viewerUrl);
+        copyBtn.dataset.viewerUrl = result.viewerUrl || "";
+        copyBtn.dataset.reportName = result.fileName || "有効応募分析";
+    }
+
+    if (copyStatus) {
+        copyStatus.classList.add("hidden");
+        copyStatus.textContent = "";
     }
 
     meta.textContent =
@@ -2517,6 +2549,65 @@ if (saveSheetsConnectionBtn) {
     saveSheetsConnectionBtn.addEventListener(
         "click",
         saveSheetsConnectionSettings
+    );
+}
+
+async function copyViewerShareText() {
+    const btn = document.getElementById("copyViewerShareBtn");
+    const status = document.getElementById("viewerShareCopyStatus");
+    if (!btn) return;
+
+    const viewerUrl = normalizeString(btn.dataset.viewerUrl);
+    const reportName = normalizeString(btn.dataset.reportName) || "有効応募分析";
+
+    if (!viewerUrl) return;
+
+    const text =
+        `【企業共有用】\n` +
+        `共有先：${reportName}\n` +
+        `有効応募分析レポート\n` +
+        `${viewerUrl}`;
+
+    let copied = false;
+
+    try {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+    } catch (_) {
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.focus();
+        area.select();
+
+        try {
+            copied = document.execCommand("copy");
+        } catch (_) {
+            copied = false;
+        } finally {
+            area.remove();
+        }
+    }
+
+    if (status) {
+        status.textContent = copied
+            ? `「${reportName}」の企業共有用リンクをコピーしました。`
+            : "コピーできませんでした。Webレポートを開いてURLをご確認ください。";
+        status.className = copied
+            ? "mt-2 text-[11px] text-emerald-700"
+            : "mt-2 text-[11px] text-red-600";
+        status.classList.remove("hidden");
+    }
+}
+
+const copyViewerShareBtn =
+    document.getElementById("copyViewerShareBtn");
+if (copyViewerShareBtn) {
+    copyViewerShareBtn.addEventListener(
+        "click",
+        copyViewerShareText
     );
 }
 
