@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>有効応募分析 Phase 0 / GAS疎通テスト</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2937;
+      background: #f3f4f6;
+    }
+    body { margin: 0; padding: 24px; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    h2 { font-size: 18px; margin: 0 0 12px; }
+    p { line-height: 1.6; }
+    label { display: block; font-weight: 700; margin: 10px 0 6px; }
+    input, textarea, select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #9ca3af;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #111827;
+      color: #fff;
+    }
+    button.secondary { background: #4b5563; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .status {
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #111827;
+      color: #f9fafb;
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 90px;
+      overflow-wrap: anywhere;
+    }
+    .ok { color: #065f46; font-weight: 700; }
+    .warn { color: #92400e; font-weight: 700; }
+    .small { font-size: 13px; color: #6b7280; }
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>有効応募分析 Phase 0</h1>
+    <p>GitHub Pages → Apps Script Web App の疎通、payloadサイズ、テンプレート複製、TOP画像URL取得を本体改修前に確認するためのテスト画面です。</p>
+
+    <label for="endpoint">GAS Web App URL（/exec）</label>
+    <input id="endpoint" placeholder="https://script.google.com/macros/s/...../exec" />
+
+    <label for="accessKey">アクセスキー</label>
+    <input id="accessKey" type="password" autocomplete="off" />
+
+    <div class="actions">
+      <button onclick="runPing()">1. 疎通テスト</button>
+      <button class="secondary" onclick="runCopy()">3. テンプレート複製テスト</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. Payloadサイズ・POSTテスト</h2>
+    <div class="grid">
+      <div>
+        <label for="rows">疑似応募行数</label>
+        <input id="rows" type="number" min="1" step="100" value="1000" />
+      </div>
+      <div>
+        <label for="textLength">1行あたり疑似長文文字数</label>
+        <input id="textLength" type="number" min="0" step="100" value="1000" />
+      </div>
+    </div>
+    <p class="small">本番65列の厳密再現ではなく、長文重複によるpayload膨張を早く把握するための負荷テストです。</p>
+    <div class="actions">
+      <button onclick="measurePayload()">サイズ計測のみ</button>
+      <button class="secondary" onclick="sendPayload()">GASへ送信</button>
+    </div>
+    <p id="payloadInfo"></p>
+  </div>
+
+  <div class="card">
+    <h2>4. TOP画像URL取得テスト</h2>
+    <label for="jobId">求人管理番号</label>
+    <input id="jobId" value="25205292" />
+    <div class="actions">
+      <button onclick="runImage()">画像URL取得</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>結果</h2>
+    <div id="result" class="status">未実行</div>
+  </div>
+</div>
+
+<script>
+const te = new TextEncoder();
+
+function endpoint() {
+  return document.getElementById('endpoint').value.trim();
+}
+function accessKey() {
+  return document.getElementById('accessKey').value;
+}
+function setResult(v) {
+  document.getElementById('result').textContent =
+    typeof v === 'string' ? v : JSON.stringify(v, null, 2);
+}
+function makeRequest(action, extra = {}) {
+  return {
+    action,
+    schemaVersion: 'phase0-1',
+    requestId: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+    accessKey: accessKey(),
+    requestedAt: new Date().toISOString(),
+    ...extra
+  };
+}
+async function postJson(payload) {
+  const url = endpoint();
+  if (!url) throw new Error('GAS Web App URLを入力してください。');
+
+  // application/json を避け、CORS preflightを増やしにくい text/plain でJSON文字列を送る。
+  const res = await fetch(url, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); }
+  catch (_) {
+    throw new Error(`JSONではないレスポンスです。\nHTTP ${res.status}\n${text.slice(0, 1000)}`);
+  }
+  return { httpStatus: res.status, response: json };
+}
+
+async function busy(fn) {
+  const buttons = [...document.querySelectorAll('button')];
+  buttons.forEach(b => b.disabled = true);
+  try { await fn(); }
+  catch (e) { setResult(`ERROR\n${e && e.stack ? e.stack : e}`); }
+  finally { buttons.forEach(b => b.disabled = false); }
+}
+
+function makeDummyRows(count, textLength) {
+  const longText = 'あ'.repeat(Math.max(0, textLength));
+  const rows = new Array(count);
+  for (let i = 0; i < count; i++) {
+    rows[i] = {
+      recordId: `APP${String(i + 1).padStart(7, '0')}`,
+      companyId: String(100000 + (i % 50)),
+      jobNo: `JOB-${String(i % 300).padStart(4, '0')}`,
+      age: 18 + (i % 55),
+      media: ['Indeed', '求人ボックス', 'その他'][i % 3],
+      status: ['応募', '面接', '採用', '辞退'][i % 4],
+      description: longText,
+      note: longText.slice(0, Math.floor(longText.length / 2)),
+      tags: '101::205::309::412',
+      image: `image_${i % 80}.png`
+    };
+  }
+  return rows;
+}
+
+function buildPayloadForSizeTest() {
+  const count = Number(document.getElementById('rows').value || 0);
+  const textLength = Number(document.getElementById('textLength').value || 0);
+  return makeRequest('payloadTest', {
+    datasets: {
+      applicationJoinData: makeDummyRows(count, textLength)
+    }
+  });
+}
+
+function measurePayload() {
+  const payload = buildPayloadForSizeTest();
+  const json = JSON.stringify(payload);
+  const bytes = te.encode(json).length;
+  document.getElementById('payloadInfo').innerHTML =
+    `<span class="ok">${payload.datasets.applicationJoinData.length.toLocaleString()}行</span> / ` +
+    `${bytes.toLocaleString()} bytes / ${(bytes / 1024 / 1024).toFixed(2)} MiB`;
+  setResult({
+    rows: payload.datasets.applicationJoinData.length,
+    utf8Bytes: bytes,
+    mebibytes: Number((bytes / 1024 / 1024).toFixed(3))
+  });
+}
+
+function runPing() {
+  busy(async () => {
+    setResult('疎通テスト送信中...');
+    setResult(await postJson(makeRequest('ping', { message: 'hello' })));
+  });
+}
+
+function sendPayload() {
+  busy(async () => {
+    const payload = buildPayloadForSizeTest();
+    const json = JSON.stringify(payload);
+    const bytes = te.encode(json).length;
+    document.getElementById('payloadInfo').textContent =
+      `${payload.datasets.applicationJoinData.length.toLocaleString()}行 / ${(bytes / 1024 / 1024).toFixed(2)} MiB`;
+    setResult(`payload送信中...\n${(bytes / 1024 / 1024).toFixed(2)} MiB`);
+    setResult(await postJson(payload));
+  });
+}
+
+function runCopy() {
+  busy(async () => {
+    setResult('テンプレート複製テスト中...');
+    setResult(await postJson(makeRequest('copyTemplate')));
+  });
+}
+
+function runImage() {
+  busy(async () => {
+    const jobId = document.getElementById('jobId').value.trim();
+    setResult('TOP画像URL取得テスト中...');
+    setResult(await postJson(makeRequest('resolveImage', { jobId })));
+  });
+}
+</script>
+</body>
+</html>
