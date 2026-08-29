@@ -123,6 +123,7 @@
       <button onclick="runImage()">UrlFetchで画像URL取得</button>
       <button class="secondary" onclick="runTenichiDiagnostic()">ten.1049.cc接続診断</button>
       <button class="secondary" onclick="runImportXml()">IMPORTXML代替テスト</button>
+      <button class="secondary" onclick="runBrowserFetch()">ブラウザ直接fetch診断</button>
     </div>
   </div>
 
@@ -276,6 +277,147 @@ function runImportXml() {
     const jobId = document.getElementById('jobId').value.trim();
     setResult('IMPORTXML代替テスト中...');
     setResult(await postJson(makeRequest('importXmlImage', { jobId })));
+  });
+}
+
+
+function extractTopImageFromHtmlBrowser(html) {
+  // 1) JobPosting JSON-LD の image
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const scripts = [...doc.querySelectorAll('script[type="application/ld+json"]')];
+
+  for (const el of scripts) {
+    const raw = (el.textContent || '').trim();
+    if (!raw) continue;
+    try {
+      const parsed = JSON.parse(raw);
+      const nodes = Array.isArray(parsed) ? parsed : [parsed];
+
+      const stack = [...nodes];
+      while (stack.length) {
+        const node = stack.shift();
+        if (!node || typeof node !== 'object') continue;
+
+        if (node['@type'] === 'JobPosting' && node.image) {
+          if (typeof node.image === 'string') {
+            return { url: node.image, method: 'json-ld:image' };
+          }
+          if (Array.isArray(node.image) && node.image.length) {
+            const v = node.image[0];
+            if (typeof v === 'string') return { url: v, method: 'json-ld:image[0]' };
+            if (v && typeof v.url === 'string') return { url: v.url, method: 'json-ld:image[0].url' };
+          }
+          if (typeof node.image === 'object' && typeof node.image.url === 'string') {
+            return { url: node.image.url, method: 'json-ld:image.url' };
+          }
+        }
+
+        if (Array.isArray(node['@graph'])) stack.push(...node['@graph']);
+      }
+    } catch (_) {
+      // 壊れたJSON-LDは無視してHTML側へフォールバック
+    }
+  }
+
+  // 2) 画面HTML側のsource[srcset]
+  const source = doc.querySelector('figure.bl_contents_imgWrap picture source[srcset]');
+  if (source && source.getAttribute('srcset')) {
+    return { url: source.getAttribute('srcset'), method: 'picture:source-srcset' };
+  }
+
+  // 3) img[data-src]
+  const img = doc.querySelector('figure.bl_contents_imgWrap img[data-src]');
+  if (img && img.getAttribute('data-src')) {
+    return { url: img.getAttribute('data-src'), method: 'img:data-src' };
+  }
+
+  return { url: '', method: '' };
+}
+
+async function runBrowserFetch() {
+  const jobId = document.getElementById('jobId').value.trim();
+  if (!/^\d+$/.test(jobId)) {
+    setResult('ERROR\n求人管理番号は数字で指定してください。');
+    return;
+  }
+
+  const url = `https://ten.1049.cc/job/${jobId}`;
+
+  await busy(async () => {
+    setResult(`ブラウザ直接fetch診断中...\norigin: ${location.origin}\nurl: ${url}`);
+
+    const started = performance.now();
+
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        redirect: 'follow',
+        cache: 'no-store'
+      });
+
+      const html = await res.text();
+      const image = extractTopImageFromHtmlBrowser(html);
+
+      setResult({
+        test: 'browser-direct-fetch',
+        origin: location.origin,
+        jobUrl: url,
+        readable: true,
+        httpStatus: res.status,
+        responseType: res.type,
+        finalUrl: res.url,
+        elapsedMs: Math.round(performance.now() - started),
+        htmlChars: html.length,
+        imageUrl: image.url,
+        imageMethod: image.method,
+        note: image.url
+          ? 'ブラウザから求人HTMLを読み取り、TOP画像URLまで抽出できました。'
+          : 'HTMLは読み取れましたがTOP画像URLを抽出できませんでした。'
+      });
+      return;
+
+    } catch (corsErr) {
+      // 読取り可能なCORS fetchが失敗した場合だけ、
+      // no-corsで「リクエスト自体を送れる可能性」があるか参考診断する。
+      // opaque応答は本文を読めないため、本番の画像URL抽出には利用不可。
+      let noCors = {
+        attempted: false,
+        result: '',
+        note: ''
+      };
+
+      try {
+        noCors.attempted = true;
+        const opaque = await fetch(url, {
+          method: 'GET',
+          mode: 'no-cors',
+          credentials: 'omit',
+          redirect: 'follow',
+          cache: 'no-store'
+        });
+        noCors.result = `type=${opaque.type}, status=${opaque.status}`;
+        noCors.note =
+          'no-corsではopaque応答のためHTML本文は読めません。成功しても画像URL抽出用途には使えません。';
+      } catch (noCorsErr) {
+        noCors.result = String(noCorsErr && noCorsErr.message ? noCorsErr.message : noCorsErr);
+        noCors.note = 'no-corsでもブラウザ側のネットワークエラーになりました。';
+      }
+
+      setResult({
+        test: 'browser-direct-fetch',
+        origin: location.origin,
+        jobUrl: url,
+        readable: false,
+        elapsedMs: Math.round(performance.now() - started),
+        corsFetchError: String(corsErr && corsErr.message ? corsErr.message : corsErr),
+        noCorsProbe: noCors,
+        conclusion:
+          '通常fetchでHTMLを読めないため、ブラウザ側だけでのTOP画像URL抽出には利用できません。開発者ツールConsoleにCORSエラーが出ているか確認してください。'
+      });
+    }
   });
 }
 
