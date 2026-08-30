@@ -339,6 +339,72 @@
         grid-template-columns: 1fr;
     }
 }
+
+.period-panel {
+    margin-top: 14px;
+    border: 1px solid #dbeafe;
+    background: #eff6ff;
+    border-radius: 14px;
+    padding: 14px;
+}
+.period-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.period-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #1e3a8a;
+}
+.period-note {
+    margin-top: 3px;
+    font-size: 11px;
+    color: #64748b;
+}
+.period-controls {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+.period-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.period-field label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+}
+.period-field input {
+    min-height: 36px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    padding: 6px 9px;
+    font: inherit;
+    color: #0f172a;
+}
+.period-action {
+    min-height: 36px;
+    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+    background: #fff;
+    color: #1d4ed8;
+    font-weight: 800;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+.period-action.primary {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+}
         .footer {
             margin-top: 28px;
             text-align: center;
@@ -387,15 +453,36 @@
         <div id="shareNameWarning" class="share-warning hidden"></div>
 
         <div class="notice">
-            このページは閲覧専用です。表示データは企業別Google Sheetに保存された正規化データを読み込み、
-            ブラウザ内で集計しています。
+            このページは閲覧専用です。保存済みデータをブラウザ内で集計しています。
+            期間はViewer上で自由に絞り込めます。
+        </div>
+
+        <div class="period-panel">
+            <div class="period-head">
+                <div>
+                    <div class="period-title">分析期間</div>
+                    <div id="viewerPeriodRangeNote" class="period-note">応募データの全期間を読み込んでいます。</div>
+                </div>
+                <button id="viewerAllPeriodBtn" type="button" class="period-action">全期間に戻す</button>
+            </div>
+            <div class="period-controls">
+                <div class="period-field">
+                    <label for="viewerPeriodStart">開始日</label>
+                    <input id="viewerPeriodStart" type="date">
+                </div>
+                <div class="period-field">
+                    <label for="viewerPeriodEnd">終了日</label>
+                    <input id="viewerPeriodEnd" type="date">
+                </div>
+                <button id="viewerApplyPeriodBtn" type="button" class="period-action primary">この期間で集計</button>
+            </div>
         </div>
 
         <section class="grid-kpi">
             <div class="card kpi">
                 <div class="kpi-label">分析対象応募数</div>
                 <div id="kpiTotal" class="kpi-value">-</div>
-                <div class="kpi-sub">設定期間内</div>
+                <div class="kpi-sub">選択期間内</div>
             </div>
             <div class="card kpi">
                 <div class="kpi-label">ターゲット応募数</div>
@@ -414,7 +501,7 @@
             </div>
         </section>
 
-        <section class="card section">
+        <section id="ageSection" class="card section">
             <div class="section-head">
                 <div>
                     <h2>年代構成</h2>
@@ -436,12 +523,12 @@
             </div>
         </section>
 
-        <section class="card section">
+        <section id="basicAnalysisIndexSection" class="card section">
             <div class="section-head">
                 <div>
                     <h2>基本分析</h2>
                     <div class="section-note">
-                        Google Sheets版の基本クロス集計をブラウザ側へ移植しました。各表は独立して横スクロールできます。
+                        各分析表は独立して横スクロールできます。
                     </div>
                 </div>
             </div>
@@ -531,7 +618,7 @@
     </section>
 </div>
 
-<div class="footer">有効応募分析・企業向け閲覧Pages Viewer移行 v4</div>
+<div class="footer">有効応募分析 Viewer v5</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -1129,11 +1216,182 @@ function initializeCustomAnalysis(data, viewerResult, core) {
     run();
 }
 
+let currentViewerData = null;
+let currentViewerPeriod = {
+    start: "",
+    end: ""
+};
+let currentViewerBounds = {
+    start: "",
+    end: ""
+};
+
+function ymd(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+    ].join("-");
+}
+
+function viewerApplicationDateBounds(data, core) {
+    const rows =
+        core.datasetObjects(
+            data?.datasets?.applicationData || {}
+        );
+
+    let min = null;
+    let max = null;
+
+    rows.forEach(row => {
+        const date = core.parseDate(row["応募日時"]);
+        if (!date || Number.isNaN(date.getTime())) return;
+        if (!min || date < min) min = date;
+        if (!max || date > max) max = date;
+    });
+
+    return {
+        start: ymd(min),
+        end: ymd(max)
+    };
+}
+
+function viewerDisplayMap(data) {
+    const map = {};
+    const items = Array.isArray(data?.displaySettings)
+        ? data.displaySettings
+        : [];
+
+    items.forEach(item => {
+        const id = String(item?.id || "").trim();
+        if (!id) return;
+        map[id] = item?.visible !== false;
+    });
+
+    return map;
+}
+
+function viewerDisplayEnabled(displayMap, id) {
+    return !Object.prototype.hasOwnProperty.call(displayMap, id) ||
+        displayMap[id] !== false;
+}
+
+function dataForCurrentViewerPeriod(data) {
+    return {
+        ...data,
+        settings: {
+            ...(data?.settings || {}),
+            "集計開始日": currentViewerPeriod.start,
+            "集計終了日": currentViewerPeriod.end
+        }
+    };
+}
+
+function periodLabel() {
+    const start =
+        currentViewerPeriod.start ||
+        currentViewerBounds.start;
+
+    const end =
+        currentViewerPeriod.end ||
+        currentViewerBounds.end;
+
+    if (!currentViewerPeriod.start && !currentViewerPeriod.end) {
+        return start && end
+            ? `全期間：${start} ～ ${end}`
+            : "全期間";
+    }
+
+    return `${start || "指定なし"} ～ ${end || "指定なし"}`;
+}
+
+function initializeViewerPeriod(data) {
+    const core = window.ValidApplicationAnalysisCore;
+
+    currentViewerData = data;
+    currentViewerPeriod = {
+        start: "",
+        end: ""
+    };
+    currentViewerBounds =
+        viewerApplicationDateBounds(data, core);
+
+    const startInput =
+        document.getElementById("viewerPeriodStart");
+    const endInput =
+        document.getElementById("viewerPeriodEnd");
+
+    if (startInput) {
+        startInput.value = currentViewerBounds.start;
+        startInput.min = currentViewerBounds.start;
+        startInput.max = currentViewerBounds.end;
+    }
+
+    if (endInput) {
+        endInput.value = currentViewerBounds.end;
+        endInput.min = currentViewerBounds.start;
+        endInput.max = currentViewerBounds.end;
+    }
+
+    const applyPeriodBtn =
+        document.getElementById("viewerApplyPeriodBtn");
+
+    if (applyPeriodBtn) {
+        applyPeriodBtn.onclick = () => {
+            const start = startInput?.value || "";
+            const end = endInput?.value || "";
+
+            if (start && end && start > end) {
+                window.alert("開始日は終了日以前を指定してください。");
+                return;
+            }
+
+            currentViewerPeriod = {
+                start:
+                    start === currentViewerBounds.start
+                        ? ""
+                        : start,
+                end:
+                    end === currentViewerBounds.end
+                        ? ""
+                        : end
+            };
+
+            renderReport(currentViewerData);
+        };
+    }
+
+    const allPeriodBtn =
+        document.getElementById("viewerAllPeriodBtn");
+
+    if (allPeriodBtn) {
+        allPeriodBtn.onclick = () => {
+            currentViewerPeriod = {
+                start: "",
+                end: ""
+            };
+
+            if (startInput) {
+                startInput.value = currentViewerBounds.start;
+            }
+
+            if (endInput) {
+                endInput.value = currentViewerBounds.end;
+            }
+
+            renderReport(currentViewerData);
+        };
+    }
+}
+
 function renderReport(data) {
     const core = window.ValidApplicationAnalysisCore;
-    const result = core.aggregateViewer(data);
+    const runtimeData = dataForCurrentViewerPeriod(data);
+    const result = core.aggregateViewer(runtimeData);
     const metadata = data.metadata || {};
-    const settings = data.settings || {};
+    const settings = runtimeData.settings || {};
+    const displayMap = viewerDisplayMap(data);
     const actualName = metadata.reportTitle || "有効応募分析レポート";
     const urlName = getViewerUrlName();
 
@@ -1161,13 +1419,11 @@ function renderReport(data) {
         shareWarning.textContent = "";
     }
 
-    const start =
-        displaySettingDate(settings["集計開始日"]);
-    const end =
-        displaySettingDate(settings["集計終了日"]);
-
     document.getElementById("reportSubtitle").textContent =
-        `集計期間：${start} ～ ${end} ／ 最終データ更新：${formatDateLabel(metadata.lastDataUpdateAt)}`;
+        `集計期間：${periodLabel()} ／ 最終データ更新：${formatDateLabel(metadata.lastDataUpdateAt)}`;
+
+    document.getElementById("viewerPeriodRangeNote").textContent =
+        `現在：${periodLabel()}`;
 
     document.getElementById("kpiTotal").textContent =
         core.formatNumber(result.totalCount);
@@ -1207,6 +1463,27 @@ function renderReport(data) {
             </tr>
         `).join("");
 
+    document.getElementById("ageSection")
+        ?.classList.toggle(
+            "hidden",
+            !viewerDisplayEnabled(displayMap, "age")
+        );
+
+    const visibleBasicTables =
+        result.basicCrossTables.filter(
+            table =>
+                viewerDisplayEnabled(
+                    displayMap,
+                    table.id
+                )
+        );
+
+    document.getElementById("basicAnalysisIndexSection")
+        ?.classList.toggle(
+            "hidden",
+            visibleBasicTables.length === 0
+        );
+
     const nav =
         document.getElementById("analysisNav");
 
@@ -1215,11 +1492,11 @@ function renderReport(data) {
 
     if (basicSectionNote) {
         basicSectionNote.textContent =
-            `Google Sheets版の基本分析 ${result.basicCrossTables.length}表をブラウザ集計しています。各表は独立して横スクロールできます。`;
+            `表示設定に基づき ${visibleBasicTables.length}表を表示しています。各表は独立して横スクロールできます。`;
     }
 
     nav.innerHTML =
-        result.basicCrossTables.map(table => `
+        visibleBasicTables.map(table => `
             <button type="button" data-target="analysis-${escapeHtml(table.id)}">${escapeHtml(table.label)}</button>
         `).join("");
 
@@ -1240,7 +1517,7 @@ function renderReport(data) {
         document.getElementById("basicCrossTables");
 
     container.innerHTML =
-        result.basicCrossTables
+        visibleBasicTables
             .map(table => renderCrossTable(table, core))
             .join("");
 
@@ -1259,11 +1536,36 @@ function renderReport(data) {
         core
     );
 
-    initializeCustomAnalysis(
-        data,
-        result,
-        core
-    );
+    [
+        ["noteDetailSection", "note-detail"],
+        ["indeedTagDetailSection", "indeed-tag-detail"],
+        ["topImageDetailSection", "top-image-detail"]
+    ].forEach(([elementId, settingId]) => {
+        if (!viewerDisplayEnabled(displayMap, settingId)) {
+            document.getElementById(elementId)
+                ?.classList.add("hidden");
+        }
+    });
+
+    const customVisible =
+        viewerDisplayEnabled(
+            displayMap,
+            "custom-analysis"
+        );
+
+    document.getElementById("customAnalysisSection")
+        ?.classList.toggle(
+            "hidden",
+            !customVisible
+        );
+
+    if (customVisible) {
+        initializeCustomAnalysis(
+            runtimeData,
+            result,
+            core
+        );
+    }
 
     document.getElementById("loadingView")
         .classList.add("hidden");
@@ -1307,6 +1609,7 @@ function renderReport(data) {
 
             try {
                 const data = await fetchViewerData(token);
+                initializeViewerPeriod(data);
                 renderReport(data);
             } catch (error) {
                 const message =
