@@ -72,396 +72,240 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans h-screen m-0 overflow-hidden text-gray-800">
-
-    <!-- 設定モーダル -->
-    <div id="settingsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative transform transition-all border border-gray-100 max-h-[90vh] overflow-y-auto">
-            <button id="closeSettingsBtn" class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-200 rounded-full p-2 focus:outline-none transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <h2 class="text-2xl font-extrabold text-gray-800 mb-6 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                詳細設定
-            </h2>
-            
-            <div class="space-y-6">
-                <!-- 文字コード -->
-                <div>
-                    <label class="block font-bold text-sm text-gray-700 mb-2">CSVの文字コード</label>
-                    <select id="encoding" class="border border-gray-300 p-2.5 rounded-lg w-full text-sm bg-gray-50 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all">
-                        <option value="Shift_JIS" selected>Shift_JIS (Excel等から出力したCSV)</option>
-                        <option value="UTF-8">UTF-8</option>
-                    </select>
-                </div>
-                
-                <hr class="border-gray-200">
-
-                <!-- Google Sheets連携 -->
-                <div class="pt-1">
-                    <label class="block font-bold text-sm text-gray-700 mb-3">Viewer連携・保存設定</label>
-
-                    <div class="space-y-3">
-                        <div class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3">
-                            <div class="text-xs font-bold text-indigo-800">連携先</div>
-                            <div class="text-[11px] leading-relaxed text-indigo-700 mt-1">
-                                Web App URLはツール側に設定済みです。新しいブラウザではアクセスキーのみ入力してください。
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="sheetsAccessKeyInput" class="block text-xs font-bold text-gray-600 mb-1">
-                                アクセスキー
-                            </label>
-                            <div class="flex gap-2">
-                                <input
-                                    id="sheetsAccessKeyInput"
-                                    type="password"
-                                    autocomplete="off"
-                                    placeholder="アクセスキーを入力"
-                                    class="border border-gray-300 p-2.5 rounded-lg flex-1 min-w-0 text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                                >
-                                <a
-                                    href="https://docs.google.com/document/d/1c5u4HqoHo5LQRPrXjbWWUJI00BPjTv0Ekk2VA6KtYIQ/edit"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="shrink-0 inline-flex items-center justify-center px-3 py-2 rounded-lg border border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:bg-indigo-50 transition"
-                                    title="組織メンバー限定のアクセスキー確認ドキュメントを開く"
-                                >
-                                    キー確認
-                                </a>
-                            </div>
-                        </div>
-
-                        <button
-                            id="saveSheetsConnectionBtn"
-                            type="button"
-                            class="w-full bg-indigo-50 text-indigo-700 border border-indigo-200 px-4 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition-all text-sm"
-                        >
-                            このブラウザにアクセスキーを保存
-                        </button>
-
-                        <details class="rounded-xl border border-gray-200 bg-gray-50/60">
-                            <summary class="cursor-pointer px-3 py-2.5 text-[11px] font-bold text-gray-600">
-                                保存・保守リンク
-                            </summary>
-                            <div class="border-t border-gray-200 p-3 grid grid-cols-2 gap-2">
-                                <a
-                                    href="https://drive.google.com/drive/folders/1pczMllofAeCpPsMKmaU0fDDUUXgkXy8f"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-xs font-bold hover:bg-gray-50 transition"
-                                >
-                                    保存データを開く
-                                </a>
-                                <a
-                                    href="https://docs.google.com/document/d/1c5u4HqoHo5LQRPrXjbWWUJI00BPjTv0Ekk2VA6KtYIQ/edit"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-xs font-bold hover:bg-gray-50 transition"
-                                >
-                                    アクセスキー確認Doc
-                                </a>
-                            </div>
-                        </details>
-
-                        <div id="sheetsConnectionSettingsStatus" class="hidden text-xs rounded-lg p-2.5"></div>
-
-                        <p class="text-[11px] leading-relaxed text-gray-500">
-                            アクセスキーはこのブラウザのlocalStorageに保存します。
-                            バックエンドの保存データにはアクセスキーを保存しません。
-                        </p>
-                    </div>
-                </div>
-
-                <hr class="border-gray-200">
-
-                <!-- CSVダウンロード -->
-                <div class="pt-2">
-                    <label class="block font-bold text-sm text-gray-700 mb-3">処理結果のエクスポート</label>
-                    <button id="downloadBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-3 rounded-xl font-bold hover:from-emerald-600 hover:to-teal-700 transition-all text-sm shadow-[0_4px_10px_-2px_rgba(16,185,129,0.4)] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        CSVをダウンロード
-                    </button>
-                    <p class="text-xs text-gray-500 mt-3 flex items-center"><svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 分析データを作成後にダウンロード可能になります。</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         ETLビュー (データ準備画面)
-         ========================================== -->
-    <div id="etlView" class="h-full w-full overflow-y-auto p-8 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50 relative">
-        <!-- 装飾的な背景の光彩 -->
+<body class="bg-gray-100 font-sans min-h-screen m-0 text-gray-800">
+    <div id="etlView" class="min-h-screen w-full overflow-y-auto p-5 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50 relative">
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
             <div class="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] rounded-full bg-blue-200/40 blur-[100px]"></div>
             <div class="absolute bottom-[-10%] right-[-5%] w-[40%] h-[50%] rounded-full bg-purple-200/30 blur-[100px]"></div>
-            <div class="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-emerald-200/20 blur-[80px]"></div>
         </div>
 
-        <div class="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl p-10 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 relative z-10 my-4">
-            
-            <div class="flex justify-between items-center mb-10 pb-6 border-b border-gray-200/60">
-                <h1 class="text-3xl font-extrabold tracking-tight flex items-center">
-                    <span class="text-4xl mr-3 drop-shadow-md transform -translate-y-1">🌸</span>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">有効応募分析 CSVデータ更新</span>
+        <div class="max-w-4xl mx-auto bg-white/90 backdrop-blur-xl p-6 md:p-9 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 relative z-10 my-4">
+            <header class="mb-7 pb-5 border-b border-gray-200/60">
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">
+                        有効応募分析 CSVデータ更新
+                    </span>
                 </h1>
-                <button id="openSettingsBtn" class="p-3 text-gray-500 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-full shadow-sm border border-gray-100 transition-all focus:outline-none hover:shadow-md hover:-translate-y-0.5 group" title="詳細設定・CSVダウンロード">
-                    <svg class="w-6 h-6 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </button>
-            </div>
+                <p class="mt-2 text-sm text-slate-500 leading-relaxed">
+                    CSVを選び、1回の実行で分析データ作成から個社Google Sheet保存、Viewer反映まで完了します。
+                </p>
+            </header>
 
-            <div id="workflowModeSelector" class="mb-8 rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4">
-    <div class="text-[11px] font-extrabold tracking-wide text-indigo-600">CSV DATA UPDATE / ETL</div>
-    <div class="mt-1 text-base font-extrabold text-indigo-950">
-        新しいCSVを分析データへ変換し、Viewerへ反映します
-    </div>
-    <div class="mt-2 text-xs leading-relaxed text-indigo-800/80">
-        新規企業はこのページから開始できます。既存企業は個社Google Sheetの「CSVデータ更新はこちら」から開くと、更新先が自動で指定されます。
-    </div>
-    <div id="etlSheetTargetBanner" class="hidden mt-3 rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-[11px] text-emerald-800">
-        <span class="font-extrabold">既存データ更新モード：</span>
-        この個社Sheetへ最新CSVを反映します。まずCSVを選んでください。
-    </div>
-    <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <div class="rounded-xl border border-white/80 bg-white px-3 py-2.5">
-            <div class="text-[9px] font-extrabold tracking-wide text-indigo-500">STEP 1</div>
-            <div class="mt-0.5 text-[11px] font-extrabold text-slate-800">CSVを選ぶ</div>
-        </div>
-        <div class="rounded-xl border border-white/80 bg-white px-3 py-2.5">
-            <div class="text-[9px] font-extrabold tracking-wide text-indigo-500">STEP 2</div>
-            <div class="mt-0.5 text-[11px] font-extrabold text-slate-800">分析データを作成</div>
-        </div>
-        <div class="rounded-xl border border-white/80 bg-white px-3 py-2.5">
-            <div class="text-[9px] font-extrabold tracking-wide text-indigo-500">STEP 3</div>
-            <div class="mt-0.5 text-[11px] font-extrabold text-slate-800">Viewerへ反映・確認</div>
-        </div>
-    </div>
-</div>
-
-<div id="workflowModeEtlPanel">
-<div class="grid grid-cols-2 gap-8 mb-10">
-                <div class="p-6 rounded-2xl bg-gradient-to-b from-blue-50/80 to-white border border-blue-100 shadow-sm relative group hover:shadow-md transition-all">
-                    <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500 rounded-l-2xl"></div>
-                    <h2 class="font-extrabold mb-4 text-blue-900 flex items-center text-lg tracking-wide">
-                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        応募CSV <span class="text-xs font-normal text-blue-600 ml-1">(複数選択可)</span>
-                        <span class="ml-3 text-xs font-bold px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-md">必須</span>
-                    </h2>
-                    <input type="file" id="fileA" accept=".csv" multiple class="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:shadow-sm file:transition-colors file:cursor-pointer border border-gray-200 rounded-xl p-1 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-200"/>
-                </div>
-                
-                <div class="p-6 rounded-2xl bg-gradient-to-b from-emerald-50/80 to-white border border-emerald-100 shadow-sm relative group hover:shadow-md transition-all">
-                    <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-400 rounded-l-2xl"></div>
-                    <h2 class="font-extrabold mb-4 text-emerald-900 flex items-center text-lg tracking-wide">
-                        <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        求人CSV <span class="text-xs font-normal text-emerald-600 ml-1">(複数選択可)</span>
-                        <span class="ml-3 text-xs font-bold px-2.5 py-0.5 bg-gray-100 text-gray-500 rounded-md">任意</span>
-                    </h2>
-                    <input type="file" id="fileB" accept=".csv" multiple class="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 file:shadow-sm file:transition-colors file:cursor-pointer border border-gray-200 rounded-xl p-1 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-200"/>
-                </div>
-                
-                <!-- キーワード抽出設定 -->
-                <div class="p-6 rounded-2xl bg-gradient-to-b from-purple-50/80 to-white border border-purple-100 shadow-sm relative col-span-2 group hover:shadow-md transition-all">
-                    <div class="absolute top-0 left-0 w-1.5 h-full bg-purple-400 rounded-l-2xl"></div>
-                    <div class="flex items-center justify-between mb-2">
-                        <h2 class="font-extrabold text-purple-900 flex items-center text-lg tracking-wide">
-                            <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            『仕事名KW』抽出設定
-                        </h2>
-                        <a href="https://docs.google.com/spreadsheets/d/1DdqVnKnVBLfuWK7vPPOxD5W4L8Cfg6891vY-WMXf44U/" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-purple-600 hover:text-purple-800 hover:underline flex items-center bg-purple-100/50 hover:bg-purple-100 px-3 py-1 rounded-full transition-colors">
-                            KW候補リスト
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            <section id="accessKeyCard" class="mb-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-sm font-extrabold text-slate-900">Viewer連携アクセスキー</div>
+                            <span id="accessKeyStatusBadge" class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-800">
+                                確認中
+                            </span>
+                        </div>
+                        <div id="accessKeyStatusText" class="mt-1 text-[11px] leading-relaxed text-slate-600">
+                            保存済みのアクセスキーを確認しています。
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="changeAccessKeyBtn" type="button" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
+                            キーを入力・変更
+                        </button>
+                        <a
+                            href="https://docs.google.com/document/d/1c5u4HqoHo5LQRPrXjbWWUJI00BPjTv0Ekk2VA6KtYIQ/edit"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50"
+                        >
+                            キー確認
                         </a>
                     </div>
-                    <label class="text-sm text-gray-600 block mb-3 pl-1 font-medium">「仕事名」から抽出して分析したいキーワードを改行区切りで入力してください。</label>
-                    <textarea id="keywordInput" rows="3" class="border border-gray-300 p-3.5 rounded-xl w-full text-sm focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100/50 transition-all bg-white shadow-inner" placeholder="例:&#10;店長候補&#10;急募&#10;未経験歓迎"></textarea>
+                </div>
+
+                <div id="accessKeyEntryArea" class="hidden mt-3 border-t border-amber-200/70 pt-3">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input
+                            id="sheetsAccessKeyInput"
+                            type="password"
+                            autocomplete="off"
+                            placeholder="アクセスキーを入力"
+                            class="border border-gray-300 p-2.5 rounded-lg flex-1 min-w-0 text-xs bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                        >
+                        <button
+                            id="saveSheetsConnectionBtn"
+                            type="button"
+                            class="shrink-0 bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-indigo-700 text-xs"
+                        >
+                            保存して接続確認
+                        </button>
+                    </div>
+                    <div id="sheetsConnectionSettingsStatus" class="hidden mt-2 text-xs rounded-lg p-2.5"></div>
+                    <p class="mt-2 text-[10px] text-slate-500">
+                        アクセスキーはこのブラウザ内だけに保存し、個社Sheetへは保存しません。
+                    </p>
+                </div>
+            </section>
+
+            <div id="workflowModeSelector" class="mb-6 rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4">
+                <div class="text-[11px] font-extrabold tracking-wide text-indigo-600">CSV DATA UPDATE / ETL</div>
+                <div class="mt-1 text-sm font-extrabold text-indigo-950">
+                    新規企業はこのページから開始。既存企業は個社Sheetの「CSVデータ更新はこちら」から開くのがおすすめです。
+                </div>
+                <div id="etlSheetTargetBanner" class="hidden mt-3 rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-[11px] text-emerald-800">
+                    <span class="font-extrabold">既存データ更新モード：</span>
+                    個社Sheetから更新先が指定されています。
                 </div>
             </div>
 
-            <button id="runBtn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-4 rounded-2xl font-extrabold hover:from-indigo-700 hover:to-blue-700 transition-all shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(79,70,229,0.6)] hover:-translate-y-1 flex items-center justify-center text-xl overflow-hidden relative group">
-                <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
-                <svg class="w-6 h-6 mr-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="relative z-10 tracking-wide">分析データを作成</span>
-            </button>
+            <div id="workflowModeEtlPanel">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                    <div class="p-5 rounded-2xl bg-gradient-to-b from-blue-50/80 to-white border border-blue-100 shadow-sm relative">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500 rounded-l-2xl"></div>
+                        <h2 class="font-extrabold mb-3 text-blue-900 text-base">
+                            応募CSV
+                            <span class="ml-2 text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md">必須・複数可</span>
+                        </h2>
+                        <input type="file" id="fileA" accept=".csv" multiple class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                    </div>
 
-            <div id="message" class="mt-6 text-center text-sm font-semibold p-4 rounded-xl hidden"></div>
+                    <div class="p-5 rounded-2xl bg-gradient-to-b from-emerald-50/80 to-white border border-emerald-100 shadow-sm relative">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-400 rounded-l-2xl"></div>
+                        <h2 class="font-extrabold mb-3 text-emerald-900 text-base">
+                            求人CSV
+                            <span class="ml-2 text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md">任意・複数可</span>
+                        </h2>
+                        <input type="file" id="fileB" accept=".csv" multiple class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                    </div>
+                </div>
 
-<div id="resultArea" class="mt-8 hidden border-t border-gray-200/60 pt-8">
-                <div class="flex flex-col items-center gap-5">
-<!-- Google Sheets生成 / 既存レポート更新 -->
-                    <div id="sheetsCreateArea" class="w-full max-w-2xl rounded-2xl border border-green-200 bg-green-50/70 p-5">
-                        <div class="flex flex-col gap-4">
-                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                <div class="min-w-0">
-                                    <div id="sheetsCreateTitle" class="font-extrabold text-green-900 text-base">分析Viewerへ反映</div>
-                                    <div id="sheetsCreateSummary" class="text-xs text-green-800 mt-1.5 leading-relaxed">
-                                        作成した分析データを保存し、企業向けViewerで確認できる状態へ反映します。
-                                    </div>
-                                    <div class="text-[11px] text-green-700/80 mt-2">
-                                        氏名・メールアドレス全文・詳細な居住住所・重複行明細は送信しません。
-                                    </div>
-                                </div>
-                                <button
-                                    id="createGoogleSheetBtn"
-                                    type="button"
-                                    class="shrink-0 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-extrabold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                <section class="mb-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                    <div>
+                        <div id="sheetsCreateTitle" class="text-sm font-extrabold text-slate-900">新しいViewerを作成</div>
+                        <div id="existingSheetModeNote" class="mt-1 text-[11px] leading-relaxed text-slate-500">
+                            更新先が空欄なら、新しい個社SheetとViewerを作成します。
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label for="existingSheetUrlInput" class="block text-[11px] font-bold text-slate-600 mb-1">
+                            更新先Google Sheet <span class="font-normal text-slate-400">（既存データ更新時のみ）</span>
+                        </label>
+                        <input
+                            id="existingSheetUrlInput"
+                            type="url"
+                            inputmode="url"
+                            autocomplete="off"
+                            placeholder="個社Sheetから開いた場合は自動入力されます"
+                            class="border border-gray-300 p-2.5 rounded-lg w-full text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                        >
+                    </div>
+
+                    <div id="newReportIdentityBlock" class="mt-4 rounded-xl border border-indigo-200 bg-white p-4">
+                        <div class="text-xs font-extrabold text-indigo-900">新規作成時の表示名</div>
+                        <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label for="newCompanyDisplayNameInput" class="block text-[11px] font-bold text-gray-600 mb-1">
+                                    企業表示名 <span class="font-normal text-gray-400">（任意）</span>
+                                </label>
+                                <input
+                                    id="newCompanyDisplayNameInput"
+                                    type="text"
+                                    maxlength="100"
+                                    autocomplete="off"
+                                    placeholder="例：株式会社○○"
+                                    class="w-full border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                                 >
-                                    分析Viewerへ反映
-                                </button>
+                                <div class="mt-1 text-[10px] text-gray-500">
+                                    「様」または「御中」が無い場合は「様」を自動付与します。
+                                </div>
                             </div>
 
-<div id="newReportIdentityBlock" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4">
-    <div class="text-xs font-extrabold text-indigo-900">
-        新しいViewerの基本情報
-    </div>
-    <div class="mt-1 text-[11px] leading-relaxed text-indigo-700">
-        企業表示名を設定しておくと、個社Viewer一覧と企業共有時の宛先確認が分かりやすくなります。
-    </div>
-
-    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-            <label for="newCompanyDisplayNameInput" class="block text-[11px] font-bold text-gray-600 mb-1">
-                企業表示名 <span class="font-normal text-gray-400">（任意）</span>
-            </label>
-            <input
-                id="newCompanyDisplayNameInput"
-                type="text"
-                maxlength="100"
-                autocomplete="off"
-                placeholder="例：株式会社○○（「様」は自動付与）"
-                class="w-full border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-            >
-            <div class="mt-1 text-[10px] text-gray-500">
-                企業共有用の表示名です。「様」または「御中」が無い場合は「様」を自動付与します。
-            </div>
-        </div>
-
-        <div>
-            <div class="mb-1 flex items-center justify-between gap-2">
-                <label for="newReportNameInput" class="text-[11px] font-bold text-gray-600">
-                    Viewer名 <span class="font-normal text-gray-400">（任意）</span>
-                </label>
-                <button
-                    id="suggestNewReportNameBtn"
-                    type="button"
-                    class="rounded-md border border-indigo-200 bg-white px-2 py-1 text-[9px] font-extrabold text-indigo-700 hover:bg-indigo-50"
-                    title="企業表示名を使ってViewer名欄だけを入力します"
-                >
-                    企業表示名から入力
-                </button>
-            </div>
-            <input
-                id="newReportNameInput"
-                type="text"
-                maxlength="120"
-                autocomplete="off"
-                placeholder="例：株式会社○○様_有効応募分析"
-                class="w-full border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-            >
-            <div class="mt-1 text-[10px] text-gray-500">
-                個社一覧とViewerの共有先確認に使う名称です。空欄なら企業表示名から自動設定します。
-            </div>
-        </div>
-    </div>
-</div>
-
-<label class="flex items-start gap-2 rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2.5 text-[11px] text-blue-800 cursor-pointer">
-    <input
-        id="etlAutoOpenViewerCheckbox"
-        type="checkbox"
-        class="mt-0.5 rounded border-blue-300 text-blue-600 focus:ring-blue-300"
-        checked
-    >
-    <span>
-        <span class="font-extrabold">反映完了後にViewerを新しいタブで開く</span>
-        <span class="block mt-0.5 text-[10px] text-blue-700/80">
-            デフォルトON。新規タブがブロックされた場合は完了後のViewerリンクから確認できます。
-        </span>
-    </span>
-</label>
-
-                            <div class="rounded-xl border border-green-200 bg-white/90 p-4">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div>
-                                        <div class="text-xs font-extrabold text-gray-700">既存Viewerへデータを反映する場合</div>
-                                        <div class="text-[11px] text-gray-500 mt-1">
-                                            個社一覧の「データ更新」から入ると反映先は自動設定されます。URL直接指定は詳細操作として利用できます。
-                                        </div>
-                                    </div>
-                                    <a
-                                        href="https://drive.google.com/drive/folders/1pczMllofAeCpPsMKmaU0fDDUUXgkXy8f"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="shrink-0 text-xs font-bold text-green-700 hover:text-green-900 underline"
+                            <div>
+                                <div class="mb-1 flex items-center justify-between gap-2">
+                                    <label for="newReportNameInput" class="text-[11px] font-bold text-gray-600">
+                                        Viewer名 <span class="font-normal text-gray-400">（任意）</span>
+                                    </label>
+                                    <button
+                                        id="suggestNewReportNameBtn"
+                                        type="button"
+                                        class="rounded-md border border-indigo-200 bg-white px-2 py-1 text-[9px] font-extrabold text-indigo-700 hover:bg-indigo-50"
                                     >
-                                        出力フォルダ
-                                    </a>
+                                        企業表示名から入力
+                                    </button>
                                 </div>
                                 <input
-                                    id="existingSheetUrlInput"
-                                    type="url"
-                                    inputmode="url"
+                                    id="newReportNameInput"
+                                    type="text"
+                                    maxlength="120"
                                     autocomplete="off"
-                                    placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-                                    class="mt-3 border border-gray-300 p-2.5 rounded-lg w-full text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+                                    placeholder="例：株式会社○○様_有効応募分析"
+                                    class="w-full border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                                 >
-                                <div id="existingSheetModeNote" class="mt-2 text-[11px] leading-relaxed text-gray-500">
-                                    空欄なら新規作成します。URLを入力した場合は、集計設定・KWマスタ・企業表示名・画像マスタ等を引き継いで更新します。
-                                </div>
-                            </div>
-
-                            <div id="sheetsCreateStatus" class="hidden text-xs rounded-xl bg-white border border-green-100 p-3 text-gray-700 whitespace-pre-wrap"></div>
-
-                            <div id="sheetsCreateSuccess" class="hidden rounded-xl border border-emerald-200 bg-white p-4">
-                                <div id="sheetsCreateSuccessTitle" class="font-bold text-emerald-800 text-sm">スプレッドシートを作成しました</div>
-                                <div id="sheetsCreateSuccessMeta" class="text-xs text-gray-600 mt-1"></div>
-                                <div id="viewerShareTarget" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                                    <span class="font-extrabold">共有先確認：</span>
-                                    <span id="viewerShareTargetName"></span>
-                                </div>
-                                <a
-                                    id="openCreatedSheetLink"
-                                    href="#"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="inline-flex items-center mt-3 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition"
-                                >
-                                    Googleスプレッドシートを開く
-                                </a>
-                                <a
-                                    id="openViewerReportLink"
-                                    href="#"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition"
-                                >
-                                    企業向けViewerを開く
-                                </a>
-                                <button
-                                    id="copyViewerShareBtn"
-                                    type="button"
-                                    class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-800 text-sm font-bold transition"
-                                >
-                                    企業共有用リンクをコピー
-                                </button>
-                                <div id="viewerShareCopyStatus" class="hidden mt-2 text-[11px] text-emerald-700"></div>
                             </div>
                         </div>
                     </div>
 
+                    <label class="mt-4 flex items-start gap-2 rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2.5 text-[11px] text-blue-800 cursor-pointer">
+                        <input
+                            id="etlAutoOpenViewerCheckbox"
+                            type="checkbox"
+                            class="mt-0.5 rounded border-blue-300 text-blue-600 focus:ring-blue-300"
+                            checked
+                        >
+                        <span>
+                            <span class="font-extrabold">反映完了後にViewerを新しいタブで開く</span>
+                            <span class="block mt-0.5 text-[10px] text-blue-700/80">
+                                デフォルトON。処理中は待機タブを表示し、完了するとViewerへ切り替わります。
+                            </span>
+                        </span>
+                    </label>
+                </section>
 
+                <button id="runBtn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-4 rounded-2xl font-extrabold hover:from-indigo-700 hover:to-blue-700 transition-all shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg md:text-xl">
+                    <span id="runBtnLabel" class="tracking-wide">分析データを作成してViewerを作る</span>
+                </button>
+
+                <div id="message" class="mt-5 text-center text-sm font-semibold p-4 rounded-xl hidden"></div>
+
+                <div id="resultArea" class="mt-6 hidden border-t border-gray-200/60 pt-6">
+                    <div id="sheetsCreateSummary" class="text-xs text-slate-600 leading-relaxed"></div>
+                    <div id="sheetsCreateStatus" class="hidden mt-3 text-xs rounded-xl bg-white border border-green-100 p-3 text-gray-700 whitespace-pre-wrap"></div>
+
+                    <div id="sheetsCreateSuccess" class="hidden mt-4 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+                        <div id="sheetsCreateSuccessTitle" class="font-bold text-emerald-800 text-sm">Viewerへ反映しました</div>
+                        <div id="sheetsCreateSuccessMeta" class="text-xs text-gray-600 mt-1"></div>
+                        <div id="viewerShareTarget" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                            <span class="font-extrabold">共有先確認：</span>
+                            <span id="viewerShareTargetName"></span>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <a id="openCreatedSheetLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+                                個社Google Sheetを開く
+                            </a>
+                            <a id="openViewerReportLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">
+                                Viewerを開く
+                            </a>
+                            <button id="copyViewerShareBtn" type="button" class="hidden inline-flex items-center px-4 py-2 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-800 text-xs font-bold">
+                                企業共有用リンクをコピー
+                            </button>
+                        </div>
+                        <div id="viewerShareCopyStatus" class="hidden mt-2 text-[11px] text-emerald-700"></div>
+                    </div>
+
+                    <div class="mt-4 rounded-xl border border-slate-200 bg-white p-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <div class="text-[11px] font-extrabold text-slate-700">処理済みCSVが必要な場合</div>
+                                <div class="mt-0.5 text-[10px] text-slate-400">
+                                    Viewer反映とは別に、結合後のデータをCSV保存できます。
+                                </div>
+                            </div>
+                            <button id="downloadBtn" disabled class="shrink-0 border border-slate-200 bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-bold hover:bg-slate-100 text-xs disabled:opacity-50">
+                                CSVをダウンロード
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-</div><!-- /workflowModeEtlPanel -->
-
-
-
         </div>
     </div>
-
 
     <script>
         // --------------------------------------------------
@@ -540,50 +384,102 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
         let globalDuplicateCount = 0;
         let globalDuplicateData = [];
 
-        // モーダルの制御
-        const settingsModal = document.getElementById('settingsModal');
-        const openSettingsBtn = document.getElementById('openSettingsBtn');
-        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-
-        openSettingsBtn.addEventListener('click', () => {
-            // データが存在しない場合はダウンロードボタンを無効にする
-            document.getElementById('downloadBtn').disabled = globalFinalData.length === 0;
-            loadSheetsConnectionSettingsIntoModal();
-            settingsModal.classList.remove('hidden');
-        });
-
-        closeSettingsBtn.addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-        });
-
-        // モーダルの背景クリックで閉じる
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) {
-                settingsModal.classList.add('hidden');
-            }
-        });
-
-        // 保存済みのViewer連携・保存設定を初期表示へ反映
-        loadSheetsConnectionSettingsIntoModal();
+        let globalUnifiedRunInFlight = false;
+        let globalTargetFromSheetPortal = false;
+        let globalAccessKeyVerified = false;
 
         function preprocessKey(rawKey) {
             if (rawKey === null || rawKey === undefined) return "";
             return String(rawKey).trim().toUpperCase().replace(/_[0-9]{3,8}$|§.*/g, "");
         }
 
-        function parseCSV(file, encoding) {
-            return new Promise((resolve, reject) => {
-                Papa.parse(file, {
-                    header: true, skipEmptyLines: true, encoding: encoding,
-                    transformHeader: function(header) {
-                        let cleanHeader = header.trim();
-                        return aliasMap[cleanHeader] ? aliasMap[cleanHeader] : cleanHeader;
-                    },
-                    complete: (results) => resolve(results.data),
-                    error: (err) => reject(err)
-                });
-            });
-        }
+async function detectCsvEncoding(file) {
+    const sample =
+        new Uint8Array(
+            await file
+                .slice(
+                    0,
+                    65536
+                )
+                .arrayBuffer()
+        );
+
+    if (
+        sample.length >= 3 &&
+        sample[0] === 0xEF &&
+        sample[1] === 0xBB &&
+        sample[2] === 0xBF
+    ) {
+        return "UTF-8";
+    }
+
+    try {
+        new TextDecoder(
+            "utf-8",
+            {
+                fatal: true
+            }
+        ).decode(sample);
+
+        return "UTF-8";
+
+    } catch (_) {
+        return "Shift_JIS";
+    }
+}
+
+async function parseCSV(file) {
+    const encoding =
+        await detectCsvEncoding(
+            file
+        );
+
+    const rows =
+        await new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+                Papa.parse(
+                    file,
+                    {
+                        header: true,
+                        skipEmptyLines: true,
+                        encoding,
+                        transformHeader:
+                            function(header) {
+                                const cleanHeader =
+                                    header.trim();
+
+                                return aliasMap[
+                                    cleanHeader
+                                ]
+                                    ? aliasMap[
+                                        cleanHeader
+                                      ]
+                                    : cleanHeader;
+                            },
+                        complete:
+                            results =>
+                                resolve(
+                                    results.data
+                                ),
+                        error:
+                            err =>
+                                reject(
+                                    err
+                                )
+                    }
+                );
+            }
+        );
+
+    return {
+        rows,
+        encoding
+    };
+}
+
 
         function convertCodes(rawVal, mapObj) {
             if (!rawVal) return "";
@@ -1021,7 +917,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-etl-v1";
+const SHEETS_APP_VERSION = "2026.08.30-etl-v2";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -1441,14 +1337,7 @@ function getApplicationDateRange() {
 }
 
 function buildSheetsPayloadV3(accessKey = "", requestId = "", targetSpreadsheetUrl = "") {
-    const dateRange = getApplicationDateRange();
-    const ageMinEl = document.getElementById("filterAgeMin");
-    const ageMaxEl = document.getElementById("filterAgeMax");
-    const keywordEl = document.getElementById("keywordInput");
-    const jobNameKeywords = normalizeString(keywordEl?.value)
-        .split(/\r?\n/)
-        .map(x => x.trim())
-        .filter(Boolean);
+    const jobNameKeywords = [];
 
     const normalizedModel = buildNormalizedSheetsModel();
 
@@ -1479,8 +1368,8 @@ function buildSheetsPayloadV3(accessKey = "", requestId = "", targetSpreadsheetU
         initialSettings: {
             analysisStartDate: "",
             analysisEndDate: "",
-            targetAgeMin: ageMinEl?.value === "" ? "" : Number(ageMinEl?.value),
-            targetAgeMax: ageMaxEl?.value === "" ? "" : Number(ageMaxEl?.value),
+            targetAgeMin: "",
+            targetAgeMax: "",
             ageMode: "年代",
             jobNameKeywords
         },
@@ -1622,52 +1511,353 @@ function getStoredUpdateTargetUrl() {
     }
 }
 
+function setAccessKeyUiState(
+    state,
+    message = ""
+) {
+    const card =
+        document.getElementById(
+            "accessKeyCard"
+        );
+
+    const badge =
+        document.getElementById(
+            "accessKeyStatusBadge"
+        );
+
+    const text =
+        document.getElementById(
+            "accessKeyStatusText"
+        );
+
+    const entry =
+        document.getElementById(
+            "accessKeyEntryArea"
+        );
+
+    const runBtn =
+        document.getElementById(
+            "runBtn"
+        );
+
+    const styles = {
+        ok: {
+            card:
+                "mb-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4",
+            badge:
+                "rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800",
+            label:
+                "接続OK"
+        },
+        checking: {
+            card:
+                "mb-6 rounded-2xl border border-blue-200 bg-blue-50/60 p-4",
+            badge:
+                "rounded-full border border-blue-300 bg-blue-100 px-2 py-0.5 text-[10px] font-extrabold text-blue-800",
+            label:
+                "確認中"
+        },
+        missing: {
+            card:
+                "mb-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-4",
+            badge:
+                "rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-800",
+            label:
+                "未設定"
+        },
+        invalid: {
+            card:
+                "mb-6 rounded-2xl border border-red-200 bg-red-50/60 p-4",
+            badge:
+                "rounded-full border border-red-300 bg-red-100 px-2 py-0.5 text-[10px] font-extrabold text-red-800",
+            label:
+                "要確認"
+        },
+        unknown: {
+            card:
+                "mb-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4",
+            badge:
+                "rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-extrabold text-slate-700",
+            label:
+                "保存済み"
+        }
+    };
+
+    const ui =
+        styles[state] ||
+        styles.unknown;
+
+    if (card) {
+        card.className =
+            ui.card;
+    }
+
+    if (badge) {
+        badge.className =
+            ui.badge;
+
+        badge.textContent =
+            ui.label;
+    }
+
+    if (text) {
+        text.textContent =
+            message ||
+            (
+                state === "ok"
+                    ? "アクセスキーを確認しました。このまま実行できます。"
+                    : state === "missing"
+                        ? "実行前にアクセスキーを保存してください。"
+                        : state === "invalid"
+                            ? "保存済みアクセスキーを確認できませんでした。入力し直してください。"
+                            : "アクセスキーは保存されています。"
+            );
+    }
+
+    if (entry) {
+        entry.classList.toggle(
+            "hidden",
+            state === "ok" ||
+            state === "checking"
+        );
+    }
+
+    globalAccessKeyVerified =
+        state === "ok";
+
+    if (runBtn) {
+        runBtn.disabled =
+            state !== "ok";
+    }
+}
+
+function openSheetsSettingsAndFocus() {
+    const keyInput =
+        document.getElementById(
+            "sheetsAccessKeyInput"
+        );
+
+    const entry =
+        document.getElementById(
+            "accessKeyEntryArea"
+        );
+
+    if (keyInput) {
+        keyInput.value =
+            getStoredSheetsAccessKey();
+    }
+
+    entry?.classList.remove(
+        "hidden"
+    );
+
+    setTimeout(
+        () => {
+            keyInput?.focus();
+        },
+        30
+    );
+}
+
+async function verifyStoredAccessKey() {
+    const accessKey =
+        getStoredSheetsAccessKey();
+
+    if (!accessKey) {
+        setAccessKeyUiState(
+            "missing"
+        );
+        return false;
+    }
+
+    setAccessKeyUiState(
+        "checking",
+        "保存済みアクセスキーを中央APIで確認しています。"
+    );
+
+    try {
+        const response =
+            await fetch(
+                SHEETS_API_URL,
+                {
+                    method:
+                        "POST",
+                    mode:
+                        "cors",
+                    credentials:
+                        "omit",
+                    headers: {
+                        "Content-Type":
+                            "text/plain;charset=UTF-8"
+                    },
+                    body:
+                        JSON.stringify({
+                            action:
+                                "manageAuthCheck",
+                            schemaVersion:
+                                SHEETS_SCHEMA_VERSION,
+                            pagesVersion:
+                                SHEETS_APP_VERSION,
+                            accessKey
+                        })
+                }
+            );
+
+        const text =
+            await response.text();
+
+        let data;
+
+        try {
+            data =
+                JSON.parse(
+                    text
+                );
+        } catch (_) {
+            throw new Error(
+                "API応答を確認できませんでした。"
+            );
+        }
+
+        if (!data?.ok) {
+            const error =
+                new Error(
+                    mapSheetsApiError(
+                        data
+                    )
+                );
+
+            error.code =
+                data?.code ||
+                "";
+
+            throw error;
+        }
+
+        setAccessKeyUiState(
+            "ok",
+            `接続OK / API ${data.apiVersion || ""}`
+        );
+
+        const input =
+            document.getElementById(
+                "sheetsAccessKeyInput"
+            );
+
+        if (input) {
+            input.value = "";
+        }
+
+        return true;
+
+    } catch (error) {
+        const code =
+            normalizeString(
+                error?.code
+            );
+
+        if (
+            code === "AUTH_INVALID" ||
+            code === "SCHEMA_MISMATCH" ||
+            code ===
+                "PAGES_VERSION_MISMATCH"
+        ) {
+            setAccessKeyUiState(
+                "invalid",
+                error?.message ||
+                "アクセスキーを確認できませんでした。"
+            );
+
+            return false;
+        }
+
+        setAccessKeyUiState(
+            "unknown",
+            "アクセスキーは保存済みですが、中央APIへ接続確認できませんでした。通信状態を確認して再度お試しください。"
+        );
+
+        return false;
+    }
+}
+
 function saveSheetsConnectionSettings() {
-    const keyInput = document.getElementById("sheetsAccessKeyInput");
-    const statusEl = document.getElementById("sheetsConnectionSettingsStatus");
-    const accessKey = normalizeString(keyInput?.value);
+    const keyInput =
+        document.getElementById(
+            "sheetsAccessKeyInput"
+        );
+
+    const statusEl =
+        document.getElementById(
+            "sheetsConnectionSettingsStatus"
+        );
+
+    const accessKey =
+        normalizeString(
+            keyInput?.value
+        );
 
     if (!accessKey) {
         if (statusEl) {
-            statusEl.className = "text-xs rounded-lg p-2.5 bg-red-50 text-red-700 border border-red-200";
-            statusEl.textContent = "アクセスキーを入力してください。";
-            statusEl.classList.remove("hidden");
+            statusEl.className =
+                "text-xs rounded-lg p-2.5 bg-red-50 text-red-700 border border-red-200";
+            statusEl.textContent =
+                "アクセスキーを入力してください。";
+            statusEl.classList.remove(
+                "hidden"
+            );
         }
+
         keyInput?.focus();
         return false;
     }
 
     try {
-        localStorage.setItem(SHEETS_ACCESS_KEY_STORAGE_KEY, accessKey);
+        localStorage.setItem(
+            SHEETS_ACCESS_KEY_STORAGE_KEY,
+            accessKey
+        );
+
     } catch (error) {
         if (statusEl) {
-            statusEl.className = "text-xs rounded-lg p-2.5 bg-red-50 text-red-700 border border-red-200";
-            statusEl.textContent = "ブラウザへの保存に失敗しました。";
-            statusEl.classList.remove("hidden");
+            statusEl.className =
+                "text-xs rounded-lg p-2.5 bg-red-50 text-red-700 border border-red-200";
+            statusEl.textContent =
+                "ブラウザへの保存に失敗しました。";
+            statusEl.classList.remove(
+                "hidden"
+            );
         }
+
         return false;
     }
 
     if (statusEl) {
-        statusEl.className = "text-xs rounded-lg p-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200";
-        statusEl.textContent = "アクセスキーをこのブラウザに保存しました。";
-        statusEl.classList.remove("hidden");
+        statusEl.className =
+            "text-xs rounded-lg p-2.5 bg-blue-50 text-blue-700 border border-blue-200";
+        statusEl.textContent =
+            "保存しました。接続を確認しています...";
+        statusEl.classList.remove(
+            "hidden"
+        );
     }
+
+    verifyStoredAccessKey().then(
+        ok => {
+            if (!statusEl) return;
+
+            statusEl.className =
+                ok
+                    ? "text-xs rounded-lg p-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : "text-xs rounded-lg p-2.5 bg-red-50 text-red-700 border border-red-200";
+
+            statusEl.textContent =
+                ok
+                    ? "アクセスキーを確認しました。"
+                    : "アクセスキーを確認できませんでした。";
+        }
+    );
+
     return true;
-}
-
-function loadSheetsConnectionSettingsIntoModal() {
-    const keyInput = document.getElementById("sheetsAccessKeyInput");
-    if (keyInput) keyInput.value = getStoredSheetsAccessKey();
-}
-
-function openSheetsSettingsAndFocus() {
-    loadSheetsConnectionSettingsIntoModal();
-    settingsModal.classList.remove("hidden");
-
-    setTimeout(() => {
-        document.getElementById("sheetsAccessKeyInput")?.focus();
-    }, 50);
 }
 
 function extractSpreadsheetIdFromUrl(value) {
@@ -1682,45 +1872,102 @@ function extractSpreadsheetIdFromUrl(value) {
 }
 
 function updateSheetsOperationUi() {
-    const input = document.getElementById("existingSheetUrlInput");
-    const title = document.getElementById("sheetsCreateTitle");
-    const btn = document.getElementById("createGoogleSheetBtn");
-    const note = document.getElementById("existingSheetModeNote");
+    const input =
+        document.getElementById(
+            "existingSheetUrlInput"
+        );
+
+    const title =
+        document.getElementById(
+            "sheetsCreateTitle"
+        );
+
+    const runLabel =
+        document.getElementById(
+            "runBtnLabel"
+        );
+
+    const note =
+        document.getElementById(
+            "existingSheetModeNote"
+        );
+
     const identityBlock =
-        document.getElementById("newReportIdentityBlock");
+        document.getElementById(
+            "newReportIdentityBlock"
+        );
 
-    if (!input || !title || !btn || !note) return;
+    if (
+        !input ||
+        !title ||
+        !runLabel ||
+        !note
+    ) {
+        return;
+    }
 
-    const raw = normalizeString(input.value);
+    const raw =
+        normalizeString(
+            input.value
+        );
 
-    identityBlock?.classList.toggle(
-        "hidden",
-        !!raw
-    );
-    const id = extractSpreadsheetIdFromUrl(raw);
+    identityBlock
+        ?.classList
+        .toggle(
+            "hidden",
+            !!raw
+        );
+
+    const id =
+        extractSpreadsheetIdFromUrl(
+            raw
+        );
 
     if (!raw) {
-        title.textContent = "分析Viewerへ反映";
-        btn.textContent = "分析Viewerへ反映";
-        note.className = "mt-2 text-[11px] leading-relaxed text-gray-500";
-        note.textContent = "空欄なら新規作成します。URLを入力した場合は、集計設定・KWマスタ・企業表示名・画像マスタ等を引き継いで更新します。";
+        title.textContent =
+            "新しいViewerを作成";
+
+        runLabel.textContent =
+            "分析データを作成してViewerを作る";
+
+        note.className =
+            "mt-1 text-[11px] leading-relaxed text-slate-500";
+
+        note.textContent =
+            "新しい個社Google SheetとViewerを作成します。";
+
         return;
     }
 
     if (!id) {
-        title.textContent = "既存データを更新";
-        btn.textContent = "既存データを更新";
-        note.className = "mt-2 text-[11px] leading-relaxed text-red-600";
-        note.textContent = "Google SheetsのURLを正しく貼り付けてください。";
+        title.textContent =
+            "更新先を確認";
+
+        runLabel.textContent =
+            "更新先Google Sheetを確認してください";
+
+        note.className =
+            "mt-1 text-[11px] leading-relaxed text-red-600";
+
+        note.textContent =
+            "Google SheetsのURLを正しく貼り付けてください。";
+
         return;
     }
 
-    title.textContent = "既存データをViewerへ反映";
-    btn.textContent = "この既存データを更新";
-    note.className = "mt-2 text-[11px] leading-relaxed text-green-700";
+    title.textContent =
+        "既存Viewerを更新";
+
+    runLabel.textContent =
+        "分析データを作成してViewerを更新";
+
+    note.className =
+        "mt-1 text-[11px] leading-relaxed text-emerald-700";
+
     note.textContent =
-        "更新モード：最新CSVの分析データへ差し替えます。Sheet側の設定・仕事名KW・企業表示名・画像マスタ・Viewer表示設定は維持します。";
+        "最新CSVへ差し替えます。Sheet側の設定・マスタ・Viewer表示設定は維持します。";
 }
+
 
 function refreshSheetsCreateSummary() {
     const el = document.getElementById("sheetsCreateSummary");
@@ -1834,9 +2081,11 @@ function mapSheetsApiError(data) {
 
     const messages = {
         AUTH_INVALID:
-            "アクセスキーが正しくありません。右上の詳細設定からGoogle Sheets連携のアクセスキーを確認してください。",
+            "アクセスキーが正しくありません。画面上部のViewer連携アクセスキーを確認してください。",
         SCHEMA_MISMATCH:
             "Pages側とAPI GAS側のデータ仕様が一致していません。API GASのSCHEMA_VERSIONが3.0か確認してください。",
+        PAGES_VERSION_MISMATCH:
+            "ETL Pagesと中央APIのバージョンが一致していません。GASとGitHub Pagesを同じ配布版へ更新してください。",
         NO_APPLICATION_DATA:
             "応募データがありません。先に分析データを作成してください。",
         INVALID_PAYLOAD:
@@ -2260,169 +2509,242 @@ function failReservedViewerTab(tab, message) {
     );
 }
 
-async function createGoogleSpreadsheet() {
-    if (globalSheetsCreateInFlight || globalFinalData.length === 0) return;
+async function createGoogleSpreadsheet({
+    viewerTab: suppliedViewerTab = null
+} = {}) {
+    if (
+        globalSheetsCreateInFlight ||
+        globalFinalData.length === 0
+    ) {
+        return null;
+    }
 
-    const apiUrl = SHEETS_API_URL;
-    const accessKey = getStoredSheetsAccessKey();
-    const targetInput = document.getElementById("existingSheetUrlInput");
-    const targetSpreadsheetUrl = normalizeString(targetInput?.value);
-    const targetSpreadsheetId = extractSpreadsheetIdFromUrl(targetSpreadsheetUrl);
+    const apiUrl =
+        SHEETS_API_URL;
 
-    if (targetSpreadsheetUrl && !targetSpreadsheetId) {
+    const accessKey =
+        getStoredSheetsAccessKey();
+
+    const targetInput =
+        document.getElementById(
+            "existingSheetUrlInput"
+        );
+
+    const targetSpreadsheetUrl =
+        normalizeString(
+            targetInput?.value
+        );
+
+    const targetSpreadsheetId =
+        extractSpreadsheetIdFromUrl(
+            targetSpreadsheetUrl
+        );
+
+    if (
+        targetSpreadsheetUrl &&
+        !targetSpreadsheetId
+    ) {
         setSheetsCreateStatus(
-            "既存Viewerの保存先URLが正しくありません。",
+            "更新先Google SheetのURLを確認してください。",
             "warning"
         );
+
         targetInput?.focus();
-        return;
+        return null;
     }
 
     if (!accessKey) {
         setSheetsCreateStatus(
-            "Viewer連携のアクセスキーが未設定です。詳細設定へ入力してください。",
+            "Viewer連携アクセスキーが未設定です。先にアクセスキーを保存してください。",
             "warning"
         );
+
+        setAccessKeyUiState(
+            "missing"
+        );
+
         openSheetsSettingsAndFocus();
-        return;
+        return null;
     }
 
     const jobFileCount =
-        globalInputFileInfo.filter(info => info.type === "求人CSV").length;
+        globalInputFileInfo
+            .filter(
+                info =>
+                    info.type ===
+                    "求人CSV"
+            )
+            .length;
 
-    if (jobFileCount > 0 && globalJoinCount === 0) {
-        const proceed = window.confirm(
-            "求人CSVは読み込まれていますが、応募データとの求人突合が0件です。\n\n" +
-            "このまま「応募データのみ」でViewerへ反映しますか？\n\n" +
-            "［OK］このまま反映\n［キャンセル］求人CSVを見直す"
-        );
-        if (!proceed) return;
-    }
+    if (
+        jobFileCount > 0 &&
+        globalJoinCount === 0
+    ) {
+        const proceed =
+            window.confirm(
+                "求人CSVは読み込まれていますが、応募データとの求人突合が0件です。\n\n" +
+                "このまま「応募データのみ」でViewerへ反映しますか？"
+            );
 
-    if (targetSpreadsheetId) {
-        const proceedUpdate = window.confirm(
-            "この企業の分析データを更新し、Viewerへ反映します。\n\n" +
-            "企業表示名・集計設定・KW・画像URL／メモ・カスタム分析設定・Viewer共有設定は維持します。\n\n" +
-            "このViewerへ反映しますか？"
-        );
-        if (!proceedUpdate) return;
+        if (!proceed) {
+            try {
+                suppliedViewerTab?.close();
+            } catch (_) {}
+
+            return null;
+        }
     }
 
     const viewerTab =
+        suppliedViewerTab ||
         reserveViewerTab(
             targetSpreadsheetId
                 ? "既存Viewerへ最新データを反映しています。完了すると自動で表示します。"
                 : "新しいViewerを準備しています。完了すると自動で表示します。"
         );
 
-    const btn = document.getElementById("createGoogleSheetBtn");
-    const originalText =
-        btn?.textContent.trim() ||
-        "分析Viewerへ反映";
+    const runBtn =
+        document.getElementById(
+            "runBtn"
+        );
 
-    globalSheetsCreateInFlight = true;
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = "作成準備中...";
+    const runLabel =
+        document.getElementById(
+            "runBtnLabel"
+        );
+
+    globalSheetsCreateInFlight =
+        true;
+
+    if (runBtn) {
+        runBtn.disabled = true;
     }
 
     hideSheetsCreateSuccess();
 
     try {
-        const planSummary = getImageLookupPlanSummary();
+        const planSummary =
+            getImageLookupPlanSummary();
 
         if (
             planSummary.analysisTargetCount > 0 &&
-            globalImageMasterInitial.length !== planSummary.analysisTargetCount
+            globalImageMasterInitial.length !==
+                planSummary.analysisTargetCount
         ) {
             setSheetsCreateStatus(
                 `TOP画像URLを確認しています。\n公開中求人から取得可能: ${planSummary.resolvableCount.toLocaleString()}種類`,
                 "info"
             );
 
-            if (btn) btn.textContent = "画像URL確認中...";
+            if (runLabel) {
+                runLabel.textContent =
+                    "TOP画像URLを確認しています...";
+            }
 
-            await resolveImageMasterInitial((done, total) => {
-                setSheetsCreateStatus(
-                    `TOP画像URLを確認しています。\n${done.toLocaleString()} / ${total.toLocaleString()} 種類 完了`,
-                    "info"
-                );
-            });
+            await resolveImageMasterInitial(
+                (
+                    done,
+                    total
+                ) => {
+                    setSheetsCreateStatus(
+                        `TOP画像URLを確認しています。\n${done.toLocaleString()} / ${total.toLocaleString()} 種類 完了`,
+                        "info"
+                    );
+                }
+            );
         }
 
-        if (!globalPendingSheetsRequestId) {
-            globalPendingSheetsRequestId = makeRequestId();
+        if (
+            !globalPendingSheetsRequestId
+        ) {
+            globalPendingSheetsRequestId =
+                makeRequestId();
         }
 
-        if (btn) btn.textContent = "送信データ準備中...";
+        if (runLabel) {
+            runLabel.textContent =
+                "Viewerへ反映しています...";
+        }
+
         setSheetsCreateStatus(
             "Viewer反映用データを準備しています...",
             "info"
         );
 
-        const payload = buildSheetsPayloadV3(
-            accessKey,
-            globalPendingSheetsRequestId,
-            targetSpreadsheetUrl
-        );
+        const payload =
+            buildSheetsPayloadV3(
+                accessKey,
+                globalPendingSheetsRequestId,
+                targetSpreadsheetUrl
+            );
 
         try {
-            if (targetSpreadsheetUrl) {
-                localStorage.setItem(SHEETS_UPDATE_TARGET_STORAGE_KEY, targetSpreadsheetUrl);
+            if (
+                targetSpreadsheetUrl
+            ) {
+                localStorage.setItem(
+                    SHEETS_UPDATE_TARGET_STORAGE_KEY,
+                    targetSpreadsheetUrl
+                );
             } else {
-                localStorage.removeItem(SHEETS_UPDATE_TARGET_STORAGE_KEY);
+                localStorage.removeItem(
+                    SHEETS_UPDATE_TARGET_STORAGE_KEY
+                );
             }
         } catch (_) {}
-        const payloadBytes = measureJsonBytes(payload);
+
+        const payloadBytes =
+            measureJsonBytes(
+                payload
+            );
 
         setSheetsCreateStatus(
             `API GASへ送信しています。\n` +
             `送信サイズ: ${formatByteSize(payloadBytes)}\n` +
-            `requestId: ${globalPendingSheetsRequestId}\n\n` +
-            (targetSpreadsheetId
-                ? `既存Viewerへのデータ反映完了を待っています...`
-                : `保存領域の作成・データ反映完了を待っています...`),
+            (
+                targetSpreadsheetId
+                    ? "既存Viewerへの反映完了を待っています..."
+                    : "新しい個社SheetとViewerを作成しています..."
+            ),
             "info"
         );
 
-        if (btn) btn.textContent = targetSpreadsheetId ? "Viewer更新中..." : "Viewer反映中...";
+        const data =
+            await postSheetsPayloadUntilReady(
+                apiUrl,
+                payload,
+                message => {
+                    setSheetsCreateStatus(
+                        message,
+                        "info"
+                    );
 
-
-const data =
-    await postSheetsPayloadUntilReady(
-        apiUrl,
-        payload,
-        message => {
-            setSheetsCreateStatus(
-                message,
-                "info"
+                    if (runLabel) {
+                        runLabel.textContent =
+                            "Viewerへ反映しています...";
+                    }
+                }
             );
 
-            if (btn) {
-                btn.textContent =
-                    "Viewer反映中...";
-            }
+        if (!data.spreadsheetUrl) {
+            throw new Error(
+                "API処理は成功しましたが、保存先情報が返りませんでした。"
+            );
         }
-    );
-
-if (!data.spreadsheetUrl) {
-    setSheetsCreateStatus(
-        "API処理は成功しましたが、保存先情報が返りませんでした。",
-        "error"
-    );
-    return;
-}
 
         setSheetsCreateStatus(
-            normalizeString(data.operationMode).toUpperCase() === "UPDATE"
+            normalizeString(
+                data.operationMode
+            ).toUpperCase() ===
+                "UPDATE"
                 ? "既存Viewerへのデータ反映が完了しました。"
-                : (data.reused
-                    ? "同じ処理IDの反映済みViewerを確認しました。"
-                    : "分析Viewerへの反映が完了しました。"),
+                : "個社SheetとViewerの作成が完了しました。",
             "success"
         );
 
-        showCreatedSheetSuccess(data);
+        showCreatedSheetSuccess(
+            data
+        );
 
         openViewerInReservedTab(
             viewerTab,
@@ -2430,49 +2752,59 @@ if (!data.spreadsheetUrl) {
             data.viewerEnabled !== false
         );
 
-        // 成功後は次回クリックを新しい反映処理とするためrequestIdを破棄。
-        globalPendingSheetsRequestId = "";
+        globalPendingSheetsRequestId =
+            "";
 
+        return data;
 
-} catch (error) {
-    const apiData =
-        error?.apiData;
+    } catch (error) {
+        const apiData =
+            error?.apiData;
 
-    const code =
-        normalizeString(
-            apiData?.code ||
-            error?.code
+        const code =
+            normalizeString(
+                apiData?.code ||
+                error?.code
+            );
+
+        const message =
+            "Viewer反映処理を完了できませんでした。\n" +
+            (
+                error?.message ||
+                String(error)
+            );
+
+        setSheetsCreateStatus(
+            message,
+            "error"
         );
 
-    const message =
-        "Viewer反映処理を完了できませんでした.\n" +
-        (error?.message || String(error)) +
-        "\n\n同じボタンから再試行できます。requestIdと生成済みファイルは維持されます。";
-
-    setSheetsCreateStatus(
-        message,
-        "error"
-    );
-
-    failReservedViewerTab(
-        viewerTab,
-        error?.message ||
-            String(error)
-    );
-
-    if (code === "AUTH_INVALID") {
-        openSheetsSettingsAndFocus(
-            "key"
+        failReservedViewerTab(
+            viewerTab,
+            error?.message ||
+                String(error)
         );
-    }
-} finally {
-        globalSheetsCreateInFlight = false;
-        if (btn) {
-            btn.disabled = false;
-            btn.textContent = originalText;
+
+        if (
+            code ===
+            "AUTH_INVALID"
+        ) {
+            setAccessKeyUiState(
+                "invalid",
+                "アクセスキーが正しくありません。入力し直してください。"
+            );
+
+            openSheetsSettingsAndFocus();
         }
+
+        return null;
+
+    } finally {
+        globalSheetsCreateInFlight =
+            false;
     }
 }
+
 
 const saveSheetsConnectionBtn =
     document.getElementById("saveSheetsConnectionBtn");
@@ -5949,6 +6281,17 @@ if (newCompanyDisplayNameInput) {
 
 initializeViewerAutoOpenControls();
 
+document
+    .getElementById(
+        "changeAccessKeyBtn"
+    )
+    ?.addEventListener(
+        "click",
+        openSheetsSettingsAndFocus
+    );
+
+verifyStoredAccessKey();
+
 const managedReportListSearch =
     document.getElementById(
         "managedReportListSearch"
@@ -6303,28 +6646,57 @@ if (sheetFromHash) {
     updateSheetsOperationUi();
 }
 
-const createGoogleSheetBtn =
-    document.getElementById("createGoogleSheetBtn");
-if (createGoogleSheetBtn) {
-    createGoogleSheetBtn.addEventListener(
-        "click",
-        createGoogleSpreadsheet
-    );
-}
-
         // ==========================================
         // 1. ETL処理ロジック
         // ==========================================
-        document.getElementById('runBtn').addEventListener('click', async () => {
-            const filesA = document.getElementById('fileA').files;
-            const filesB = document.getElementById('fileB').files;
-            const keyNameA = "仕事番号"; // 固定キーに変更
-            const keyNameB = "仕事番号"; // 固定キーに変更
-            const encoding = document.getElementById('encoding').value;
-            const msgEl = document.getElementById('message');
-            
-            const rawKeywords = document.getElementById('keywordInput').value;
-            const searchKeywords = rawKeywords.split('\n').map(kw => kw.trim()).filter(kw => kw !== "");
+
+document.getElementById('runBtn').addEventListener('click', async () => {
+    if (globalUnifiedRunInFlight) return;
+
+    const filesA =
+        document.getElementById(
+            'fileA'
+        ).files;
+
+    const filesB =
+        document.getElementById(
+            'fileB'
+        ).files;
+
+    const keyNameA =
+        "仕事番号";
+
+    const keyNameB =
+        "仕事番号";
+
+    const msgEl =
+        document.getElementById(
+            'message'
+        );
+
+    const runBtn =
+        document.getElementById(
+            'runBtn'
+        );
+
+    const runLabel =
+        document.getElementById(
+            'runBtnLabel'
+        );
+
+    const targetSpreadsheetUrl =
+        normalizeString(
+            document.getElementById(
+                "existingSheetUrlInput"
+            )?.value
+        );
+
+    const targetSpreadsheetId =
+        extractSpreadsheetIdFromUrl(
+            targetSpreadsheetUrl
+        );
+
+    const searchKeywords = [];
 
             if (filesA.length === 0 || !keyNameA) {
                 msgEl.innerHTML = "<span class='flex items-center justify-center'><svg class='w-5 h-5 mr-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path></svg> 応募CSVは必須です。</span>";
@@ -6332,24 +6704,123 @@ if (createGoogleSheetBtn) {
                 return;
             }
 
+
+if (
+    targetSpreadsheetUrl &&
+    !targetSpreadsheetId
+) {
+    msgEl.textContent =
+        "更新先Google SheetのURLを確認してください。";
+
+    msgEl.className =
+        "mt-5 text-center text-sm font-bold text-red-600 bg-red-50 p-4 rounded-xl border border-red-100 block";
+
+    document
+        .getElementById(
+            "existingSheetUrlInput"
+        )
+        ?.focus();
+
+    return;
+}
+
+const accessKey =
+    getStoredSheetsAccessKey();
+
+if (!accessKey) {
+    setAccessKeyUiState(
+        "missing"
+    );
+
+    openSheetsSettingsAndFocus();
+
+    msgEl.textContent =
+        "実行前にViewer連携アクセスキーを保存してください。";
+
+    msgEl.className =
+        "mt-5 text-center text-sm font-bold text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200 block";
+
+    return;
+}
+
+if (!globalAccessKeyVerified) {
+    msgEl.textContent =
+        "Viewer連携アクセスキーの接続確認を完了してください。";
+
+    msgEl.className =
+        "mt-5 text-center text-sm font-bold text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200 block";
+
+    return;
+}
+
+globalUnifiedRunInFlight =
+    true;
+
+runBtn.disabled =
+    true;
+
+runLabel.textContent =
+    "CSVを読み込んでいます...";
+
+const viewerTab =
+    reserveViewerTab(
+        targetSpreadsheetId
+            ? "CSVを処理し、既存Viewerへ反映しています。"
+            : "CSVを処理し、新しいViewerを準備しています。"
+    );
+
             msgEl.innerHTML = "<span class='flex items-center justify-center'><svg class='animate-spin w-5 h-5 mr-2' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg> CSVを読み込み、分析データを作成しています...</span>";
             msgEl.className = "mt-6 text-center text-sm font-bold text-blue-600 bg-blue-50 p-4 rounded-xl border border-blue-100 block";
             document.getElementById('resultArea').classList.add('hidden');
 
             try {
                 // 複数の応募CSVを並列で読み込み
-                const parsePromisesA = Array.from(filesA).map(f => parseCSV(f, encoding));
-                const dataA_arrays = await Promise.all(parsePromisesA);
+                const parsedA =
+                    await Promise.all(
+                        Array.from(filesA)
+                            .map(
+                                file =>
+                                    parseCSV(
+                                        file
+                                    )
+                            )
+                    );
+
+                const dataA_arrays =
+                    parsedA.map(
+                        item =>
+                            item.rows
+                    );
+
                 // 読み込んだ配列を1つのフラットな配列に結合する
-                const dataA = dataA_arrays.flat();
+                const dataA =
+                    dataA_arrays.flat();
                 
                 // 複数の求人CSVを並列で読み込み（選択されている場合）
                 let dataB = [];
                 let dataB_arrays = [];
+                let parsedB = [];
+
                 if (filesB.length > 0) {
-                    const parsePromisesB = Array.from(filesB).map(f => parseCSV(f, encoding));
-                    dataB_arrays = await Promise.all(parsePromisesB);
-                    dataB = dataB_arrays.flat();
+                    parsedB =
+                        await Promise.all(
+                            Array.from(filesB)
+                                .map(
+                                    file =>
+                                        parseCSV(
+                                            file
+                                        )
+                                )
+                        );
+
+                    dataB_arrays =
+                        parsedB.map(
+                            item =>
+                                item.rows
+                        );
+
+                    dataB =
+                        dataB_arrays.flat();
                 }
 
                 // 入力ファイル情報をSheet生成payload向けに保持する。
@@ -6358,13 +6829,17 @@ if (createGoogleSheetBtn) {
                         type: "応募CSV",
                         name: file.name,
                         rowCount: dataA_arrays[i]?.length || 0,
-                        encoding
+                        encoding:
+                            parsedA[i]?.encoding ||
+                            "自動判定" 
                     })),
                     ...Array.from(filesB).map((file, i) => ({
                         type: "求人CSV",
                         name: file.name,
                         rowCount: dataB_arrays?.[i]?.length || 0,
-                        encoding
+                        encoding:
+                            parsedB[i]?.encoding ||
+                            "自動判定" 
                     }))
                 ];
 
@@ -6561,31 +7036,108 @@ if (createGoogleSheetBtn) {
                     joinMsg = `<span class="text-indigo-600 mt-1 inline-block">🎯 求人CSVなし (応募CSV単独処理)</span>`;
                 }
 
-                msgEl.innerHTML = `
-                    <div class="flex flex-col items-center">
-                        <span class="text-lg flex items-center mb-1"><svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 集計完了！</span>
-                        <span class="text-gray-800">最終出力件数: <span class="font-extrabold text-xl text-blue-700">${globalFinalData.length.toLocaleString()}</span> 件</span>
-                        ${joinMsg}
-                        <span class="text-red-500 text-xs mt-1">※事前重複削除(応募CSV内): ${duplicateCount.toLocaleString()}件</span>
-                        <span class="text-gray-400 text-xs mt-2 font-normal">処理時間: ${timeTaken} ms</span>
-                    </div>
-                `;
-                msgEl.className = "mt-6 text-center text-sm font-bold text-green-700 bg-green-50 p-5 rounded-xl border border-green-200 block shadow-inner";
+msgEl.innerHTML = `
+            <div class="flex flex-col items-center">
+                <span class="text-base font-extrabold">分析データを作成しました。Viewerへ反映しています...</span>
+                <span class="mt-1 text-sm text-slate-600">
+                    ${globalFinalData.length.toLocaleString()}応募 ／ 求人突合 ${matchCount.toLocaleString()}応募（${joinRate}%）
+                </span>
+                <span class="mt-1 text-[11px] text-slate-400">
+                    重複除外 ${duplicateCount.toLocaleString()}件 ／ ETL ${timeTaken} ms
+                </span>
+            </div>
+        `;
 
-                document.getElementById('resultArea').classList.remove('hidden');
+        msgEl.className =
+            "mt-5 text-center text-sm font-bold text-blue-700 bg-blue-50 p-5 rounded-xl border border-blue-200 block";
 
-                // 新しいETLスナップショットになったので、前回の未送信requestIdは破棄する。
-                globalPendingSheetsRequestId = "";
-                hideSheetsCreateSuccess();
-                refreshSheetsCreateSummary();
-                refreshImageLookupTestArea(filesB.length > 0);
+        document
+            .getElementById(
+                'resultArea'
+            )
+            .classList
+            .remove(
+                'hidden'
+            );
 
-            } catch (error) {
-                console.error(error);
-                msgEl.textContent = "❌ エラーが発生しました: " + error.message;
-                msgEl.className = "mt-4 text-sm font-semibold text-red-600";
-            }
-        });
+        document
+            .getElementById(
+                'downloadBtn'
+            )
+            .disabled =
+            false;
+
+        // 新しいETLスナップショットになったので、前回の未送信requestIdは破棄する。
+        globalPendingSheetsRequestId =
+            "";
+
+        hideSheetsCreateSuccess();
+        refreshSheetsCreateSummary();
+        refreshImageLookupTestArea(
+            filesB.length > 0
+        );
+
+        runLabel.textContent =
+            targetSpreadsheetId
+                ? "Viewerを更新しています..."
+                : "Viewerを作成しています...";
+
+        const published =
+            await createGoogleSpreadsheet({
+                viewerTab
+            });
+
+        if (published) {
+            msgEl.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <span class="text-lg font-extrabold">Viewerへの反映が完了しました</span>
+                    <span class="mt-1 text-sm text-slate-600">
+                        ${globalFinalData.length.toLocaleString()}応募を処理しました。
+                    </span>
+                </div>
+            `;
+
+            msgEl.className =
+                "mt-5 text-center text-sm font-bold text-emerald-700 bg-emerald-50 p-5 rounded-xl border border-emerald-200 block";
+        } else {
+            msgEl.textContent =
+                "分析データは作成済みです。Viewerへの反映は完了していません。表示されているメッセージをご確認ください。";
+
+            msgEl.className =
+                "mt-5 text-center text-sm font-bold text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200 block";
+        }
+
+    } catch (error) {
+        console.error(
+            error
+        );
+
+        failReservedViewerTab(
+            viewerTab,
+            error?.message ||
+                String(error)
+        );
+
+        msgEl.textContent =
+            "エラーが発生しました: " +
+            (
+                error?.message ||
+                String(error)
+            );
+
+        msgEl.className =
+            "mt-5 text-center text-sm font-semibold text-red-600 bg-red-50 p-4 rounded-xl border border-red-100 block";
+
+    } finally {
+        globalUnifiedRunInFlight =
+            false;
+
+        runBtn.disabled =
+            !globalAccessKeyVerified;
+
+        updateSheetsOperationUi();
+    }
+});
 
         // ==========================================
         // 2. ダウンロード

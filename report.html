@@ -575,7 +575,7 @@
             <div>
                 <h2>カスタム分析</h2>
                 <div class="section-note">
-                    行軸・列軸を自由に選択できます。Viewer上の変更はSheet設定へ保存されません。
+                    Viewer表示設定でONになっている分析だけを軸として選択できます。Viewer上の変更はSheet設定へ保存されません。
                 </div>
             </div>
         </div>
@@ -618,7 +618,7 @@
     </section>
 </div>
 
-<div class="footer">有効応募分析 Viewer v5</div>
+<div class="footer">有効応募分析 Viewer v5.1</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -1155,31 +1155,146 @@ function renderCustomResult(result, core) {
 }
 
 function initializeCustomAnalysis(data, viewerResult, core) {
-    const context = viewerResult.context;
-    const options = viewerResult.customAxisOptions;
-    const defaults = data.customAnalysis || {};
+    const context =
+        viewerResult.context;
+
+    const options =
+        Array.isArray(
+            viewerResult.customAxisOptions
+        )
+            ? viewerResult.customAxisOptions
+            : [];
+
+    const defaults =
+        data.customAnalysis || {};
+
+    const rowSelect =
+        document.getElementById(
+            "customRowAxis"
+        );
+
+    const colSelect =
+        document.getElementById(
+            "customColAxis"
+        );
+
+    const ageMode =
+        document.getElementById(
+            "customAgeMode"
+        );
+
+    const ageMin =
+        document.getElementById(
+            "customAgeMin"
+        );
+
+    const ageMax =
+        document.getElementById(
+            "customAgeMax"
+        );
+
+    const runButton =
+        document.getElementById(
+            "customRunBtn"
+        );
+
+    const message =
+        document.getElementById(
+            "customMessage"
+        );
+
+    if (options.length < 2) {
+        [
+            rowSelect,
+            colSelect,
+            ageMode,
+            ageMin,
+            ageMax,
+            runButton
+        ].forEach(control => {
+            if (control) {
+                control.disabled = true;
+            }
+        });
+
+        if (message) {
+            message.textContent =
+                "カスタム分析には、Viewer表示設定でONになっている分析軸が2種類以上必要です。";
+            message.classList.remove(
+                "hidden"
+            );
+        }
+
+        document
+            .getElementById(
+                "customMeta"
+            )
+            ?.classList.add(
+                "hidden"
+            );
+
+        const output =
+            document.getElementById(
+                "customResult"
+            );
+
+        if (output) {
+            output.innerHTML = "";
+        }
+
+        return;
+    }
+
+    [
+        rowSelect,
+        colSelect,
+        ageMode,
+        ageMin,
+        ageMax,
+        runButton
+    ].forEach(control => {
+        if (control) {
+            control.disabled = false;
+        }
+    });
 
     const rowAxis =
-        options.includes(defaults.rowAxis)
+        options.includes(
+            defaults.rowAxis
+        )
             ? defaults.rowAxis
-            : "対応状況";
+            : options[0];
 
     const colAxis =
-        options.includes(defaults.colAxis)
+        (
+            options.includes(
+                defaults.colAxis
+            ) &&
+            defaults.colAxis !==
+                rowAxis
+        )
             ? defaults.colAxis
-            : "応募媒体";
+            : options.find(
+                option =>
+                    option !==
+                    rowAxis
+            );
 
-    const rowSelect = document.getElementById("customRowAxis");
-    const colSelect = document.getElementById("customColAxis");
-    const ageMode = document.getElementById("customAgeMode");
-    const ageMin = document.getElementById("customAgeMin");
-    const ageMax = document.getElementById("customAgeMax");
+    setCustomSelectOptions(
+        rowSelect,
+        options,
+        rowAxis
+    );
 
-    setCustomSelectOptions(rowSelect, options, rowAxis);
-    setCustomSelectOptions(colSelect, options, colAxis);
+    setCustomSelectOptions(
+        colSelect,
+        options,
+        colAxis
+    );
 
     ageMode.value =
-        defaults.ageFilterMode === "指定範囲"
+        defaults.ageFilterMode ===
+        "指定範囲"
             ? "指定範囲"
             : "全年齢";
 
@@ -1198,23 +1313,35 @@ function initializeCustomAnalysis(data, viewerResult, core) {
             : defaults.ageMax;
 
     const run = () => {
-        const custom = core.aggregateCustom(
-            context,
-            {
-                rowAxis: rowSelect.value,
-                colAxis: colSelect.value,
-                ageFilterMode: ageMode.value,
-                ageMin: ageMin.value,
-                ageMax: ageMax.value
-            }
-        );
+        const custom =
+            core.aggregateCustom(
+                context,
+                {
+                    rowAxis:
+                        rowSelect.value,
+                    colAxis:
+                        colSelect.value,
+                    ageFilterMode:
+                        ageMode.value,
+                    ageMin:
+                        ageMin.value,
+                    ageMax:
+                        ageMax.value
+                }
+            );
 
-        renderCustomResult(custom, core);
+        renderCustomResult(
+            custom,
+            core
+        );
     };
 
-    document.getElementById("customRunBtn").onclick = run;
+    runButton.onclick =
+        run;
+
     run();
 }
+
 
 let currentViewerData = null;
 let currentViewerPeriod = {

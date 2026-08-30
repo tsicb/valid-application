@@ -1243,48 +1243,171 @@ function aggregateTopImages(context) {
     };
 }
 
-function customAxisOptions(context) {
-    const options = [
-        "対応状況",
-        "応募年月",
-        "応募媒体",
-        "氏名文字種区分",
-        "居住都道府県",
-        "企業ID",
-        "職種",
-        "雇用形態",
-        "求人勤務地名称",
-        "勤務地都道府県",
-        "勤務地・居住都道府県一致",
-        "募集背景",
-        "月内応募日",
-        "応募曜日",
-        "応募時間帯",
-        "給与区分",
-        "時給下限",
-        "日給下限",
-        "月給下限",
-        "年収下限",
-        "求人原稿文字数",
-        "メイン画像有無",
-        "求人画像枚数",
-        "TOP画像ファイル名",
-        "求人動画有無",
-        "Indeed求人タグ数",
-        "求人備考1行目"
+function viewerDisplaySettingsMap(displaySettings) {
+    const map = {};
+
+    (
+        Array.isArray(displaySettings)
+            ? displaySettings
+            : []
+    ).forEach(item => {
+        const id = s(item?.id);
+        if (!id) return;
+
+        map[id] =
+            item?.visible !== false;
+    });
+
+    return map;
+}
+
+function viewerDisplaySettingEnabled(map, id) {
+    return !Object.prototype
+        .hasOwnProperty.call(
+            map,
+            id
+        ) ||
+        map[id] !== false;
+}
+
+function customAxisOptions(
+    context,
+    displaySettings
+) {
+    const visibility =
+        viewerDisplaySettingsMap(
+            displaySettings
+        );
+
+    const rules = [
+        ["対応状況", "status"],
+        ["応募年月", "month"],
+        ["応募媒体", "media"],
+        ["氏名文字種区分", "name-script"],
+        ["居住都道府県", "residence"],
+        ["企業ID", "enterprise"],
+        ["職種", "job-category"],
+        ["雇用形態", "employment"],
+        ["求人勤務地名称", "job-location-name"],
+        ["勤務地都道府県", "job-prefecture"],
+        ["勤務地・居住都道府県一致", "prefecture-match"],
+        ["募集背景", "recruit-background"],
+        ["月内応募日", "month-day"],
+        ["応募曜日", "weekday"],
+        ["応募時間帯", "hour"],
+        ["時給下限", "hourly-salary"],
+        ["日給下限", "daily-salary"],
+        ["月給下限", "monthly-salary"],
+        ["年収下限", "annual-salary"],
+        ["求人原稿文字数", "text-length"],
+        ["メイン画像有無", "main-image"],
+        ["求人画像枚数", "image-count"],
+        ["TOP画像ファイル名", "top-image-detail"],
+        ["求人動画有無", "job-video"],
+        ["Indeed求人タグ数", "indeed-tag-count"],
+        ["求人備考1行目", "note-detail"]
     ];
 
-    if (context.keywordMaster.length > 0) {
-        options.splice(
-            11,
-            0,
-            "仕事名KW",
-            "仕事名フルKW"
+    const options =
+        rules
+            .filter(
+                ([, settingId]) =>
+                    viewerDisplaySettingEnabled(
+                        visibility,
+                        settingId
+                    )
+            )
+            .map(
+                ([axis]) =>
+                    axis
+            );
+
+    const salaryVisible =
+        [
+            "hourly-salary",
+            "daily-salary",
+            "monthly-salary",
+            "annual-salary"
+        ].some(
+            id =>
+                viewerDisplaySettingEnabled(
+                    visibility,
+                    id
+                )
         );
+
+    if (salaryVisible) {
+        const firstSalaryIndex =
+            [
+                "時給下限",
+                "日給下限",
+                "月給下限",
+                "年収下限"
+            ]
+                .map(axis =>
+                    options.indexOf(axis)
+                )
+                .filter(index => index >= 0)
+                .sort((a, b) => a - b)[0];
+
+        if (
+            firstSalaryIndex !==
+            undefined
+        ) {
+            options.splice(
+                firstSalaryIndex,
+                0,
+                "給与区分"
+            );
+        }
+    }
+
+    if (
+        context.keywordMaster.length > 0
+    ) {
+        const keywordAxes = [];
+
+        if (
+            viewerDisplaySettingEnabled(
+                visibility,
+                "job-keyword"
+            )
+        ) {
+            keywordAxes.push(
+                "仕事名KW"
+            );
+        }
+
+        if (
+            viewerDisplaySettingEnabled(
+                visibility,
+                "job-full-keyword"
+            )
+        ) {
+            keywordAxes.push(
+                "仕事名フルKW"
+            );
+        }
+
+        if (keywordAxes.length) {
+            const recruitIndex =
+                options.indexOf(
+                    "募集背景"
+                );
+
+            options.splice(
+                recruitIndex >= 0
+                    ? recruitIndex
+                    : options.length,
+                0,
+                ...keywordAxes
+            );
+        }
     }
 
     return options;
 }
+
 
 function customAxisRequiresJob(axis) {
     const appOnly = new Set([
@@ -1738,7 +1861,11 @@ function aggregateCustom(context, options = {}) {
             noteDetail: aggregateNoteDetail(context),
             indeedTagDetail: aggregateIndeedTags(context),
             topImageDetail: aggregateTopImages(context),
-            customAxisOptions: customAxisOptions(context)
+            customAxisOptions:
+                customAxisOptions(
+                    context,
+                    viewerResponse?.displaySettings || []
+                )
         };
     }
 
@@ -1771,6 +1898,8 @@ function aggregateCustom(context, options = {}) {
         aggregateNoteDetail,
         aggregateIndeedTags,
         aggregateTopImages,
+        viewerDisplaySettingsMap,
+        viewerDisplaySettingEnabled,
         customAxisOptions,
         customAxisRequiresJob,
         customAxisValue,
