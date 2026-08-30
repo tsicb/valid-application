@@ -13,6 +13,54 @@
         return Number.isFinite(num) ? num : null;
     }
 
+    function positiveInt(value, fallback) {
+        const num = Math.floor(Number(value));
+        return Number.isFinite(num) && num > 0 ? num : fallback;
+    }
+
+    function numberLabel(value) {
+        return Number(value || 0).toLocaleString("ja-JP");
+    }
+
+    function readKeywordMaster(dataset) {
+        const rows = datasetObjects(dataset);
+        const result = [];
+        const seen = new Set();
+
+        rows.forEach(row => {
+            const keyword = s(row["仕事名KW"]);
+            if (!keyword || seen.has(keyword)) return;
+            seen.add(keyword);
+            result.push(keyword);
+        });
+
+        return result;
+    }
+
+    function matchKeywords(jobName, keywords) {
+        const text = s(jobName);
+
+        if (!text || !keywords.length) {
+            return { single: "（該当なし）", full: "（該当なし）" };
+        }
+
+        const lower = text.toLowerCase();
+        const matched = [];
+
+        keywords.forEach(keyword => {
+            if (lower.includes(keyword.toLowerCase())) matched.push(keyword);
+        });
+
+        if (!matched.length) {
+            return { single: "（該当なし）", full: "（該当なし）" };
+        }
+
+        return {
+            single: matched[0],
+            full: matched.join("＋")
+        };
+    }
+
     function truthy(value) {
         return (
             value === true ||
@@ -220,14 +268,31 @@
         const targetAgeMin = settings["ターゲット年齢下限"];
         const targetAgeMax = settings["ターゲット年齢上限"];
 
+        const widths = {
+            monthDay: positiveInt(settings["月内応募日幅"], 7),
+            hour: positiveInt(settings["応募時間帯幅"], 6),
+            text: positiveInt(settings["求人原稿文字数幅"], 300),
+            tagCount: positiveInt(settings["Indeed求人タグ数幅"], 5),
+            hourlySalary: positiveInt(settings["時給下限幅"], 50),
+            dailySalary: positiveInt(settings["日給下限幅"], 1000),
+            monthlySalary: positiveInt(settings["月給下限幅"], 50000),
+            annualSalary: positiveInt(settings["年収下限幅"], 500000)
+        };
+
         const apps = datasetObjects(
             viewerResponse?.datasets?.applicationData || {}
         );
+
         const jobs = datasetObjects(
             viewerResponse?.datasets?.jobAnalysisMaster || {}
         );
 
+        const keywordMaster = readKeywordMaster(
+            viewerResponse?.datasets?.keywordMaster || {}
+        );
+
         const jobMap = new Map();
+
         jobs.forEach(job => {
             const ref = s(job["求人参照ID"]);
             if (ref) jobMap.set(ref, job);
@@ -250,9 +315,10 @@
             const age = n(app["年齢"]);
             const jobRefId = s(app["求人参照ID"]);
             const matchedFlag = truthy(app["求人データ突合フラグ"]);
-            const job = matchedFlag && jobRefId
-                ? (jobMap.get(jobRefId) || null)
-                : null;
+            const job =
+                matchedFlag && jobRefId
+                    ? (jobMap.get(jobRefId) || null)
+                    : null;
 
             const enterpriseId = s(app["企業ID"]);
             let enterpriseLabel = enterpriseId;
@@ -265,6 +331,11 @@
                         : "（企業IDなし）");
             }
 
+            const keywordMatch = matchKeywords(
+                job ? job["仕事名"] : "",
+                keywordMaster
+            );
+
             const record = {
                 app,
                 job,
@@ -275,7 +346,9 @@
                 ageBucket: ageBucket(age, ageMode),
                 isTarget: isTargetAge(age, targetAgeMin, targetAgeMax),
                 enterpriseId,
-                enterpriseLabel
+                enterpriseLabel,
+                kwSingle: keywordMatch.single,
+                kwFull: keywordMatch.full
             };
 
             recordsAll.push(record);
@@ -288,6 +361,8 @@
             ageCols: ageBuckets(ageMode),
             targetAgeMin,
             targetAgeMax,
+            widths,
+            keywordMaster,
             enterpriseInfo,
             recordsAll,
             recordsMatched
@@ -401,9 +476,40 @@
         };
     }
 
+    function salaryDefinition(id, label, context, salaryType, width) {
+        const records = context.recordsMatched.filter(record =>
+            s(record.job?.["給与区分"]) === salaryType
+        );
+
+        return {
+            id,
+            label,
+            baseLabel: `求人突合済応募（${salaryType}）`,
+            records,
+            sort: "numericAsc",
+            conditionText: `バケット幅: ${numberLabel(width)}円`,
+            categoryFn: record => {
+                const value = n(record.job?.["給与金額MIN"]);
+
+                if (value === null || value <= 0) {
+                    return category("（給与下限なし）", 999999999999);
+                }
+
+                const start = Math.floor(value / width) * width;
+                const end = start + width - 1;
+
+                return category(
+                    `${numberLabel(start)}-${numberLabel(end)}円`,
+                    start
+                );
+            }
+        };
+    }
+
     function buildBasicTableDefinitions(context) {
         const all = context.recordsAll;
         const matched = context.recordsMatched;
+        const w = context.widths;
         const definitions = [];
 
         definitions.push({
@@ -424,10 +530,7 @@
             sort: "numericAsc",
             categoryFn: record => {
                 const label = s(record.app["応募年月"]) || "（不明）";
-                return category(
-                    label,
-                    monthSortValue(label, record.appDate)
-                );
+                return category(label, monthSortValue(label, record.appDate));
             }
         });
 
@@ -529,6 +632,242 @@
                 )
         });
 
+        if (context.keywordMaster.length > 0) {
+            definitions.push({
+                id: "job-keyword",
+                label: "仕事名KW別",
+                baseLabel: "求人突合済応募",
+                records: matched,
+                sort: "countDesc",
+                categoryFn: record =>
+                    category(record.kwSingle || "（該当なし）")
+            });
+
+            definitions.push({
+                id: "job-full-keyword",
+                label: "仕事名フルKW別",
+                baseLabel: "求人突合済応募",
+                records: matched,
+                sort: "countDesc",
+                categoryFn: record =>
+                    category(record.kwFull || "（該当なし）")
+            });
+        }
+
+        definitions.push({
+            id: "recruit-background",
+            label: "募集背景別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "countDesc",
+            categoryFn: record =>
+                category(record.job?.["募集背景"] || "（未設定）")
+        });
+
+        definitions.push({
+            id: "month-day",
+            label: "月内応募日別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "numericAsc",
+            conditionText: `バケット幅: ${w.monthDay}日`,
+            categoryFn: record => {
+                const value = n(record.app["応募日"]);
+
+                if (value === null) {
+                    return category("（不明）", 9999);
+                }
+
+                const rangeStart =
+                    Math.floor((value - 1) / w.monthDay) *
+                    w.monthDay +
+                    1;
+
+                const rangeEnd =
+                    Math.min(rangeStart + w.monthDay - 1, 31);
+
+                return category(
+                    `${rangeStart}-${rangeEnd}日`,
+                    rangeStart
+                );
+            }
+        });
+
+        definitions.push({
+            id: "weekday",
+            label: "応募曜日別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "fixed",
+            order: ["月", "火", "水", "木", "金", "土", "日", "（不明）"],
+            categoryFn: record =>
+                category(record.app["応募曜日"] || "（不明）")
+        });
+
+        definitions.push({
+            id: "hour",
+            label: "応募時間帯別",
+            baseLabel: "全応募",
+            records: all,
+            sort: "numericAsc",
+            conditionText: `バケット幅: ${w.hour}時間`,
+            categoryFn: record => {
+                const value = n(record.app["応募時間帯"]);
+
+                if (value === null) {
+                    return category("（不明）", 9999);
+                }
+
+                const rangeStart =
+                    Math.floor(value / w.hour) *
+                    w.hour;
+
+                const rangeEnd =
+                    Math.min(rangeStart + w.hour - 1, 23);
+
+                return category(
+                    `${rangeStart}-${rangeEnd}時`,
+                    rangeStart
+                );
+            }
+        });
+
+        definitions.push(
+            salaryDefinition(
+                "hourly-salary",
+                "時給下限別",
+                context,
+                "時給",
+                w.hourlySalary
+            )
+        );
+
+        definitions.push(
+            salaryDefinition(
+                "daily-salary",
+                "日給下限別",
+                context,
+                "日給",
+                w.dailySalary
+            )
+        );
+
+        definitions.push(
+            salaryDefinition(
+                "monthly-salary",
+                "月給下限別",
+                context,
+                "月給",
+                w.monthlySalary
+            )
+        );
+
+        definitions.push(
+            salaryDefinition(
+                "annual-salary",
+                "年収下限別",
+                context,
+                "年収",
+                w.annualSalary
+            )
+        );
+
+        definitions.push({
+            id: "text-length",
+            label: "求人原稿文字数別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "numericAsc",
+            conditionText: `バケット幅: ${numberLabel(w.text)}文字`,
+            categoryFn: record => {
+                const value = n(record.job?.["求人原稿文字数"]);
+
+                if (value === null) {
+                    return category("（文字数なし）", 999999999);
+                }
+
+                const rangeStart =
+                    Math.floor(value / w.text) *
+                    w.text;
+
+                const rangeEnd =
+                    rangeStart + w.text - 1;
+
+                return category(
+                    `${numberLabel(rangeStart)}-${numberLabel(rangeEnd)}文字`,
+                    rangeStart
+                );
+            }
+        });
+
+        definitions.push({
+            id: "main-image",
+            label: "メイン画像有無別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "fixed",
+            order: ["あり", "なし"],
+            categoryFn: record =>
+                category(
+                    s(record.job?.["メイン画像ファイル名"])
+                        ? "あり"
+                        : "なし"
+                )
+        });
+
+        definitions.push({
+            id: "image-count",
+            label: "求人画像枚数別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "numericAsc",
+            categoryFn: record => {
+                let value = n(record.job?.["求人画像枚数"]);
+                if (value === null) value = 0;
+                return category(`${value}枚`, value);
+            }
+        });
+
+        definitions.push({
+            id: "job-video",
+            label: "求人動画有無別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "fixed",
+            order: ["あり", "なし"],
+            categoryFn: record =>
+                category(
+                    truthy(record.job?.["求人動画あり"])
+                        ? "あり"
+                        : "なし"
+                )
+        });
+
+        definitions.push({
+            id: "indeed-tag-count",
+            label: "Indeed求人タグ数別",
+            baseLabel: "求人突合済応募",
+            records: matched,
+            sort: "numericAsc",
+            conditionText: `バケット幅: ${w.tagCount}個`,
+            categoryFn: record => {
+                let value = n(record.job?.["Indeed求人タグ数"]);
+                if (value === null) value = 0;
+
+                const rangeStart =
+                    Math.floor(value / w.tagCount) *
+                    w.tagCount;
+
+                const rangeEnd =
+                    rangeStart + w.tagCount - 1;
+
+                return category(
+                    `${rangeStart}-${rangeEnd}個`,
+                    rangeStart
+                );
+            }
+        });
+
         return definitions;
     }
 
@@ -615,6 +954,8 @@
         ageBucket,
         isTargetAge,
         targetLabel,
+        readKeywordMaster,
+        matchKeywords,
         buildViewerContext,
         aggregateCross,
         buildBasicCrossTables,

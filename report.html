@@ -111,10 +111,10 @@
         }
         .analysis-nav button {
             flex: 0 0 auto;
-            text-decoration: none;
+            border: 1px solid #bfdbfe;
+            cursor: pointer;
             color: #1d4ed8;
             background: #eff6ff;
-            border: 1px solid #bfdbfe;
             border-radius: 999px;
             padding: 6px 10px;
             font-size: 11px;
@@ -336,7 +336,7 @@
                 <div>
                     <h2>基本分析</h2>
                     <div class="section-note">
-                        Google Sheets版の主要クロス集計をブラウザ側へ移植中です。
+                        Google Sheets版の基本クロス集計をブラウザ側へ移植しました。各表は独立して横スクロールできます。
                     </div>
                 </div>
             </div>
@@ -345,7 +345,7 @@
 
         <div id="basicCrossTables"></div>
 
-        <div class="footer">有効応募分析・企業向け閲覧Pages MVP</div>
+        <div class="footer">有効応募分析・企業向け閲覧Pages Viewer移行 v3</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -512,7 +512,7 @@ function renderCrossTable(table, core) {
                 <div>
                     <h2>${escapeHtml(table.label)}</h2>
                     <div class="section-note">
-                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件
+                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""}
                     </div>
                 </div>
             </div>
@@ -625,10 +625,31 @@ function renderReport(data) {
     const nav =
         document.getElementById("analysisNav");
 
+    const basicSectionNote =
+        nav.closest(".section")?.querySelector(".section-note");
+
+    if (basicSectionNote) {
+        basicSectionNote.textContent =
+            `Google Sheets版の基本分析 ${result.basicCrossTables.length}表をブラウザ集計しています。各表は独立して横スクロールできます。`;
+    }
+
     nav.innerHTML =
         result.basicCrossTables.map(table => `
-            <a href="#analysis-${escapeHtml(table.id)}">${escapeHtml(table.label)}</a>
+            <button type="button" data-target="analysis-${escapeHtml(table.id)}">${escapeHtml(table.label)}</button>
         `).join("");
+
+    nav.querySelectorAll("button[data-target]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                const target =
+                    document.getElementById(button.dataset.target);
+
+                target?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            });
+        });
 
     const container =
         document.getElementById("basicCrossTables");
