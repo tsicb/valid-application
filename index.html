@@ -258,7 +258,64 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-8 mb-10">
+            <div id="workflowModeSelector" class="mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <button
+            id="workflowModeEtlBtn"
+            type="button"
+            class="workflow-mode-btn text-left rounded-2xl border-2 border-indigo-500 bg-indigo-50 p-4 shadow-sm transition hover:shadow-md"
+            data-workflow-mode="etl"
+        >
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <div class="text-[11px] font-extrabold tracking-wide text-indigo-600">
+                        CSVを使う
+                    </div>
+                    <div class="mt-1 text-base font-extrabold text-indigo-950">
+                        新規集計・データ更新
+                    </div>
+                </div>
+                <div class="rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-extrabold text-white">
+                    ETL
+                </div>
+            </div>
+            <div class="mt-2 text-xs leading-relaxed text-indigo-800/80">
+                応募CSV・求人CSVを読み込み、新しい企業レポートを作成するか、既存レポートの元データを更新します。
+            </div>
+        </button>
+
+        <button
+            id="workflowModeManageBtn"
+            type="button"
+            class="workflow-mode-btn text-left rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+            data-workflow-mode="manage"
+        >
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <div class="text-[11px] font-extrabold tracking-wide text-slate-500">
+                        CSV不要
+                    </div>
+                    <div class="mt-1 text-base font-extrabold text-slate-900">
+                        既存レポートの設定・マスタ管理
+                    </div>
+                </div>
+                <div class="rounded-full bg-slate-700 px-2.5 py-1 text-[10px] font-extrabold text-white">
+                    管理
+                </div>
+            </div>
+            <div class="mt-2 text-xs leading-relaxed text-slate-600">
+                個社Sheetから設定・KW・企業表示名・画像URL・カスタム分析初期値だけを読み込み、編集・保存します。
+            </div>
+        </button>
+    </div>
+
+    <div id="workflowModeHint" class="mt-3 rounded-xl border border-indigo-100 bg-white/80 px-4 py-3 text-[11px] leading-relaxed text-gray-600">
+        現在：新規集計・データ更新モード
+    </div>
+</div>
+
+<div id="workflowModeEtlPanel">
+<div class="grid grid-cols-2 gap-8 mb-10">
                 <div class="p-6 rounded-2xl bg-gradient-to-b from-blue-50/80 to-white border border-blue-100 shadow-sm relative group hover:shadow-md transition-all">
                     <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500 rounded-l-2xl"></div>
                     <h2 class="font-extrabold mb-4 text-blue-900 flex items-center text-lg tracking-wide">
@@ -305,6 +362,112 @@
 
             <div id="message" class="mt-6 text-center text-sm font-semibold p-4 rounded-xl hidden"></div>
 
+<div id="resultArea" class="mt-8 hidden border-t border-gray-200/60 pt-8">
+                <div class="flex flex-col items-center gap-5">
+                    <button id="goToDashboardBtn" class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-10 py-4 rounded-2xl font-extrabold hover:from-emerald-600 hover:to-teal-600 transition-all text-xl shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(16,185,129,0.6)] hover:-translate-y-1 flex items-center relative overflow-hidden group">
+                        <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+                        <span class="relative z-10 tracking-wide mr-2">分析ダッシュボードへ進む</span>
+                        <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                    </button>
+
+                    <!-- Google Sheets生成 / 既存レポート更新 -->
+                    <div id="sheetsCreateArea" class="w-full max-w-2xl rounded-2xl border border-green-200 bg-green-50/70 p-5">
+                        <div class="flex flex-col gap-4">
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                <div class="min-w-0">
+                                    <div id="sheetsCreateTitle" class="font-extrabold text-green-900 text-base">Google Sheetsレポートを新規作成</div>
+                                    <div id="sheetsCreateSummary" class="text-xs text-green-800 mt-1.5 leading-relaxed">
+                                        今回の集計結果から、共有・再集計できるGoogle Sheets版レポートを作成します。
+                                    </div>
+                                    <div class="text-[11px] text-green-700/80 mt-2">
+                                        氏名・メールアドレス全文・詳細な居住住所・重複行明細は送信しません。
+                                    </div>
+                                </div>
+                                <button
+                                    id="createGoogleSheetBtn"
+                                    type="button"
+                                    class="shrink-0 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-extrabold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    新規レポートを作成
+                                </button>
+                            </div>
+
+                            <div class="rounded-xl border border-green-200 bg-white/90 p-4">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <div class="text-xs font-extrabold text-gray-700">既存レポートを更新する場合</div>
+                                        <div class="text-[11px] text-gray-500 mt-1">
+                                            過去のGoogle Sheets URLを貼り付けると、新規作成せず、そのレポートの分析元データを更新します。
+                                        </div>
+                                    </div>
+                                    <a
+                                        href="https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="shrink-0 text-xs font-bold text-green-700 hover:text-green-900 underline"
+                                    >
+                                        出力フォルダ
+                                    </a>
+                                </div>
+                                <input
+                                    id="existingSheetUrlInput"
+                                    type="url"
+                                    inputmode="url"
+                                    autocomplete="off"
+                                    placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                                    class="mt-3 border border-gray-300 p-2.5 rounded-lg w-full text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+                                >
+                                <div id="existingSheetModeNote" class="mt-2 text-[11px] leading-relaxed text-gray-500">
+                                    空欄なら新規作成します。URLを入力した場合は、集計設定・KWマスタ・企業表示名・画像マスタ等を引き継いで更新します。
+                                </div>
+                            </div>
+
+                            <div id="sheetsCreateStatus" class="hidden text-xs rounded-xl bg-white border border-green-100 p-3 text-gray-700 whitespace-pre-wrap"></div>
+
+                            <div id="sheetsCreateSuccess" class="hidden rounded-xl border border-emerald-200 bg-white p-4">
+                                <div id="sheetsCreateSuccessTitle" class="font-bold text-emerald-800 text-sm">スプレッドシートを作成しました</div>
+                                <div id="sheetsCreateSuccessMeta" class="text-xs text-gray-600 mt-1"></div>
+                                <div id="viewerShareTarget" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                                    <span class="font-extrabold">共有先確認：</span>
+                                    <span id="viewerShareTargetName"></span>
+                                </div>
+                                <a
+                                    id="openCreatedSheetLink"
+                                    href="#"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center mt-3 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition"
+                                >
+                                    Googleスプレッドシートを開く
+                                </a>
+                                <a
+                                    id="openViewerReportLink"
+                                    href="#"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition"
+                                >
+                                    企業向けWebレポートを開く
+                                </a>
+                                <button
+                                    id="copyViewerShareBtn"
+                                    type="button"
+                                    class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-800 text-sm font-bold transition"
+                                >
+                                    企業共有用リンクをコピー
+                                </button>
+                                <div id="viewerShareCopyStatus" class="hidden mt-2 text-[11px] text-emerald-700"></div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+</div><!-- /workflowModeEtlPanel -->
+
+<div id="workflowModeManagePanel" class="hidden">
 <!-- 既存Google Sheetsの設定・マスタ管理 -->
 <div id="managedReportArea" class="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-sm">
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -356,7 +519,67 @@
             </div>
         </div>
 
-        <details open class="rounded-xl border border-gray-200 bg-white">
+        <div class="rounded-xl border border-blue-200 bg-blue-50/70 p-4">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+        <div>
+            <div class="text-xs font-extrabold text-blue-950">
+                分析レポートの閲覧方式
+            </div>
+            <div class="mt-1 text-[11px] leading-relaxed text-blue-800">
+                Viewer正式モードにすると、Google Sheets内の旧分析タブは削除せず非表示にし、今後の再描画を停止します。企業向けViewerは最新設定・最新データを直接集計します。
+            </div>
+        </div>
+        <div id="managedSheetReportModeBadge" class="shrink-0 rounded-full bg-white border border-blue-200 px-3 py-1 text-[10px] font-extrabold text-blue-800">
+            読み込み中
+        </div>
+    </div>
+
+    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <label class="cursor-pointer rounded-xl border border-slate-200 bg-white p-3">
+            <div class="flex items-start gap-2">
+                <input
+                    type="radio"
+                    name="managedSheetReportMode"
+                    value="LEGACY"
+                    class="mt-1"
+                >
+                <div>
+                    <div class="text-xs font-extrabold text-gray-800">
+                        移行並走モード
+                    </div>
+                    <div class="mt-1 text-[10px] leading-relaxed text-gray-500">
+                        ViewerとGoogle Sheets分析表の両方を更新。数値比較中はこちら。
+                    </div>
+                </div>
+            </div>
+        </label>
+
+        <label class="cursor-pointer rounded-xl border border-indigo-300 bg-indigo-50 p-3">
+            <div class="flex items-start gap-2">
+                <input
+                    type="radio"
+                    name="managedSheetReportMode"
+                    value="VIEWER_ONLY"
+                    class="mt-1"
+                >
+                <div>
+                    <div class="text-xs font-extrabold text-indigo-950">
+                        Viewer正式モード
+                    </div>
+                    <div class="mt-1 text-[10px] leading-relaxed text-indigo-700">
+                        Sheetは保存場所＋ポータルへ。01/14/15/16/19は更新停止・非表示。
+                    </div>
+                </div>
+            </div>
+        </label>
+    </div>
+
+    <div id="managedSheetReportModeWarning" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">
+        Viewer正式モードへ切り替えても旧分析タブの内容は削除されません。移行並走モードへ戻せば再表示し、再集計できます。
+    </div>
+</div>
+
+<details open class="rounded-xl border border-gray-200 bg-white">
             <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
                 30_集計設定
             </summary>
@@ -475,108 +698,36 @@
     </div>
 </div>
 
-            <div id="resultArea" class="mt-8 hidden border-t border-gray-200/60 pt-8">
-                <div class="flex flex-col items-center gap-5">
-                    <button id="goToDashboardBtn" class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-10 py-4 rounded-2xl font-extrabold hover:from-emerald-600 hover:to-teal-600 transition-all text-xl shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(16,185,129,0.6)] hover:-translate-y-1 flex items-center relative overflow-hidden group">
-                        <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
-                        <span class="relative z-10 tracking-wide mr-2">分析ダッシュボードへ進む</span>
-                        <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                    </button>
-
-                    <!-- Google Sheets生成 / 既存レポート更新 -->
-                    <div id="sheetsCreateArea" class="w-full max-w-2xl rounded-2xl border border-green-200 bg-green-50/70 p-5">
-                        <div class="flex flex-col gap-4">
-                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                <div class="min-w-0">
-                                    <div id="sheetsCreateTitle" class="font-extrabold text-green-900 text-base">Google Sheetsレポートを新規作成</div>
-                                    <div id="sheetsCreateSummary" class="text-xs text-green-800 mt-1.5 leading-relaxed">
-                                        今回の集計結果から、共有・再集計できるGoogle Sheets版レポートを作成します。
-                                    </div>
-                                    <div class="text-[11px] text-green-700/80 mt-2">
-                                        氏名・メールアドレス全文・詳細な居住住所・重複行明細は送信しません。
-                                    </div>
-                                </div>
-                                <button
-                                    id="createGoogleSheetBtn"
-                                    type="button"
-                                    class="shrink-0 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-extrabold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    新規レポートを作成
-                                </button>
-                            </div>
-
-                            <div class="rounded-xl border border-green-200 bg-white/90 p-4">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div>
-                                        <div class="text-xs font-extrabold text-gray-700">既存レポートを更新する場合</div>
-                                        <div class="text-[11px] text-gray-500 mt-1">
-                                            過去のGoogle Sheets URLを貼り付けると、新規作成せず、そのレポートの分析元データを更新します。
-                                        </div>
-                                    </div>
-                                    <a
-                                        href="https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="shrink-0 text-xs font-bold text-green-700 hover:text-green-900 underline"
-                                    >
-                                        出力フォルダ
-                                    </a>
-                                </div>
-                                <input
-                                    id="existingSheetUrlInput"
-                                    type="url"
-                                    inputmode="url"
-                                    autocomplete="off"
-                                    placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-                                    class="mt-3 border border-gray-300 p-2.5 rounded-lg w-full text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-                                >
-                                <div id="existingSheetModeNote" class="mt-2 text-[11px] leading-relaxed text-gray-500">
-                                    空欄なら新規作成します。URLを入力した場合は、集計設定・KWマスタ・企業表示名・画像マスタ等を引き継いで更新します。
-                                </div>
-                            </div>
-
-                            <div id="sheetsCreateStatus" class="hidden text-xs rounded-xl bg-white border border-green-100 p-3 text-gray-700 whitespace-pre-wrap"></div>
-
-                            <div id="sheetsCreateSuccess" class="hidden rounded-xl border border-emerald-200 bg-white p-4">
-                                <div id="sheetsCreateSuccessTitle" class="font-bold text-emerald-800 text-sm">スプレッドシートを作成しました</div>
-                                <div id="sheetsCreateSuccessMeta" class="text-xs text-gray-600 mt-1"></div>
-                                <div id="viewerShareTarget" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                                    <span class="font-extrabold">共有先確認：</span>
-                                    <span id="viewerShareTargetName"></span>
-                                </div>
-                                <a
-                                    id="openCreatedSheetLink"
-                                    href="#"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="inline-flex items-center mt-3 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition"
-                                >
-                                    Googleスプレッドシートを開く
-                                </a>
-                                <a
-                                    id="openViewerReportLink"
-                                    href="#"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition"
-                                >
-                                    企業向けWebレポートを開く
-                                </a>
-                                <button
-                                    id="copyViewerShareBtn"
-                                    type="button"
-                                    class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-800 text-sm font-bold transition"
-                                >
-                                    企業共有用リンクをコピー
-                                </button>
-                                <div id="viewerShareCopyStatus" class="hidden mt-2 text-[11px] text-emerald-700"></div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+            id="managedGoToDataUpdateBtn"
+            type="button"
+            class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left transition hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            <div class="text-xs font-extrabold text-emerald-900">
+                この企業のCSVデータを更新
             </div>
+            <div class="mt-1 text-[11px] leading-relaxed text-emerald-700">
+                対象Sheet URLを引き継いだまま、CSV読込モードへ移動します。
+            </div>
+        </button>
+
+        <button
+            id="managedOpenViewerQuickBtn"
+            type="button"
+            class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-left transition hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+        >
+            <div class="text-xs font-extrabold text-blue-900">
+                企業向けViewerを確認
+            </div>
+            <div class="mt-1 text-[11px] leading-relaxed text-blue-700">
+                現在読み込んでいる企業の閲覧専用Pagesを新しいタブで開きます。
+            </div>
+        </button>
+    </div>
+</div><!-- /workflowModeManagePanel -->
+
         </div>
     </div>
 
@@ -1520,7 +1671,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-management-editor-v1";
+const SHEETS_APP_VERSION = "2026.08.30-viewer-primary-mode-v1";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2785,6 +2936,177 @@ if (copyViewerShareBtn) {
     );
 }
 
+const WORKFLOW_MODE_STORAGE_KEY =
+    "validApplicationAnalysis.workflowMode";
+
+let currentWorkflowMode = "etl";
+
+function getStoredWorkflowMode() {
+    try {
+        const value =
+            localStorage.getItem(
+                WORKFLOW_MODE_STORAGE_KEY
+            );
+
+        return value === "manage"
+            ? "manage"
+            : "etl";
+    } catch (_) {
+        return "etl";
+    }
+}
+
+function storeWorkflowMode(mode) {
+    try {
+        localStorage.setItem(
+            WORKFLOW_MODE_STORAGE_KEY,
+            mode
+        );
+    } catch (_) {}
+}
+
+function setWorkflowMode(
+    mode,
+    {
+        persist = true,
+        scroll = false
+    } = {}
+) {
+    const nextMode =
+        mode === "manage"
+            ? "manage"
+            : "etl";
+
+    currentWorkflowMode =
+        nextMode;
+
+    const etlPanel =
+        document.getElementById(
+            "workflowModeEtlPanel"
+        );
+
+    const managePanel =
+        document.getElementById(
+            "workflowModeManagePanel"
+        );
+
+    const etlBtn =
+        document.getElementById(
+            "workflowModeEtlBtn"
+        );
+
+    const manageBtn =
+        document.getElementById(
+            "workflowModeManageBtn"
+        );
+
+    const hint =
+        document.getElementById(
+            "workflowModeHint"
+        );
+
+    etlPanel?.classList.toggle(
+        "hidden",
+        nextMode !== "etl"
+    );
+
+    managePanel?.classList.toggle(
+        "hidden",
+        nextMode !== "manage"
+    );
+
+    if (etlBtn) {
+        etlBtn.className =
+            nextMode === "etl"
+                ? "workflow-mode-btn text-left rounded-2xl border-2 border-indigo-500 bg-indigo-50 p-4 shadow-sm transition hover:shadow-md"
+                : "workflow-mode-btn text-left rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm transition hover:border-indigo-300 hover:shadow-md";
+    }
+
+    if (manageBtn) {
+        manageBtn.className =
+            nextMode === "manage"
+                ? "workflow-mode-btn text-left rounded-2xl border-2 border-indigo-500 bg-indigo-50 p-4 shadow-sm transition hover:shadow-md"
+                : "workflow-mode-btn text-left rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm transition hover:border-indigo-300 hover:shadow-md";
+    }
+
+    if (hint) {
+        hint.textContent =
+            nextMode === "manage"
+                ? "現在：既存レポートの設定・マスタ管理モード（CSV不要）"
+                : "現在：新規集計・データ更新モード";
+    }
+
+    if (persist) {
+        storeWorkflowMode(
+            nextMode
+        );
+    }
+
+    if (scroll) {
+        document
+            .getElementById(
+                "workflowModeSelector"
+            )
+            ?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+    }
+}
+
+function initializeWorkflowMode() {
+    const hashParams =
+        new URLSearchParams(
+            window.location.hash
+                .replace(/^#/, "")
+        );
+
+    const hasSheetHash =
+        !!normalizeString(
+            hashParams.get("sheet")
+        );
+
+    setWorkflowMode(
+        hasSheetHash
+            ? "manage"
+            : getStoredWorkflowMode(),
+        {
+            persist: false,
+            scroll: false
+        }
+    );
+
+    document
+        .getElementById(
+            "workflowModeEtlBtn"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                setWorkflowMode(
+                    "etl",
+                    {
+                        scroll: true
+                    }
+                )
+        );
+
+    document
+        .getElementById(
+            "workflowModeManageBtn"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                setWorkflowMode(
+                    "manage",
+                    {
+                        scroll: true
+                    }
+                )
+        );
+}
+
 let managedReportState = null;
 let managedImageRows = [];
 let managedReportBusy = false;
@@ -2884,6 +3206,20 @@ async function postManagementAction(action, payload = {}) {
                 action,
                 schemaVersion: SHEETS_SCHEMA_VERSION,
                 accessKey,
+                viewerBaseUrl:
+                    new URL(
+                        "report.html",
+                        window.location.href
+                    ).href
+                        .split("#")[0]
+                        .split("?")[0],
+                manageBaseUrl:
+                    new URL(
+                        "index.html",
+                        window.location.href
+                    ).href
+                        .split("#")[0]
+                        .split("?")[0],
                 ...payload
             }),
             signal: controller.signal
@@ -3219,6 +3555,78 @@ function renderManagedCustom(custom = {}) {
     }
 }
 
+function normalizeManagedSheetReportMode(value) {
+    return String(value || "").toUpperCase() === "VIEWER_ONLY"
+        ? "VIEWER_ONLY"
+        : "LEGACY";
+}
+
+function renderManagedSheetReportMode(value) {
+    const mode =
+        normalizeManagedSheetReportMode(value);
+
+    document
+        .querySelectorAll(
+            'input[name="managedSheetReportMode"]'
+        )
+        .forEach(input => {
+            input.checked =
+                input.value === mode;
+        });
+
+    const badge =
+        document.getElementById(
+            "managedSheetReportModeBadge"
+        );
+
+    if (badge) {
+        badge.textContent =
+            mode === "VIEWER_ONLY"
+                ? "Viewer正式"
+                : "移行並走";
+
+        badge.className =
+            mode === "VIEWER_ONLY"
+                ? "shrink-0 rounded-full bg-indigo-700 border border-indigo-700 px-3 py-1 text-[10px] font-extrabold text-white"
+                : "shrink-0 rounded-full bg-white border border-blue-200 px-3 py-1 text-[10px] font-extrabold text-blue-800";
+    }
+
+    const warning =
+        document.getElementById(
+            "managedSheetReportModeWarning"
+        );
+
+    warning?.classList.toggle(
+        "hidden",
+        mode !== "VIEWER_ONLY"
+    );
+}
+
+function collectManagedSheetReportMode() {
+    const selected =
+        document.querySelector(
+            'input[name="managedSheetReportMode"]:checked'
+        );
+
+    return normalizeManagedSheetReportMode(
+        selected?.value
+    );
+}
+
+document
+    .querySelectorAll(
+        'input[name="managedSheetReportMode"]'
+    )
+    .forEach(input => {
+        input.addEventListener(
+            "change",
+            () =>
+                renderManagedSheetReportMode(
+                    input.value
+                )
+        );
+    });
+
 function renderManagedReportState(data) {
     managedReportState = data;
     managedImageRows = Array.isArray(data.imageMaster)
@@ -3234,6 +3642,10 @@ function renderManagedReportState(data) {
     if (name) name.textContent = metadata.fileName || "有効応募分析";
     if (sheetLink) sheetLink.href = metadata.spreadsheetUrl || "#";
 
+    renderManagedSheetReportMode(
+        metadata.sheetReportMode || "LEGACY"
+    );
+
     if (viewerLink) {
         if (metadata.viewerUrl) {
             viewerLink.href = metadata.viewerUrl;
@@ -3242,6 +3654,32 @@ function renderManagedReportState(data) {
             viewerLink.href = "#";
             viewerLink.classList.add("hidden");
         }
+    }
+
+    const quickViewerBtn =
+        document.getElementById(
+            "managedOpenViewerQuickBtn"
+        );
+
+    if (quickViewerBtn) {
+        quickViewerBtn.disabled =
+            !metadata.viewerUrl;
+
+        quickViewerBtn.dataset.viewerUrl =
+            metadata.viewerUrl || "";
+    }
+
+    const dataUpdateBtn =
+        document.getElementById(
+            "managedGoToDataUpdateBtn"
+        );
+
+    if (dataUpdateBtn) {
+        dataUpdateBtn.disabled =
+            !metadata.spreadsheetUrl;
+
+        dataUpdateBtn.dataset.sheetUrl =
+            metadata.spreadsheetUrl || "";
     }
 
     renderManagedSettings(data.settings || []);
@@ -3421,15 +3859,25 @@ async function saveManagedReportState() {
         managedReportState?.metadata?.fileName ||
         "有効応募分析";
 
+    const sheetReportMode =
+        collectManagedSheetReportMode();
+
+    const modeNote =
+        sheetReportMode === "VIEWER_ONLY"
+            ? "\n\nViewer正式モード：旧分析タブは削除せず非表示にし、今後の再描画を停止します。"
+            : "\n\n移行並走モード：旧Google Sheets分析表も再集計します。";
+
     const confirmed = window.confirm(
-        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。`
+        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。${modeNote}`
     );
 
     if (!confirmed) return;
 
     setManagedReportBusy(true);
     setManagedReportStatus(
-        `「${fileName}」へ設定・マスタを保存し、旧Sheet分析表も再集計しています...`,
+        sheetReportMode === "VIEWER_ONLY"
+            ? `「${fileName}」へ設定・マスタを保存しています。Viewer正式モードでは旧Sheet分析表の再描画を行いません...`
+            : `「${fileName}」へ設定・マスタを保存し、旧Sheet分析表も再集計しています...`,
         "info"
     );
 
@@ -3446,7 +3894,9 @@ async function saveManagedReportState() {
                     imageUrl: row.imageUrl || "",
                     memo: row.memo || ""
                 })),
-                customAnalysis: collectManagedCustom()
+                customAnalysis: collectManagedCustom(),
+                sheetReportMode:
+                    sheetReportMode
             }
         );
 
@@ -3503,6 +3953,86 @@ if (managedImageFilter) {
     );
 }
 
+const managedGoToDataUpdateBtn =
+    document.getElementById(
+        "managedGoToDataUpdateBtn"
+    );
+
+if (managedGoToDataUpdateBtn) {
+    managedGoToDataUpdateBtn.addEventListener(
+        "click",
+        () => {
+            const target =
+                normalizeString(
+                    managedGoToDataUpdateBtn
+                        .dataset.sheetUrl
+                ) ||
+                normalizeString(
+                    managedReportState
+                        ?.metadata
+                        ?.spreadsheetUrl
+                );
+
+            if (
+                target &&
+                existingSheetUrlInput
+            ) {
+                existingSheetUrlInput.value =
+                    target;
+
+                try {
+                    localStorage.setItem(
+                        SHEETS_UPDATE_TARGET_STORAGE_KEY,
+                        target
+                    );
+                } catch (_) {}
+            }
+
+            setWorkflowMode(
+                "etl",
+                {
+                    scroll: true
+                }
+            );
+
+            updateSheetsOperationUi();
+        }
+    );
+}
+
+const managedOpenViewerQuickBtn =
+    document.getElementById(
+        "managedOpenViewerQuickBtn"
+    );
+
+if (managedOpenViewerQuickBtn) {
+    managedOpenViewerQuickBtn.addEventListener(
+        "click",
+        () => {
+            const viewerUrl =
+                normalizeString(
+                    managedOpenViewerQuickBtn
+                        .dataset.viewerUrl
+                ) ||
+                normalizeString(
+                    managedReportState
+                        ?.metadata
+                        ?.viewerUrl
+                );
+
+            if (viewerUrl) {
+                window.open(
+                    viewerUrl,
+                    "_blank",
+                    "noopener,noreferrer"
+                );
+            }
+        }
+    );
+}
+
+initializeWorkflowMode();
+
 const existingSheetUrlInput =
     document.getElementById("existingSheetUrlInput");
 if (existingSheetUrlInput) {
@@ -3512,6 +4042,14 @@ if (existingSheetUrlInput) {
     const sheetFromHash = normalizeString(hashParams.get("sheet"));
 
     if (sheetFromHash) {
+        setWorkflowMode(
+            "manage",
+            {
+                persist: false,
+                scroll: false
+            }
+        );
+
         const sheetUrl =
             `https://docs.google.com/spreadsheets/d/${sheetFromHash}/edit`;
 
