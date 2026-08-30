@@ -305,6 +305,176 @@
 
             <div id="message" class="mt-6 text-center text-sm font-semibold p-4 rounded-xl hidden"></div>
 
+<!-- 既存Google Sheetsの設定・マスタ管理 -->
+<div id="managedReportArea" class="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div>
+            <div class="font-extrabold text-indigo-950 text-base">
+                既存レポートの設定・マスタ管理
+            </div>
+            <div class="text-xs text-indigo-800/80 mt-1 leading-relaxed">
+                CSVを読み直さなくても、既存Google Sheetsの個社設定・KW・企業表示名・画像URL・カスタム分析初期値を編集できます。
+            </div>
+        </div>
+        <a
+            href="https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-xs font-bold text-indigo-700 hover:text-indigo-900 underline shrink-0"
+        >
+            出力フォルダを開く
+        </a>
+    </div>
+
+    <div class="mt-4 flex flex-col sm:flex-row gap-2">
+        <input
+            id="manageSheetUrlInput"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+            class="flex-1 border border-indigo-200 p-2.5 rounded-lg text-xs bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+        >
+        <button
+            id="loadManagedReportBtn"
+            type="button"
+            class="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            このSheetの設定を読み込む
+        </button>
+    </div>
+
+    <div id="managedReportStatus" class="hidden mt-3 text-xs rounded-lg border p-3 whitespace-pre-wrap"></div>
+
+    <div id="managedReportEditor" class="hidden mt-5 space-y-4">
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div class="text-[11px] font-extrabold text-amber-800">編集対象確認</div>
+            <div id="managedReportName" class="mt-1 text-base font-extrabold text-amber-950 break-all"></div>
+            <div class="mt-2 flex flex-wrap gap-3 text-xs">
+                <a id="managedOpenSheetLink" href="#" target="_blank" rel="noopener noreferrer" class="font-bold text-indigo-700 underline">Google Sheetsを開く</a>
+                <a id="managedOpenViewerLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden font-bold text-blue-700 underline">企業向けViewerを開く</a>
+            </div>
+        </div>
+
+        <details open class="rounded-xl border border-gray-200 bg-white">
+            <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
+                30_集計設定
+            </summary>
+            <div class="border-t border-gray-100 p-4">
+                <div id="managedSettingsRows" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            </div>
+        </details>
+
+        <details class="rounded-xl border border-gray-200 bg-white">
+            <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
+                31_仕事名KWマスタ
+            </summary>
+            <div class="border-t border-gray-100 p-4">
+                <div class="text-[11px] text-gray-500 mb-2">
+                    上の行ほど優先です。改行区切りで編集してください。
+                </div>
+                <textarea
+                    id="managedKeywordTextarea"
+                    rows="10"
+                    class="w-full border border-gray-300 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                ></textarea>
+            </div>
+        </details>
+
+        <details class="rounded-xl border border-gray-200 bg-white">
+            <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
+                33_企業IDマスタ
+            </summary>
+            <div class="border-t border-gray-100 p-4 overflow-x-auto">
+                <table class="w-full min-w-[620px] text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600">
+                            <th class="text-left p-2 border-b">企業ID</th>
+                            <th class="text-left p-2 border-b">表示名</th>
+                        </tr>
+                    </thead>
+                    <tbody id="managedEnterpriseBody"></tbody>
+                </table>
+            </div>
+        </details>
+
+        <details class="rounded-xl border border-gray-200 bg-white">
+            <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
+                32_画像マスタ
+            </summary>
+            <div class="border-t border-gray-100 p-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
+                    <input
+                        id="managedImageFilter"
+                        type="search"
+                        placeholder="画像ファイル名・状態・求人管理番号で絞り込み"
+                        class="flex-1 border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-400"
+                    >
+                    <div id="managedImageCount" class="text-[11px] text-gray-500"></div>
+                </div>
+                <div class="overflow-x-auto max-h-[520px] border border-gray-200 rounded-lg">
+                    <table class="w-full min-w-[1100px] text-[11px] border-collapse">
+                        <thead class="sticky top-0 bg-gray-50 z-10 text-gray-600">
+                            <tr>
+                                <th class="text-left p-2 border-b">画像ファイル名</th>
+                                <th class="text-left p-2 border-b">画像URL</th>
+                                <th class="text-left p-2 border-b">状態</th>
+                                <th class="text-left p-2 border-b">参照求人</th>
+                                <th class="text-left p-2 border-b">メモ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="managedImageBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </details>
+
+        <details class="rounded-xl border border-gray-200 bg-white">
+            <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
+                19_カスタム分析 初期設定
+            </summary>
+            <div class="border-t border-gray-100 p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">行軸</label>
+                    <select id="managedCustomRowAxis" class="w-full border border-gray-300 rounded-lg p-2 text-xs"></select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">列軸</label>
+                    <select id="managedCustomColAxis" class="w-full border border-gray-300 rounded-lg p-2 text-xs"></select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">年齢フィルタ</label>
+                    <select id="managedCustomAgeMode" class="w-full border border-gray-300 rounded-lg p-2 text-xs">
+                        <option value="全年齢">全年齢</option>
+                        <option value="指定範囲">指定範囲</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">年齢下限</label>
+                    <input id="managedCustomAgeMin" type="number" min="0" max="120" class="w-full border border-gray-300 rounded-lg p-2 text-xs">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">年齢上限</label>
+                    <input id="managedCustomAgeMax" type="number" min="0" max="120" class="w-full border border-gray-300 rounded-lg p-2 text-xs">
+                </div>
+            </div>
+        </details>
+
+        <div class="rounded-xl border border-indigo-200 bg-white p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="text-[11px] text-gray-500 leading-relaxed">
+                保存すると個社設定・マスタを更新します。移行期間中は旧Google Sheets版の分析表も中央APIで再集計して同期します。
+            </div>
+            <button
+                id="saveManagedReportBtn"
+                type="button"
+                class="shrink-0 px-6 py-3 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-extrabold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                設定・マスタを保存
+            </button>
+        </div>
+    </div>
+</div>
+
             <div id="resultArea" class="mt-8 hidden border-t border-gray-200/60 pt-8">
                 <div class="flex flex-col items-center gap-5">
                     <button id="goToDashboardBtn" class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-10 py-4 rounded-2xl font-extrabold hover:from-emerald-600 hover:to-teal-600 transition-all text-xl shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(16,185,129,0.6)] hover:-translate-y-1 flex items-center relative overflow-hidden group">
@@ -1350,7 +1520,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-viewer-migration-v2";
+const SHEETS_APP_VERSION = "2026.08.30-management-editor-v1";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2166,6 +2336,10 @@ function mapSheetsApiError(data) {
             "更新先は有効応募分析レポートとして確認できませんでした。別のSheet URLを指定してください。",
         REQUEST_TARGET_MISMATCH:
             "再試行中のrequestIdと更新先Sheetが一致しません。いったん再集計するか、更新先URLを確認してください。",
+        MANAGE_LOAD_ERROR:
+            "既存レポートの設定読み込み中にエラーが発生しました。",
+        MANAGE_SAVE_ERROR:
+            "設定・マスタの保存中にエラーが発生しました。",
         INTERNAL_ERROR:
             "API GAS内部でエラーが発生しました。同じボタンから再試行できます。"
     };
@@ -2611,6 +2785,724 @@ if (copyViewerShareBtn) {
     );
 }
 
+let managedReportState = null;
+let managedImageRows = [];
+let managedReportBusy = false;
+
+const MANAGED_CUSTOM_AXES_BASE = [
+    "対応状況",
+    "応募年月",
+    "応募媒体",
+    "氏名文字種区分",
+    "居住都道府県",
+    "企業ID",
+    "職種",
+    "雇用形態",
+    "求人勤務地名称",
+    "勤務地都道府県",
+    "勤務地・居住都道府県一致",
+    "募集背景",
+    "月内応募日",
+    "応募曜日",
+    "応募時間帯",
+    "給与区分",
+    "時給下限",
+    "日給下限",
+    "月給下限",
+    "年収下限",
+    "求人原稿文字数",
+    "メイン画像有無",
+    "求人画像枚数",
+    "TOP画像ファイル名",
+    "求人動画有無",
+    "Indeed求人タグ数",
+    "求人備考1行目"
+];
+
+function manageEscapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function setManagedReportStatus(message, type = "info") {
+    const el = document.getElementById("managedReportStatus");
+    if (!el) return;
+
+    const classes = {
+        info: "mt-3 text-xs rounded-lg border p-3 whitespace-pre-wrap bg-white border-indigo-200 text-gray-700",
+        warning: "mt-3 text-xs rounded-lg border p-3 whitespace-pre-wrap bg-amber-50 border-amber-200 text-amber-800",
+        error: "mt-3 text-xs rounded-lg border p-3 whitespace-pre-wrap bg-red-50 border-red-200 text-red-700",
+        success: "mt-3 text-xs rounded-lg border p-3 whitespace-pre-wrap bg-emerald-50 border-emerald-200 text-emerald-700"
+    };
+
+    el.className = classes[type] || classes.info;
+    el.textContent = message;
+    el.classList.remove("hidden");
+}
+
+function setManagedReportBusy(flag) {
+    managedReportBusy = !!flag;
+
+    [
+        "loadManagedReportBtn",
+        "saveManagedReportBtn"
+    ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = managedReportBusy;
+    });
+}
+
+async function postManagementAction(action, payload = {}) {
+    const accessKey = getStoredSheetsAccessKey();
+
+    if (!accessKey) {
+        throw Object.assign(
+            new Error("アクセスキーが未設定です。右上の詳細設定からアクセスキーを保存してください。"),
+            { code: "AUTH_INVALID" }
+        );
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+        () => controller.abort(),
+        180000
+    );
+
+    try {
+        const response = await fetch(SHEETS_API_URL, {
+            method: "POST",
+            mode: "cors",
+            credentials: "omit",
+            headers: {
+                "Content-Type": "text/plain;charset=UTF-8"
+            },
+            body: JSON.stringify({
+                action,
+                schemaVersion: SHEETS_SCHEMA_VERSION,
+                accessKey,
+                ...payload
+            }),
+            signal: controller.signal
+        });
+
+        const text = await response.text();
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch (_) {
+            throw new Error("API応答を解析できませんでした。");
+        }
+
+        if (!data?.ok) {
+            const err = new Error(mapSheetsApiError(data));
+            err.code = data?.code || "";
+            err.data = data;
+            throw err;
+        }
+
+        return data;
+
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+function managedInputTypeForSetting(key) {
+    if (
+        key === "集計開始日" ||
+        key === "集計終了日"
+    ) {
+        return "date";
+    }
+
+    if (
+        key.includes("年齢") ||
+        key.endsWith("幅")
+    ) {
+        return "number";
+    }
+
+    return "text";
+}
+
+function managedDateInputValue(value) {
+    const text = normalizeString(value);
+    if (!text) return "";
+
+    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+
+    const d = new Date(text);
+    if (Number.isNaN(d.getTime())) return text;
+
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+}
+
+function renderManagedSettings(rows) {
+    const container = document.getElementById("managedSettingsRows");
+    if (!container) return;
+
+    container.innerHTML = (rows || []).map(row => {
+        const key = normalizeString(row.key);
+        const value = row.value ?? "";
+        const description = normalizeString(row.description);
+
+        if (key === "年齢区分") {
+            return `
+                <label class="block rounded-lg border border-gray-200 bg-gray-50 p-3">
+                    <div class="text-[11px] font-extrabold text-gray-700">${manageEscapeHtml(key)}</div>
+                    <select
+                        data-managed-setting-key="${manageEscapeHtml(key)}"
+                        class="mt-2 w-full border border-gray-300 rounded-lg p-2 text-xs bg-white"
+                    >
+                        <option value="年代"${String(value) === "年代" ? " selected" : ""}>年代</option>
+                        <option value="年代（5歳ずらし）"${String(value) === "年代（5歳ずらし）" ? " selected" : ""}>年代（5歳ずらし）</option>
+                    </select>
+                    <div class="mt-1 text-[10px] text-gray-500">${manageEscapeHtml(description)}</div>
+                </label>
+            `;
+        }
+
+        if (
+            key === "Indeedタグ表示件数" ||
+            key === "TOP画像表示件数"
+        ) {
+            const options = ["20", "50", "100", "すべて"];
+            const current = normalizeString(value) || "50";
+            const optionHtml = (
+                options.includes(current)
+                    ? options
+                    : [current, ...options]
+            ).map(option => `
+                <option value="${manageEscapeHtml(option)}"${option === current ? " selected" : ""}>${manageEscapeHtml(option)}</option>
+            `).join("");
+
+            return `
+                <label class="block rounded-lg border border-gray-200 bg-gray-50 p-3">
+                    <div class="text-[11px] font-extrabold text-gray-700">${manageEscapeHtml(key)}</div>
+                    <select
+                        data-managed-setting-key="${manageEscapeHtml(key)}"
+                        class="mt-2 w-full border border-gray-300 rounded-lg p-2 text-xs bg-white"
+                    >
+                        ${optionHtml}
+                    </select>
+                    <div class="mt-1 text-[10px] text-gray-500">${manageEscapeHtml(description)}</div>
+                </label>
+            `;
+        }
+
+        const type = managedInputTypeForSetting(key);
+        const displayValue =
+            type === "date"
+                ? managedDateInputValue(value)
+                : String(value ?? "");
+
+        return `
+            <label class="block rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div class="text-[11px] font-extrabold text-gray-700">${manageEscapeHtml(key)}</div>
+                <input
+                    data-managed-setting-key="${manageEscapeHtml(key)}"
+                    type="${type}"
+                    value="${manageEscapeHtml(displayValue)}"
+                    ${type === "number" ? 'step="1"' : ""}
+                    class="mt-2 w-full border border-gray-300 rounded-lg p-2 text-xs bg-white"
+                >
+                <div class="mt-1 text-[10px] text-gray-500">${manageEscapeHtml(description)}</div>
+            </label>
+        `;
+    }).join("");
+}
+
+function renderManagedEnterprise(rows) {
+    const body = document.getElementById("managedEnterpriseBody");
+    if (!body) return;
+
+    body.innerHTML = (rows || []).map(row => `
+        <tr>
+            <td class="p-2 border-b border-gray-100 font-mono text-gray-600">
+                ${manageEscapeHtml(row.enterpriseId)}
+            </td>
+            <td class="p-2 border-b border-gray-100">
+                <input
+                    type="text"
+                    data-enterprise-id="${manageEscapeHtml(row.enterpriseId)}"
+                    value="${manageEscapeHtml(row.displayName || "")}"
+                    class="w-full border border-gray-300 rounded-md p-2 text-xs"
+                >
+            </td>
+        </tr>
+    `).join("");
+}
+
+function syncManagedImageRowFromInput(input) {
+    const fileName = normalizeString(input?.dataset?.imageFile);
+    const field = normalizeString(input?.dataset?.imageField);
+
+    if (!fileName || !field) return;
+
+    const row = managedImageRows.find(
+        item => normalizeString(item.fileName) === fileName
+    );
+
+    if (!row) return;
+    row[field] = input.value;
+}
+
+function renderManagedImages() {
+    const body = document.getElementById("managedImageBody");
+    const countEl = document.getElementById("managedImageCount");
+    const filter = normalizeString(
+        document.getElementById("managedImageFilter")?.value
+    ).toLowerCase();
+
+    if (!body) return;
+
+    const filtered = managedImageRows.filter(row => {
+        if (!filter) return true;
+
+        return [
+            row.fileName,
+            row.status,
+            row.referenceJobNumber,
+            row.memo
+        ].some(value =>
+            normalizeString(value)
+                .toLowerCase()
+                .includes(filter)
+        );
+    });
+
+    if (countEl) {
+        countEl.textContent =
+            `${filtered.length.toLocaleString()} / ${managedImageRows.length.toLocaleString()}件`;
+    }
+
+    body.innerHTML = filtered.map(row => `
+        <tr>
+            <td class="p-2 border-b border-gray-100 align-top font-mono">
+                ${manageEscapeHtml(row.fileName)}
+            </td>
+            <td class="p-2 border-b border-gray-100 align-top">
+                <input
+                    type="url"
+                    data-image-file="${manageEscapeHtml(row.fileName)}"
+                    data-image-field="imageUrl"
+                    value="${manageEscapeHtml(row.imageUrl || "")}"
+                    class="w-[420px] border border-gray-300 rounded-md p-1.5 text-[11px]"
+                    placeholder="https://..."
+                >
+            </td>
+            <td class="p-2 border-b border-gray-100 align-top text-gray-600">
+                ${manageEscapeHtml(row.status || "")}
+            </td>
+            <td class="p-2 border-b border-gray-100 align-top text-gray-600">
+                ${manageEscapeHtml(row.referenceJobNumber || "")}
+            </td>
+            <td class="p-2 border-b border-gray-100 align-top">
+                <input
+                    type="text"
+                    data-image-file="${manageEscapeHtml(row.fileName)}"
+                    data-image-field="memo"
+                    value="${manageEscapeHtml(row.memo || "")}"
+                    class="w-[260px] border border-gray-300 rounded-md p-1.5 text-[11px]"
+                >
+            </td>
+        </tr>
+    `).join("");
+
+    body.querySelectorAll("input[data-image-file]").forEach(input => {
+        input.addEventListener("input", () => {
+            syncManagedImageRowFromInput(input);
+        });
+    });
+}
+
+function managedCustomAxesFromKeywordText() {
+    const hasKeywords = normalizeString(
+        document.getElementById("managedKeywordTextarea")?.value
+    )
+        .split(/\r?\n/)
+        .some(line => normalizeString(line));
+
+    const axes = [...MANAGED_CUSTOM_AXES_BASE];
+
+    if (hasKeywords) {
+        axes.splice(
+            11,
+            0,
+            "仕事名KW",
+            "仕事名フルKW"
+        );
+    }
+
+    return axes;
+}
+
+function refreshManagedCustomAxisOptions() {
+    const rowSelect = document.getElementById("managedCustomRowAxis");
+    const colSelect = document.getElementById("managedCustomColAxis");
+
+    if (!rowSelect || !colSelect) return;
+
+    const axes = managedCustomAxesFromKeywordText();
+    const currentRow = rowSelect.value;
+    const currentCol = colSelect.value;
+
+    const renderOptions = selected =>
+        axes.map(axis => `
+            <option value="${manageEscapeHtml(axis)}"${axis === selected ? " selected" : ""}>
+                ${manageEscapeHtml(axis)}
+            </option>
+        `).join("");
+
+    const fallbackRow =
+        axes.includes(currentRow)
+            ? currentRow
+            : "対応状況";
+
+    const fallbackCol =
+        axes.includes(currentCol)
+            ? currentCol
+            : "応募媒体";
+
+    rowSelect.innerHTML = renderOptions(fallbackRow);
+    colSelect.innerHTML = renderOptions(fallbackCol);
+}
+
+function renderManagedCustom(custom = {}) {
+    const textarea = document.getElementById("managedKeywordTextarea");
+    refreshManagedCustomAxisOptions();
+
+    const row = document.getElementById("managedCustomRowAxis");
+    const col = document.getElementById("managedCustomColAxis");
+    const mode = document.getElementById("managedCustomAgeMode");
+    const min = document.getElementById("managedCustomAgeMin");
+    const max = document.getElementById("managedCustomAgeMax");
+
+    const axes = managedCustomAxesFromKeywordText();
+
+    if (row) {
+        row.value =
+            axes.includes(custom.rowAxis)
+                ? custom.rowAxis
+                : "対応状況";
+    }
+
+    if (col) {
+        col.value =
+            axes.includes(custom.colAxis)
+                ? custom.colAxis
+                : "応募媒体";
+    }
+
+    if (mode) {
+        mode.value =
+            custom.ageFilterMode === "指定範囲"
+                ? "指定範囲"
+                : "全年齢";
+    }
+
+    if (min) min.value = custom.ageMin ?? "";
+    if (max) max.value = custom.ageMax ?? "";
+
+    if (textarea) {
+        textarea.oninput =
+            refreshManagedCustomAxisOptions;
+    }
+}
+
+function renderManagedReportState(data) {
+    managedReportState = data;
+    managedImageRows = Array.isArray(data.imageMaster)
+        ? data.imageMaster.map(row => ({ ...row }))
+        : [];
+
+    const metadata = data.metadata || {};
+    const editor = document.getElementById("managedReportEditor");
+    const name = document.getElementById("managedReportName");
+    const sheetLink = document.getElementById("managedOpenSheetLink");
+    const viewerLink = document.getElementById("managedOpenViewerLink");
+
+    if (name) name.textContent = metadata.fileName || "有効応募分析";
+    if (sheetLink) sheetLink.href = metadata.spreadsheetUrl || "#";
+
+    if (viewerLink) {
+        if (metadata.viewerUrl) {
+            viewerLink.href = metadata.viewerUrl;
+            viewerLink.classList.remove("hidden");
+        } else {
+            viewerLink.href = "#";
+            viewerLink.classList.add("hidden");
+        }
+    }
+
+    renderManagedSettings(data.settings || []);
+
+    const keywordTextarea =
+        document.getElementById("managedKeywordTextarea");
+
+    if (keywordTextarea) {
+        keywordTextarea.value =
+            (data.keywordMaster || []).join("\n");
+    }
+
+    renderManagedEnterprise(data.enterpriseMaster || []);
+    renderManagedImages();
+    renderManagedCustom(data.customAnalysis || {});
+
+    editor?.classList.remove("hidden");
+}
+
+async function loadManagedReportState({ auto = false } = {}) {
+    if (managedReportBusy) return;
+
+    const manageInput = document.getElementById("manageSheetUrlInput");
+    const fallbackInput = document.getElementById("existingSheetUrlInput");
+
+    let target =
+        normalizeString(manageInput?.value) ||
+        normalizeString(fallbackInput?.value);
+
+    const spreadsheetId = extractSpreadsheetIdFromUrl(target);
+
+    if (!spreadsheetId) {
+        setManagedReportStatus(
+            "対象Google Sheets URLを入力してください。",
+            "warning"
+        );
+        if (!auto) manageInput?.focus();
+        return;
+    }
+
+    target =
+        `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
+
+    if (manageInput) manageInput.value = target;
+    if (fallbackInput) {
+        fallbackInput.value = target;
+        updateSheetsOperationUi();
+    }
+
+    if (!getStoredSheetsAccessKey()) {
+        setManagedReportStatus(
+            "この操作には社内用アクセスキーが必要です。右上の詳細設定からアクセスキーを保存してください。",
+            "warning"
+        );
+
+        if (!auto) openSheetsSettingsAndFocus();
+        return;
+    }
+
+    setManagedReportBusy(true);
+    setManagedReportStatus(
+        "既存レポートから設定・マスタを読み込んでいます...",
+        "info"
+    );
+
+    try {
+        const data = await postManagementAction(
+            "manageLoad",
+            {
+                targetSpreadsheetUrl: target
+            }
+        );
+
+        renderManagedReportState(data);
+
+        setManagedReportStatus(
+            `「${data.metadata?.fileName || "有効応募分析"}」の設定・マスタを読み込みました。`,
+            "success"
+        );
+
+        try {
+            localStorage.setItem(
+                SHEETS_UPDATE_TARGET_STORAGE_KEY,
+                target
+            );
+        } catch (_) {}
+
+    } catch (error) {
+        const message =
+            error?.name === "AbortError"
+                ? "設定読み込みがタイムアウトしました。もう一度お試しください。"
+                : (error?.message || String(error));
+
+        setManagedReportStatus(message, "error");
+
+    } finally {
+        setManagedReportBusy(false);
+    }
+}
+
+function collectManagedSettings() {
+    const result = {};
+
+    document
+        .querySelectorAll("[data-managed-setting-key]")
+        .forEach(input => {
+            result[input.dataset.managedSettingKey] = input.value;
+        });
+
+    return result;
+}
+
+function collectManagedEnterprise() {
+    return Array.from(
+        document.querySelectorAll(
+            "#managedEnterpriseBody input[data-enterprise-id]"
+        )
+    ).map(input => ({
+        enterpriseId: input.dataset.enterpriseId,
+        displayName: input.value
+    }));
+}
+
+function collectManagedKeywords() {
+    return normalizeString(
+        document.getElementById("managedKeywordTextarea")?.value
+    )
+        .split(/\r?\n/)
+        .map(line => normalizeString(line))
+        .filter(Boolean);
+}
+
+function collectManagedCustom() {
+    return {
+        rowAxis:
+            document.getElementById("managedCustomRowAxis")?.value || "対応状況",
+        colAxis:
+            document.getElementById("managedCustomColAxis")?.value || "応募媒体",
+        ageFilterMode:
+            document.getElementById("managedCustomAgeMode")?.value || "全年齢",
+        ageMin:
+            document.getElementById("managedCustomAgeMin")?.value || "",
+        ageMax:
+            document.getElementById("managedCustomAgeMax")?.value || ""
+    };
+}
+
+async function saveManagedReportState() {
+    if (managedReportBusy) return;
+
+    const target =
+        normalizeString(
+            document.getElementById("manageSheetUrlInput")?.value
+        );
+
+    const spreadsheetId =
+        extractSpreadsheetIdFromUrl(target);
+
+    const loadedId =
+        normalizeString(
+            managedReportState?.metadata?.spreadsheetId
+        );
+
+    if (
+        !spreadsheetId ||
+        !loadedId ||
+        spreadsheetId !== loadedId
+    ) {
+        setManagedReportStatus(
+            "保存前に、現在入力されているSheetをもう一度読み込んでください。",
+            "warning"
+        );
+        return;
+    }
+
+    const fileName =
+        managedReportState?.metadata?.fileName ||
+        "有効応募分析";
+
+    const confirmed = window.confirm(
+        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。`
+    );
+
+    if (!confirmed) return;
+
+    setManagedReportBusy(true);
+    setManagedReportStatus(
+        `「${fileName}」へ設定・マスタを保存し、旧Sheet分析表も再集計しています...`,
+        "info"
+    );
+
+    try {
+        const data = await postManagementAction(
+            "manageSave",
+            {
+                targetSpreadsheetUrl: target,
+                settings: collectManagedSettings(),
+                keywordMaster: collectManagedKeywords(),
+                enterpriseMaster: collectManagedEnterprise(),
+                imageMaster: managedImageRows.map(row => ({
+                    fileName: row.fileName,
+                    imageUrl: row.imageUrl || "",
+                    memo: row.memo || ""
+                })),
+                customAnalysis: collectManagedCustom()
+            }
+        );
+
+        renderManagedReportState(data);
+
+        setManagedReportStatus(
+            `「${data.metadata?.fileName || fileName}」へ保存しました。Viewerにも次回読み込みから即反映されます。`,
+            "success"
+        );
+
+    } catch (error) {
+        const message =
+            error?.name === "AbortError"
+                ? "保存処理がタイムアウトしました。Sheet側を確認してから再試行してください。"
+                : (error?.message || String(error));
+
+        setManagedReportStatus(message, "error");
+
+    } finally {
+        setManagedReportBusy(false);
+    }
+}
+
+const manageSheetUrlInput =
+    document.getElementById("manageSheetUrlInput");
+
+const loadManagedReportBtn =
+    document.getElementById("loadManagedReportBtn");
+
+const saveManagedReportBtn =
+    document.getElementById("saveManagedReportBtn");
+
+const managedImageFilter =
+    document.getElementById("managedImageFilter");
+
+if (loadManagedReportBtn) {
+    loadManagedReportBtn.addEventListener(
+        "click",
+        () => loadManagedReportState()
+    );
+}
+
+if (saveManagedReportBtn) {
+    saveManagedReportBtn.addEventListener(
+        "click",
+        saveManagedReportState
+    );
+}
+
+if (managedImageFilter) {
+    managedImageFilter.addEventListener(
+        "input",
+        renderManagedImages
+    );
+}
+
 const existingSheetUrlInput =
     document.getElementById("existingSheetUrlInput");
 if (existingSheetUrlInput) {
@@ -2620,13 +3512,59 @@ if (existingSheetUrlInput) {
     const sheetFromHash = normalizeString(hashParams.get("sheet"));
 
     if (sheetFromHash) {
-        existingSheetUrlInput.value =
+        const sheetUrl =
             `https://docs.google.com/spreadsheets/d/${sheetFromHash}/edit`;
+
+        existingSheetUrlInput.value = sheetUrl;
+
+        if (manageSheetUrlInput) {
+            manageSheetUrlInput.value = sheetUrl;
+        }
+
+        setTimeout(() => {
+            document
+                .getElementById("managedReportArea")
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            loadManagedReportState({
+                auto: true
+            });
+        }, 250);
+
     } else {
-        existingSheetUrlInput.value = getStoredUpdateTargetUrl();
+        const storedTarget =
+            getStoredUpdateTargetUrl();
+
+        existingSheetUrlInput.value =
+            storedTarget;
+
+        if (
+            manageSheetUrlInput &&
+            storedTarget
+        ) {
+            manageSheetUrlInput.value =
+                storedTarget;
+        }
     }
 
-    existingSheetUrlInput.addEventListener("input", updateSheetsOperationUi);
+    existingSheetUrlInput.addEventListener(
+        "input",
+        () => {
+            updateSheetsOperationUi();
+
+            if (
+                manageSheetUrlInput &&
+                !managedReportBusy
+            ) {
+                manageSheetUrlInput.value =
+                    existingSheetUrlInput.value;
+            }
+        }
+    );
+
     updateSheetsOperationUi();
 }
 
