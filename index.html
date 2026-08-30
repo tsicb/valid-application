@@ -519,63 +519,19 @@
             </div>
         </div>
 
-        <div class="rounded-xl border border-blue-200 bg-blue-50/70 p-4">
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
         <div>
-            <div class="text-xs font-extrabold text-blue-950">
-                分析レポートの閲覧方式
+            <div class="text-xs font-extrabold text-emerald-950">
+                Web Viewerレポート
             </div>
-            <div class="mt-1 text-[11px] leading-relaxed text-blue-800">
-                Viewer正式モードにすると、Google Sheets内の旧分析タブは削除せず非表示にし、今後の再描画を停止します。企業向けViewerは最新設定・最新データを直接集計します。
+            <div class="mt-1 text-[11px] leading-relaxed text-emerald-800">
+                このGoogle Sheetは分析データ・設定・マスタの保存領域です。分析結果は企業向けViewerで表示します。
             </div>
         </div>
-        <div id="managedSheetReportModeBadge" class="shrink-0 rounded-full bg-white border border-blue-200 px-3 py-1 text-[10px] font-extrabold text-blue-800">
-            読み込み中
+        <div class="shrink-0 rounded-full bg-emerald-700 border border-emerald-700 px-3 py-1 text-[10px] font-extrabold text-white">
+            THIN_V1
         </div>
-    </div>
-
-    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <label class="cursor-pointer rounded-xl border border-slate-200 bg-white p-3">
-            <div class="flex items-start gap-2">
-                <input
-                    type="radio"
-                    name="managedSheetReportMode"
-                    value="LEGACY"
-                    class="mt-1"
-                >
-                <div>
-                    <div class="text-xs font-extrabold text-gray-800">
-                        移行並走モード
-                    </div>
-                    <div class="mt-1 text-[10px] leading-relaxed text-gray-500">
-                        ViewerとGoogle Sheets分析表の両方を更新。数値比較中はこちら。
-                    </div>
-                </div>
-            </div>
-        </label>
-
-        <label class="cursor-pointer rounded-xl border border-indigo-300 bg-indigo-50 p-3">
-            <div class="flex items-start gap-2">
-                <input
-                    type="radio"
-                    name="managedSheetReportMode"
-                    value="VIEWER_ONLY"
-                    class="mt-1"
-                >
-                <div>
-                    <div class="text-xs font-extrabold text-indigo-950">
-                        Viewer正式モード
-                    </div>
-                    <div class="mt-1 text-[10px] leading-relaxed text-indigo-700">
-                        Sheetは保存場所＋ポータルへ。01/14/15/16/19は更新停止・非表示。
-                    </div>
-                </div>
-            </div>
-        </label>
-    </div>
-
-    <div id="managedSheetReportModeWarning" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">
-        Viewer正式モードへ切り替えても旧分析タブの内容は削除されません。移行並走モードへ戻せば再表示し、再集計できます。
     </div>
 </div>
 
@@ -661,7 +617,7 @@
 
         <details class="rounded-xl border border-gray-200 bg-white">
             <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
-                19_カスタム分析 初期設定
+                カスタム分析 初期設定
             </summary>
             <div class="border-t border-gray-100 p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
@@ -1024,8 +980,8 @@
         const SHEETS_OUTPUT_FOLDER_URL = "https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng";
         const SHEETS_ACCESS_KEY_DOC_URL = "https://docs.google.com/document/d/1c5u4HqoHo5LQRPrXjbWWUJI00BPjTv0Ekk2VA6KtYIQ/edit";
         const SHEETS_ACCESS_KEY_STORAGE_KEY = "validApplicationAnalysis.sheetsAccessKey";
-        const SHEETS_LAST_RESULT_STORAGE_KEY = "validApplicationAnalysis.lastSheetResult";
-        const SHEETS_UPDATE_TARGET_STORAGE_KEY = "validApplicationAnalysis.updateTargetUrl";
+        const SHEETS_LAST_RESULT_STORAGE_KEY = "validApplicationAnalysis.thinV1.lastSheetResult";
+        const SHEETS_UPDATE_TARGET_STORAGE_KEY = "validApplicationAnalysis.thinV1.updateTargetUrl";
         const SHEETS_POST_TIMEOUT_MS = 330000; // 5分30秒。1回のAPI処理待機上限。
 const SHEETS_MAX_AUTO_RESUME_MS = 900000; // 自動再開は最大15分。
 const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
@@ -1678,7 +1634,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-template-free-v1";
+const SHEETS_APP_VERSION = "2026.08.30-thin-only-v1";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2492,6 +2448,8 @@ function mapSheetsApiError(data) {
             "更新先が指定の出力フォルダ内にありません。更新できるのは有効応募分析の出力フォルダ内のSheetだけです。",
         TARGET_WORKBOOK_INVALID:
             "更新先は有効応募分析レポートとして確認できませんでした。別のSheet URLを指定してください。",
+        TARGET_STORAGE_LAYOUT_UNSUPPORTED:
+            "このSheetは旧テスト版または現在のTHIN_V1構成ではありません。現行版で新規作成したSheetを指定してください。",
         REQUEST_TARGET_MISMATCH:
             "再試行中のrequestIdと更新先Sheetが一致しません。いったん再集計するか、更新先URLを確認してください。",
         MANAGE_LOAD_ERROR:
@@ -3572,93 +3530,6 @@ function renderManagedCustom(custom = {}) {
     }
 }
 
-function normalizeManagedSheetReportMode(value) {
-    return String(value || "").toUpperCase() === "VIEWER_ONLY"
-        ? "VIEWER_ONLY"
-        : "LEGACY";
-}
-
-function renderManagedSheetReportMode(value) {
-    const mode =
-        normalizeManagedSheetReportMode(value);
-
-    document
-        .querySelectorAll(
-            'input[name="managedSheetReportMode"]'
-        )
-        .forEach(input => {
-            input.checked =
-                input.value === mode;
-        });
-
-    const badge =
-        document.getElementById(
-            "managedSheetReportModeBadge"
-        );
-
-    if (badge) {
-        const storageLayout =
-            normalizeString(
-                managedReportState
-                    ?.metadata
-                    ?.storageLayout
-            );
-
-        const layoutSuffix =
-            storageLayout === "THIN_V1"
-                ? " / 新構成"
-                : "";
-
-        badge.textContent =
-            (
-                mode === "VIEWER_ONLY"
-                    ? "Viewer正式"
-                    : "移行並走"
-            ) +
-            layoutSuffix;
-
-        badge.className =
-            mode === "VIEWER_ONLY"
-                ? "shrink-0 rounded-full bg-indigo-700 border border-indigo-700 px-3 py-1 text-[10px] font-extrabold text-white"
-                : "shrink-0 rounded-full bg-white border border-blue-200 px-3 py-1 text-[10px] font-extrabold text-blue-800";
-    }
-
-    const warning =
-        document.getElementById(
-            "managedSheetReportModeWarning"
-        );
-
-    warning?.classList.toggle(
-        "hidden",
-        mode !== "VIEWER_ONLY"
-    );
-}
-
-function collectManagedSheetReportMode() {
-    const selected =
-        document.querySelector(
-            'input[name="managedSheetReportMode"]:checked'
-        );
-
-    return normalizeManagedSheetReportMode(
-        selected?.value
-    );
-}
-
-document
-    .querySelectorAll(
-        'input[name="managedSheetReportMode"]'
-    )
-    .forEach(input => {
-        input.addEventListener(
-            "change",
-            () =>
-                renderManagedSheetReportMode(
-                    input.value
-                )
-        );
-    });
-
 function renderManagedReportState(data) {
     managedReportState = data;
     managedImageRows = Array.isArray(data.imageMaster)
@@ -3673,10 +3544,6 @@ function renderManagedReportState(data) {
 
     if (name) name.textContent = metadata.fileName || "有効応募分析";
     if (sheetLink) sheetLink.href = metadata.spreadsheetUrl || "#";
-
-    renderManagedSheetReportMode(
-        metadata.sheetReportMode || "LEGACY"
-    );
 
     if (viewerLink) {
         if (metadata.viewerUrl) {
@@ -3979,25 +3846,15 @@ async function saveManagedReportState() {
         managedReportState?.metadata?.fileName ||
         "有効応募分析";
 
-    const sheetReportMode =
-        collectManagedSheetReportMode();
-
-    const modeNote =
-        sheetReportMode === "VIEWER_ONLY"
-            ? "\n\nViewer正式モード：旧分析タブは削除せず非表示にし、今後の再描画を停止します。"
-            : "\n\n移行並走モード：旧Google Sheets分析表も再集計します。";
-
     const confirmed = window.confirm(
-        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。${modeNote}`
+        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。`
     );
 
     if (!confirmed) return;
 
     setManagedReportBusy(true);
     setManagedReportStatus(
-        sheetReportMode === "VIEWER_ONLY"
-            ? `「${fileName}」へ設定・マスタを保存しています。Viewer正式モードでは旧Sheet分析表の再描画を行いません...`
-            : `「${fileName}」へ設定・マスタを保存し、旧Sheet分析表も再集計しています...`,
+        `「${fileName}」へ設定・マスタを保存しています。旧Sheet分析表の再描画は行いません...`,
         "info"
     );
 
@@ -4014,9 +3871,8 @@ async function saveManagedReportState() {
                     imageUrl: row.imageUrl || "",
                     memo: row.memo || ""
                 })),
-                customAnalysis: collectManagedCustom(),
-                sheetReportMode:
-                    sheetReportMode
+                customAnalysis:
+                    collectManagedCustom()
             }
         );
 
