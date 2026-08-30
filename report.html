@@ -234,6 +234,111 @@
         }
         .error { border-color: #fecaca; color: #991b1b; }
         .hidden { display: none !important; }
+
+.detail-grid {
+    display: grid;
+    gap: 16px;
+}
+.image-preview {
+    width: 112px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 9px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    display: block;
+}
+.image-missing {
+    width: 112px;
+    min-height: 52px;
+    border-radius: 9px;
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.4;
+}
+.custom-controls {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+.field label {
+    display: block;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+.field select,
+.field input {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    border-radius: 9px;
+    padding: 8px 9px;
+    color: #334155;
+    font-size: 12px;
+}
+.custom-run {
+    border: 0;
+    border-radius: 9px;
+    padding: 9px 14px;
+    background: #7c3aed;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.custom-run:hover {
+    background: #6d28d9;
+}
+.custom-message {
+    margin-top: 12px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fff7ed;
+    color: #9a3412;
+    border: 1px solid #fed7aa;
+    font-size: 12px;
+    line-height: 1.55;
+}
+.custom-meta {
+    margin: 12px 0 8px;
+    color: #64748b;
+    font-size: 11px;
+}
+.custom-table {
+    min-width: 720px;
+}
+.custom-table th:first-child,
+.custom-table td:first-child {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 2;
+    box-shadow: 1px 0 0 #e5e7eb;
+}
+.custom-table th:first-child {
+    background: #f8fafc;
+    z-index: 3;
+}
+@media (max-width: 900px) {
+    .custom-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 520px) {
+    .custom-controls {
+        grid-template-columns: 1fr;
+    }
+}
         .footer {
             margin-top: 28px;
             text-align: center;
@@ -345,7 +450,88 @@
 
         <div id="basicCrossTables"></div>
 
-        <div class="footer">有効応募分析・企業向け閲覧Pages Viewer移行 v3</div>
+<div id="detailAnalyses" class="detail-grid">
+    <section id="noteDetailSection" class="card section hidden">
+        <div class="section-head">
+            <div>
+                <h2>求人備考1行目別応募傾向</h2>
+                <div class="section-note">
+                    求人備考の最初の1行（&lt;BR&gt;等より前）で集計
+                </div>
+            </div>
+        </div>
+        <div id="noteDetailBody"></div>
+    </section>
+
+    <section id="indeedTagDetailSection" class="card section hidden">
+        <div class="section-head">
+            <div>
+                <h2>Indeed求人タグ別応募傾向</h2>
+                <div id="indeedTagDetailNote" class="section-note"></div>
+            </div>
+        </div>
+        <div id="indeedTagDetailBody"></div>
+    </section>
+
+    <section id="topImageDetailSection" class="card section hidden">
+        <div class="section-head">
+            <div>
+                <h2>TOP画像別応募傾向</h2>
+                <div id="topImageDetailNote" class="section-note"></div>
+            </div>
+        </div>
+        <div id="topImageDetailBody"></div>
+    </section>
+
+    <section id="customAnalysisSection" class="card section">
+        <div class="section-head">
+            <div>
+                <h2>カスタム分析</h2>
+                <div class="section-note">
+                    行軸・列軸を自由に選択できます。Viewer上の変更はSheet設定へ保存されません。
+                </div>
+            </div>
+        </div>
+
+        <div class="custom-controls">
+            <div class="field">
+                <label for="customRowAxis">行軸</label>
+                <select id="customRowAxis"></select>
+            </div>
+            <div class="field">
+                <label for="customColAxis">列軸</label>
+                <select id="customColAxis"></select>
+            </div>
+            <div class="field">
+                <label for="customAgeMode">年齢フィルタ</label>
+                <select id="customAgeMode">
+                    <option value="全年齢">全年齢</option>
+                    <option value="指定範囲">指定範囲</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="customAgeMin">年齢下限</label>
+                <input id="customAgeMin" type="number" min="0" max="120">
+            </div>
+            <div class="field">
+                <label for="customAgeMax">年齢上限</label>
+                <input id="customAgeMax" type="number" min="0" max="120">
+            </div>
+        </div>
+
+        <div style="margin-top:10px;">
+            <button id="customRunBtn" type="button" class="custom-run">
+                カスタム集計を更新
+            </button>
+        </div>
+
+        <div id="customMessage" class="custom-message hidden"></div>
+        <div id="customMeta" class="custom-meta hidden"></div>
+        <div id="customResult"></div>
+    </section>
+</div>
+
+<div class="footer">有効応募分析・企業向け閲覧Pages Viewer移行 v4</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -544,6 +730,405 @@ function renderCrossTable(table, core) {
     `;
 }
 
+
+function renderStandaloneCross(agg, core, firstHeader) {
+    const ageCols = agg.ageCols;
+    const totalAge = Object.fromEntries(
+        ageCols.map(age => [age, 0])
+    );
+
+    agg.groups.forEach(group => {
+        ageCols.forEach(age => {
+            totalAge[age] += group.ageCounts[age] || 0;
+        });
+    });
+
+    const headers = [
+        `<th>${escapeHtml(firstHeader)}</th>`,
+        ...ageCols.map(age => `<th>${escapeHtml(age)}</th>`),
+        "<th>総応募数</th>",
+        "<th>応募構成比</th>",
+        "<th>ターゲット応募数</th>",
+        "<th>ターゲット率</th>",
+        "<th>ターゲット応募構成比</th>"
+    ].join("");
+
+    const rows = agg.groups.map(group => {
+        const ageCells = ageCols
+            .map(age => `<td>${core.formatNumber(group.ageCounts[age] || 0)}</td>`)
+            .join("");
+
+        return `
+            <tr>
+                <td>${escapeHtml(group.label)}</td>
+                ${ageCells}
+                <td>${core.formatNumber(group.total)}</td>
+                <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
+                <td>${core.formatNumber(group.target)}</td>
+                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
+                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
+            </tr>
+        `;
+    }).join("");
+
+    const totalAgeCells = ageCols
+        .map(age => `<td>${core.formatNumber(totalAge[age] || 0)}</td>`)
+        .join("");
+
+    const compositionCells = ageCols
+        .map(age => `<td>${core.formatPercent(agg.baseTotal ? (totalAge[age] || 0) / agg.baseTotal : 0)}</td>`)
+        .join("");
+
+    return `
+        <div class="table-wrap">
+            <table class="cross-table">
+                <thead><tr>${headers}</tr></thead>
+                <tbody>
+                    ${rows}
+                    <tr class="total-row">
+                        <td>【総計】</td>
+                        ${totalAgeCells}
+                        <td>${core.formatNumber(agg.baseTotal)}</td>
+                        <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
+                        <td>${core.formatNumber(agg.baseTarget)}</td>
+                        <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
+                        <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
+                    </tr>
+                    <tr class="composition-row">
+                        <td>年齢構成比</td>
+                        ${compositionCells}
+                        <td></td><td></td><td></td><td></td><td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderNoteDetail(detail, core) {
+    const section = document.getElementById("noteDetailSection");
+
+    if (!detail?.visible || !detail.aggregate) {
+        section.classList.add("hidden");
+        return;
+    }
+
+    section.classList.remove("hidden");
+    document.getElementById("noteDetailBody").innerHTML =
+        renderStandaloneCross(
+            detail.aggregate,
+            core,
+            "求人備考1行目"
+        );
+}
+
+function renderIndeedTagDetail(detail, core) {
+    const section = document.getElementById("indeedTagDetailSection");
+
+    if (!detail?.visible) {
+        section.classList.add("hidden");
+        return;
+    }
+
+    section.classList.remove("hidden");
+
+    const limitLabel =
+        Number.isFinite(detail.displayLimit)
+            ? `${detail.displayLimit}件`
+            : "すべて";
+
+    document.getElementById("indeedTagDetailNote").textContent =
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ 1応募は複数タグへ重複集計`;
+
+    const ageHeaders =
+        detail.ageCols.map(age => `<th>${escapeHtml(age)}</th>`).join("");
+
+    const rows = detail.rows.map(row => {
+        const ageCells =
+            detail.ageCols
+                .map(age => `<td>${core.formatNumber(row.ageCounts[age] || 0)}</td>`)
+                .join("");
+
+        return `
+            <tr>
+                <td>${escapeHtml(row.label)}</td>
+                ${ageCells}
+                <td>${core.formatNumber(row.total)}</td>
+                <td>${core.formatPercent(row.coverRate)}</td>
+                <td>${core.formatNumber(row.target)}</td>
+                <td>${core.formatPercent(row.targetRate)}</td>
+                <td>${core.formatPercent(row.targetCoverRate)}</td>
+                <td>${core.formatNumber(row.jobCount)}</td>
+                <td>${Number(row.appsPerJob || 0).toFixed(2)}</td>
+            </tr>
+        `;
+    }).join("");
+
+    document.getElementById("indeedTagDetailBody").innerHTML = `
+        <div class="table-wrap">
+            <table class="cross-table">
+                <thead>
+                    <tr>
+                        <th>求人タグ</th>
+                        ${ageHeaders}
+                        <th>タグ対象応募数</th>
+                        <th>全応募カバー率</th>
+                        <th>ターゲット応募数</th>
+                        <th>ターゲット率</th>
+                        <th>ターゲット応募カバー率</th>
+                        <th>応募あり求人件数</th>
+                        <th>1求人あたり応募数</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderTopImageDetail(detail, core) {
+    const section = document.getElementById("topImageDetailSection");
+
+    if (!detail?.visible) {
+        section.classList.add("hidden");
+        return;
+    }
+
+    section.classList.remove("hidden");
+
+    const limitLabel =
+        Number.isFinite(detail.displayLimit)
+            ? `${detail.displayLimit}件`
+            : "すべて";
+
+    document.getElementById("topImageDetailNote").textContent =
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ URL未取得でも数値分析には含みます`;
+
+    const ageHeaders =
+        detail.ageCols.map(age => `<th>${escapeHtml(age)}</th>`).join("");
+
+    const rows = detail.rows.map(row => {
+        const ageCells =
+            detail.ageCols
+                .map(age => `<td>${core.formatNumber(row.ageCounts[age] || 0)}</td>`)
+                .join("");
+
+        const preview =
+            row.imageUrl
+                ? `<img class="image-preview" src="${escapeHtml(row.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+                : `<div class="image-missing">${row.fileName ? "URL未取得" : "TOP画像なし"}</div>`;
+
+        return `
+            <tr>
+                <td>${escapeHtml(row.label)}</td>
+                <td>${preview}</td>
+                ${ageCells}
+                <td>${core.formatNumber(row.total)}</td>
+                <td>${core.formatPercent(row.share)}</td>
+                <td>${core.formatNumber(row.target)}</td>
+                <td>${core.formatPercent(row.targetRate)}</td>
+                <td>${core.formatPercent(row.targetShare)}</td>
+                <td>${core.formatNumber(row.jobCount)}</td>
+                <td>${Number(row.appsPerJob || 0).toFixed(2)}</td>
+            </tr>
+        `;
+    }).join("");
+
+    document.getElementById("topImageDetailBody").innerHTML = `
+        <div class="table-wrap">
+            <table class="cross-table">
+                <thead>
+                    <tr>
+                        <th>画像ファイル名</th>
+                        <th>プレビュー</th>
+                        ${ageHeaders}
+                        <th>総応募数</th>
+                        <th>応募構成比</th>
+                        <th>ターゲット応募数</th>
+                        <th>ターゲット率</th>
+                        <th>ターゲット応募構成比</th>
+                        <th>応募あり求人件数</th>
+                        <th>1求人あたり応募数</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    `;
+}
+
+function setCustomSelectOptions(select, options, selected) {
+    select.innerHTML =
+        options.map(option => `
+            <option value="${escapeHtml(option)}"${option === selected ? " selected" : ""}>
+                ${escapeHtml(option)}
+            </option>
+        `).join("");
+}
+
+function renderCustomResult(result, core) {
+    const message = document.getElementById("customMessage");
+    const meta = document.getElementById("customMeta");
+    const output = document.getElementById("customResult");
+
+    message.classList.add("hidden");
+    meta.classList.add("hidden");
+    output.innerHTML = "";
+
+    if (!result.ok) {
+        const messages = {
+            AXIS_REQUIRED:
+                "行軸と列軸を選択してください。",
+            SAME_AXIS:
+                "行軸と列軸には異なる項目を選択してください。",
+            NO_DATA:
+                "現在の条件では集計対象データがありません。",
+            TOO_MANY_COLUMNS:
+                `列軸のカテゴリが ${result.columnCount || 0} 種類あります。100種類を超えるため表示できません。行軸と列軸を入れ替えるか、別の列軸を選択してください。`
+        };
+
+        message.textContent =
+            messages[result.reason] ||
+            "カスタム分析を表示できません。";
+
+        message.classList.remove("hidden");
+        return;
+    }
+
+    const ageLabel =
+        result.ageFilterMode === "指定範囲"
+            ? core.targetLabel(
+                result.ageMin,
+                result.ageMax
+            )
+            : "全年齢";
+
+    meta.textContent =
+        `行軸: ${result.rowAxis} ／ 列軸: ${result.colAxis} ／ 年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`;
+
+    meta.classList.remove("hidden");
+
+    const headers =
+        result.colLabels
+            .map(label => `<th>${escapeHtml(label)}</th>`)
+            .join("");
+
+    const rows =
+        result.rowLabels.map(rowLabel => {
+            const rowMap =
+                result.matrix.get(rowLabel) ||
+                new Map();
+
+            const cells =
+                result.colLabels
+                    .map(
+                        colLabel =>
+                            `<td>${core.formatNumber(rowMap.get(colLabel) || 0)}</td>`
+                    )
+                    .join("");
+
+            return `
+                <tr>
+                    <td>${escapeHtml(rowLabel)}</td>
+                    ${cells}
+                    <td>${core.formatNumber(result.rowTotals.get(rowLabel) || 0)}</td>
+                </tr>
+            `;
+        }).join("");
+
+    const totalCells =
+        result.colLabels
+            .map(
+                colLabel =>
+                    `<td>${core.formatNumber(result.colTotals.get(colLabel) || 0)}</td>`
+            )
+            .join("");
+
+    output.innerHTML = `
+        <div class="table-wrap">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>${escapeHtml(result.rowAxis)} ＼ ${escapeHtml(result.colAxis)}</th>
+                        ${headers}
+                        <th>行合計</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                    <tr class="total-row">
+                        <td>列合計</td>
+                        ${totalCells}
+                        <td>${core.formatNumber(result.applicationCount)}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function initializeCustomAnalysis(data, viewerResult, core) {
+    const context = viewerResult.context;
+    const options = viewerResult.customAxisOptions;
+    const defaults = data.customAnalysis || {};
+
+    const rowAxis =
+        options.includes(defaults.rowAxis)
+            ? defaults.rowAxis
+            : "対応状況";
+
+    const colAxis =
+        options.includes(defaults.colAxis)
+            ? defaults.colAxis
+            : "応募媒体";
+
+    const rowSelect = document.getElementById("customRowAxis");
+    const colSelect = document.getElementById("customColAxis");
+    const ageMode = document.getElementById("customAgeMode");
+    const ageMin = document.getElementById("customAgeMin");
+    const ageMax = document.getElementById("customAgeMax");
+
+    setCustomSelectOptions(rowSelect, options, rowAxis);
+    setCustomSelectOptions(colSelect, options, colAxis);
+
+    ageMode.value =
+        defaults.ageFilterMode === "指定範囲"
+            ? "指定範囲"
+            : "全年齢";
+
+    ageMin.value =
+        defaults.ageMin === "" ||
+        defaults.ageMin === null ||
+        defaults.ageMin === undefined
+            ? ""
+            : defaults.ageMin;
+
+    ageMax.value =
+        defaults.ageMax === "" ||
+        defaults.ageMax === null ||
+        defaults.ageMax === undefined
+            ? ""
+            : defaults.ageMax;
+
+    const run = () => {
+        const custom = core.aggregateCustom(
+            context,
+            {
+                rowAxis: rowSelect.value,
+                colAxis: colSelect.value,
+                ageFilterMode: ageMode.value,
+                ageMin: ageMin.value,
+                ageMax: ageMax.value
+            }
+        );
+
+        renderCustomResult(custom, core);
+    };
+
+    document.getElementById("customRunBtn").onclick = run;
+    run();
+}
+
 function renderReport(data) {
     const core = window.ValidApplicationAnalysisCore;
     const result = core.aggregateViewer(data);
@@ -658,6 +1243,27 @@ function renderReport(data) {
         result.basicCrossTables
             .map(table => renderCrossTable(table, core))
             .join("");
+
+    renderNoteDetail(
+        result.noteDetail,
+        core
+    );
+
+    renderIndeedTagDetail(
+        result.indeedTagDetail,
+        core
+    );
+
+    renderTopImageDetail(
+        result.topImageDetail,
+        core
+    );
+
+    initializeCustomAnalysis(
+        data,
+        result,
+        core
+    );
 
     document.getElementById("loadingView")
         .classList.add("hidden");

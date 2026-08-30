@@ -256,6 +256,63 @@
         return { map, hasAnyDisplayName };
     }
 
+
+function noteFirstLine(value) {
+    const text = s(value);
+    if (!text) return "（求人備考なし）";
+    const first = s(text.split(/<br\s*\/?>/i)[0]);
+    return first || "（求人備考なし）";
+}
+
+function splitCodes(value) {
+    const text = s(value);
+    if (!text) return [];
+    return text
+        .split("::")
+        .map(item => s(item))
+        .filter(Boolean);
+}
+
+function displayLimit(value, fallback = 50) {
+    const text = s(value);
+
+    if (!text) return fallback;
+    if (text === "すべて" || text.toLowerCase() === "all") {
+        return Infinity;
+    }
+
+    const num = Number(text);
+    return Number.isFinite(num) && num > 0
+        ? Math.floor(num)
+        : fallback;
+}
+
+function buildTagMaster(dataset) {
+    const rows = datasetObjects(dataset);
+    const map = {};
+
+    rows.forEach(row => {
+        const code = s(row["コード"]);
+        if (!code) return;
+        map[code] = s(row["表示名"]) || code;
+    });
+
+    return map;
+}
+
+function buildImageMap(dataset) {
+    const rows = datasetObjects(dataset);
+    const map = {};
+
+    rows.forEach(row => {
+        const fileName = s(row["画像ファイル名"]);
+        const url = s(row["画像URL"]);
+        if (fileName && url) map[fileName] = url;
+    });
+
+    return map;
+}
+
     function buildViewerContext(viewerResponse) {
         const settings = viewerResponse?.settings || {};
         const ageMode =
@@ -279,6 +336,18 @@
             annualSalary: positiveInt(settings["年収下限幅"], 500000)
         };
 
+        const indeedTagLimit =
+            displayLimit(
+                settings["Indeedタグ表示件数"],
+                50
+            );
+
+        const topImageLimit =
+            displayLimit(
+                settings["TOP画像表示件数"],
+                50
+            );
+
         const apps = datasetObjects(
             viewerResponse?.datasets?.applicationData || {}
         );
@@ -289,6 +358,14 @@
 
         const keywordMaster = readKeywordMaster(
             viewerResponse?.datasets?.keywordMaster || {}
+        );
+
+        const tagMaster = buildTagMaster(
+            viewerResponse?.datasets?.indeedTagMaster || {}
+        );
+
+        const imageMap = buildImageMap(
+            viewerResponse?.datasets?.imageMaster || {}
         );
 
         const jobMap = new Map();
@@ -336,6 +413,11 @@
                 keywordMaster
             );
 
+            const noteFirst =
+                job
+                    ? noteFirstLine(job["求人備考"])
+                    : "";
+
             const record = {
                 app,
                 job,
@@ -348,7 +430,8 @@
                 enterpriseId,
                 enterpriseLabel,
                 kwSingle: keywordMatch.single,
-                kwFull: keywordMatch.full
+                kwFull: keywordMatch.full,
+                noteFirst
             };
 
             recordsAll.push(record);
@@ -363,6 +446,10 @@
             targetAgeMax,
             widths,
             keywordMaster,
+            tagMaster,
+            imageMap,
+            indeedTagLimit,
+            topImageLimit,
             enterpriseInfo,
             recordsAll,
             recordsMatched
@@ -885,6 +972,724 @@
             }));
     }
 
+
+function aggregateNoteDetail(context) {
+    const records = context.recordsMatched;
+
+    const visible = records.some(
+        record =>
+            record.noteFirst &&
+            record.noteFirst !== "（求人備考なし）"
+    );
+
+    if (!visible) {
+        return {
+            visible: false,
+            aggregate: null
+        };
+    }
+
+    return {
+        visible: true,
+        aggregate: aggregateCross(
+            records,
+            record =>
+                category(
+                    record.noteFirst ||
+                    "（求人備考なし）"
+                ),
+            context,
+            { sort: "countDesc" }
+        )
+    };
+}
+
+function emptyAgeCounts(ageCols) {
+    return Object.fromEntries(
+        ageCols.map(age => [age, 0])
+    );
+}
+
+function accumulateMultiGroup(group, record) {
+    group.total += 1;
+    group.ageCounts[record.ageBucket] =
+        (group.ageCounts[record.ageBucket] || 0) + 1;
+
+    if (record.isTarget) group.target += 1;
+    if (record.jobRefId) group.jobRefs.add(record.jobRefId);
+}
+
+function aggregateIndeedTags(context) {
+    const ageCols = context.ageCols;
+    const groups = new Map();
+    let realTagExists = false;
+
+    function ensureGroup(code, label, special = "") {
+        const key = code || special;
+
+        if (!groups.has(key)) {
+            groups.set(key, {
+                key,
+                code,
+                label,
+                special,
+                ageCounts: emptyAgeCounts(ageCols),
+                total: 0,
+                target: 0,
+                jobRefs: new Set()
+            });
+        }
+
+        return groups.get(key);
+    }
+
+    context.recordsMatched.forEach(record => {
+        const codes = splitCodes(
+            record.job?.["Indeed求人タグコード"]
+        );
+
+        if (!codes.length) {
+            const noTag = ensureGroup(
+                "",
+                "（タグなし）",
+                "__NO_TAG__"
+            );
+
+            accumulateMultiGroup(noTag, record);
+            return;
+        }
+
+        realTagExists = true;
+        const seen = new Set();
+
+        codes.forEach(code => {
+            if (seen.has(code)) return;
+            seen.add(code);
+
+            const label =
+                context.tagMaster[code] ||
+                `${code}（名称未登録）`;
+
+            const group = ensureGroup(
+                code,
+                label,
+                ""
+            );
+
+            accumulateMultiGroup(group, record);
+        });
+    });
+
+    if (!realTagExists) {
+        return {
+            visible: false,
+            rows: [],
+            baseTotal: context.recordsMatched.length,
+            baseTarget: 0
+        };
+    }
+
+    let noTagGroup = null;
+    let realGroups = [];
+
+    groups.forEach(group => {
+        if (group.special === "__NO_TAG__") {
+            noTagGroup = group;
+        } else {
+            realGroups.push(group);
+        }
+    });
+
+    realGroups.sort((a, b) => {
+        if (a.target !== b.target) return b.target - a.target;
+        if (a.total !== b.total) return b.total - a.total;
+        return a.label.localeCompare(b.label, "ja");
+    });
+
+    if (Number.isFinite(context.indeedTagLimit)) {
+        realGroups = realGroups.slice(0, context.indeedTagLimit);
+    }
+
+    if (noTagGroup) realGroups.push(noTagGroup);
+
+    const baseTotal = context.recordsMatched.length;
+    const baseTarget = context.recordsMatched.reduce(
+        (sum, record) => sum + (record.isTarget ? 1 : 0),
+        0
+    );
+
+    return {
+        visible: true,
+        ageCols,
+        baseTotal,
+        baseTarget,
+        displayLimit: context.indeedTagLimit,
+        rows: realGroups.map(group => ({
+            label: group.label,
+            ageCounts: group.ageCounts,
+            total: group.total,
+            coverRate: baseTotal ? group.total / baseTotal : 0,
+            target: group.target,
+            targetRate: group.total ? group.target / group.total : 0,
+            targetCoverRate: baseTarget ? group.target / baseTarget : 0,
+            jobCount: group.jobRefs.size,
+            appsPerJob:
+                group.jobRefs.size
+                    ? group.total / group.jobRefs.size
+                    : 0
+        }))
+    };
+}
+
+function aggregateTopImages(context) {
+    const ageCols = context.ageCols;
+    const groups = new Map();
+    let hasAnyImage = false;
+
+    context.recordsMatched.forEach(record => {
+        const fileName = s(
+            record.job?.["メイン画像ファイル名"]
+        );
+
+        if (fileName) hasAnyImage = true;
+
+        const key = fileName || "__NO_IMAGE__";
+
+        if (!groups.has(key)) {
+            groups.set(key, {
+                key,
+                label: fileName || "（TOP画像なし）",
+                fileName,
+                noImage: !fileName,
+                ageCounts: emptyAgeCounts(ageCols),
+                total: 0,
+                target: 0,
+                jobRefs: new Set()
+            });
+        }
+
+        const group = groups.get(key);
+        group.total += 1;
+        group.ageCounts[record.ageBucket] =
+            (group.ageCounts[record.ageBucket] || 0) + 1;
+
+        if (record.isTarget) group.target += 1;
+        if (record.jobRefId) group.jobRefs.add(record.jobRefId);
+    });
+
+    if (!hasAnyImage) {
+        return {
+            visible: false,
+            rows: [],
+            baseTotal: context.recordsMatched.length,
+            baseTarget: 0
+        };
+    }
+
+    let noImageGroup = null;
+    let realGroups = [];
+
+    groups.forEach(group => {
+        if (group.noImage) {
+            noImageGroup = group;
+        } else {
+            realGroups.push(group);
+        }
+    });
+
+    realGroups.sort((a, b) => {
+        if (a.target !== b.target) return b.target - a.target;
+        if (a.total !== b.total) return b.total - a.total;
+        return a.label.localeCompare(b.label, "ja");
+    });
+
+    if (Number.isFinite(context.topImageLimit)) {
+        realGroups = realGroups.slice(0, context.topImageLimit);
+    }
+
+    if (noImageGroup) realGroups.push(noImageGroup);
+
+    const baseTotal = context.recordsMatched.length;
+    const baseTarget = context.recordsMatched.reduce(
+        (sum, record) => sum + (record.isTarget ? 1 : 0),
+        0
+    );
+
+    return {
+        visible: true,
+        ageCols,
+        baseTotal,
+        baseTarget,
+        displayLimit: context.topImageLimit,
+        rows: realGroups.map(group => ({
+            label: group.label,
+            fileName: group.fileName,
+            imageUrl:
+                group.fileName
+                    ? (context.imageMap[group.fileName] || "")
+                    : "",
+            ageCounts: group.ageCounts,
+            total: group.total,
+            share: baseTotal ? group.total / baseTotal : 0,
+            target: group.target,
+            targetRate: group.total ? group.target / group.total : 0,
+            targetShare: baseTarget ? group.target / baseTarget : 0,
+            jobCount: group.jobRefs.size,
+            appsPerJob:
+                group.jobRefs.size
+                    ? group.total / group.jobRefs.size
+                    : 0
+        }))
+    };
+}
+
+function customAxisOptions(context) {
+    const options = [
+        "対応状況",
+        "応募年月",
+        "応募媒体",
+        "氏名文字種区分",
+        "居住都道府県",
+        "企業ID",
+        "職種",
+        "雇用形態",
+        "求人勤務地名称",
+        "勤務地都道府県",
+        "勤務地・居住都道府県一致",
+        "募集背景",
+        "月内応募日",
+        "応募曜日",
+        "応募時間帯",
+        "給与区分",
+        "時給下限",
+        "日給下限",
+        "月給下限",
+        "年収下限",
+        "求人原稿文字数",
+        "メイン画像有無",
+        "求人画像枚数",
+        "TOP画像ファイル名",
+        "求人動画有無",
+        "Indeed求人タグ数",
+        "求人備考1行目"
+    ];
+
+    if (context.keywordMaster.length > 0) {
+        options.splice(
+            11,
+            0,
+            "仕事名KW",
+            "仕事名フルKW"
+        );
+    }
+
+    return options;
+}
+
+function customAxisRequiresJob(axis) {
+    const appOnly = new Set([
+        "対応状況",
+        "応募年月",
+        "応募媒体",
+        "氏名文字種区分",
+        "居住都道府県",
+        "企業ID",
+        "月内応募日",
+        "応募曜日",
+        "応募時間帯"
+    ]);
+
+    return !appOnly.has(axis);
+}
+
+function fixedSortValue(label, order) {
+    const index = order.indexOf(label);
+    return index >= 0 ? index : 99999;
+}
+
+function customSalaryValue(record, salaryType, width) {
+    if (s(record.job?.["給与区分"]) !== salaryType) {
+        return null;
+    }
+
+    const value = n(record.job?.["給与金額MIN"]);
+
+    if (value === null || value <= 0) {
+        return category("（給与下限なし）", 999999999999);
+    }
+
+    const start = Math.floor(value / width) * width;
+    const end = start + width - 1;
+
+    return category(
+        `${numberLabel(start)}-${numberLabel(end)}円`,
+        start
+    );
+}
+
+function customAxisValue(record, axis, context) {
+    const w = context.widths;
+
+    if (axis === "対応状況") {
+        return category(record.app["対応状況"] || "（未設定）");
+    }
+
+    if (axis === "応募年月") {
+        const label = s(record.app["応募年月"]) || "（不明）";
+        return category(
+            label,
+            monthSortValue(label, record.appDate)
+        );
+    }
+
+    if (axis === "応募媒体") {
+        return category(record.app["応募媒体"] || "（未設定）");
+    }
+
+    if (axis === "氏名文字種区分") {
+        const label = record.app["氏名文字種区分"] || "（不明）";
+        return category(
+            label,
+            fixedSortValue(
+                label,
+                ["漢字を含む", "漢字を含まない", "（不明）"]
+            )
+        );
+    }
+
+    if (axis === "居住都道府県") {
+        return category(record.app["居住都道府県"] || "（不明）");
+    }
+
+    if (axis === "企業ID") {
+        return category(
+            record.enterpriseLabel ||
+            record.enterpriseId ||
+            "（企業IDなし）"
+        );
+    }
+
+    if (axis === "月内応募日") {
+        const value = n(record.app["応募日"]);
+
+        if (value === null) return category("（不明）", 9999);
+
+        const start =
+            Math.floor((value - 1) / w.monthDay) *
+            w.monthDay +
+            1;
+
+        const end = Math.min(start + w.monthDay - 1, 31);
+
+        return category(`${start}-${end}日`, start);
+    }
+
+    if (axis === "応募曜日") {
+        const label = record.app["応募曜日"] || "（不明）";
+
+        return category(
+            label,
+            fixedSortValue(
+                label,
+                ["月", "火", "水", "木", "金", "土", "日", "（不明）"]
+            )
+        );
+    }
+
+    if (axis === "応募時間帯") {
+        const value = n(record.app["応募時間帯"]);
+
+        if (value === null) return category("（不明）", 9999);
+
+        const start = Math.floor(value / w.hour) * w.hour;
+        const end = Math.min(start + w.hour - 1, 23);
+
+        return category(`${start}-${end}時`, start);
+    }
+
+    if (!record.matched) return null;
+
+    if (axis === "職種") {
+        return category(record.job?.["職種"] || "（未設定）");
+    }
+
+    if (axis === "雇用形態") {
+        return category(record.job?.["雇用形態"] || "（未設定）");
+    }
+
+    if (axis === "求人勤務地名称") {
+        return category(record.job?.["求人勤務地名称"] || "（未設定）");
+    }
+
+    if (axis === "勤務地都道府県") {
+        return category(record.job?.["勤務地都道府県"] || "（未設定）");
+    }
+
+    if (axis === "勤務地・居住都道府県一致") {
+        const label = yesNoMatchLabel(
+            record.app["勤務地・居住都道府県一致"]
+        );
+
+        return category(
+            label,
+            fixedSortValue(
+                label,
+                ["一致", "不一致", "（不明）"]
+            )
+        );
+    }
+
+    if (axis === "仕事名KW") {
+        return category(record.kwSingle || "（該当なし）");
+    }
+
+    if (axis === "仕事名フルKW") {
+        return category(record.kwFull || "（該当なし）");
+    }
+
+    if (axis === "募集背景") {
+        return category(record.job?.["募集背景"] || "（未設定）");
+    }
+
+    if (axis === "給与区分") {
+        return category(record.job?.["給与区分"] || "（未設定）");
+    }
+
+    if (axis === "時給下限") {
+        return customSalaryValue(record, "時給", w.hourlySalary);
+    }
+
+    if (axis === "日給下限") {
+        return customSalaryValue(record, "日給", w.dailySalary);
+    }
+
+    if (axis === "月給下限") {
+        return customSalaryValue(record, "月給", w.monthlySalary);
+    }
+
+    if (axis === "年収下限") {
+        return customSalaryValue(record, "年収", w.annualSalary);
+    }
+
+    if (axis === "求人原稿文字数") {
+        const value = n(record.job?.["求人原稿文字数"]);
+
+        if (value === null) {
+            return category("（文字数なし）", 999999999);
+        }
+
+        const start = Math.floor(value / w.text) * w.text;
+        const end = start + w.text - 1;
+
+        return category(
+            `${numberLabel(start)}-${numberLabel(end)}文字`,
+            start
+        );
+    }
+
+    if (axis === "メイン画像有無") {
+        const label =
+            s(record.job?.["メイン画像ファイル名"])
+                ? "あり"
+                : "なし";
+
+        return category(
+            label,
+            fixedSortValue(label, ["あり", "なし"])
+        );
+    }
+
+    if (axis === "求人画像枚数") {
+        let value = n(record.job?.["求人画像枚数"]);
+        if (value === null) value = 0;
+        return category(`${value}枚`, value);
+    }
+
+    if (axis === "TOP画像ファイル名") {
+        return category(
+            s(record.job?.["メイン画像ファイル名"]) ||
+            "（TOP画像なし）"
+        );
+    }
+
+    if (axis === "求人動画有無") {
+        const label =
+            truthy(record.job?.["求人動画あり"])
+                ? "あり"
+                : "なし";
+
+        return category(
+            label,
+            fixedSortValue(label, ["あり", "なし"])
+        );
+    }
+
+    if (axis === "Indeed求人タグ数") {
+        let value = n(record.job?.["Indeed求人タグ数"]);
+        if (value === null) value = 0;
+
+        const start =
+            Math.floor(value / w.tagCount) *
+            w.tagCount;
+
+        const end = start + w.tagCount - 1;
+
+        return category(`${start}-${end}個`, start);
+    }
+
+    if (axis === "求人備考1行目") {
+        return category(
+            record.noteFirst || "（求人備考なし）"
+        );
+    }
+
+    return null;
+}
+
+function sortCustomLabels(labels, metaMap, totalMap) {
+    labels.sort((a, b) => {
+        const am = metaMap.get(a) || {};
+        const bm = metaMap.get(b) || {};
+
+        const av = am.sortValue;
+        const bv = bm.sortValue;
+
+        const aHas =
+            av !== null &&
+            av !== undefined &&
+            Number.isFinite(Number(av));
+
+        const bHas =
+            bv !== null &&
+            bv !== undefined &&
+            Number.isFinite(Number(bv));
+
+        if (aHas && bHas && Number(av) !== Number(bv)) {
+            return Number(av) - Number(bv);
+        }
+
+        if (aHas !== bHas) return aHas ? -1 : 1;
+
+        const at = totalMap.get(a) || 0;
+        const bt = totalMap.get(b) || 0;
+
+        if (at !== bt) return bt - at;
+        return a.localeCompare(b, "ja");
+    });
+}
+
+function aggregateCustom(context, options = {}) {
+    const rowAxis = s(options.rowAxis);
+    const colAxis = s(options.colAxis);
+
+    const ageFilterMode =
+        s(options.ageFilterMode) === "指定範囲"
+            ? "指定範囲"
+            : "全年齢";
+
+    const ageMin = n(options.ageMin);
+    const ageMax = n(options.ageMax);
+
+    if (!rowAxis || !colAxis) {
+        return { ok: false, reason: "AXIS_REQUIRED" };
+    }
+
+    if (rowAxis === colAxis) {
+        return { ok: false, reason: "SAME_AXIS" };
+    }
+
+    const requiresJob =
+        customAxisRequiresJob(rowAxis) ||
+        customAxisRequiresJob(colAxis);
+
+    let base =
+        requiresJob
+            ? context.recordsMatched
+            : context.recordsAll;
+
+    if (ageFilterMode === "指定範囲") {
+        base = base.filter(record => {
+            if (record.age === null) return false;
+            if (ageMin !== null && record.age < ageMin) return false;
+            if (ageMax !== null && record.age > ageMax) return false;
+            return true;
+        });
+    }
+
+    const rowMeta = new Map();
+    const colMeta = new Map();
+    const matrix = new Map();
+    const rowTotals = new Map();
+    const colTotals = new Map();
+    let usedRecords = 0;
+
+    base.forEach(record => {
+        const rowCat = customAxisValue(record, rowAxis, context);
+        const colCat = customAxisValue(record, colAxis, context);
+
+        if (!rowCat || !colCat) return;
+
+        const rLabel = rowCat.label;
+        const cLabel = colCat.label;
+
+        if (!rowMeta.has(rLabel)) rowMeta.set(rLabel, rowCat);
+        if (!colMeta.has(cLabel)) colMeta.set(cLabel, colCat);
+        if (!matrix.has(rLabel)) matrix.set(rLabel, new Map());
+
+        const rowMap = matrix.get(rLabel);
+
+        rowMap.set(
+            cLabel,
+            (rowMap.get(cLabel) || 0) + 1
+        );
+
+        rowTotals.set(
+            rLabel,
+            (rowTotals.get(rLabel) || 0) + 1
+        );
+
+        colTotals.set(
+            cLabel,
+            (colTotals.get(cLabel) || 0) + 1
+        );
+
+        usedRecords += 1;
+    });
+
+    const rowLabels = Array.from(rowMeta.keys());
+    const colLabels = Array.from(colMeta.keys());
+
+    sortCustomLabels(rowLabels, rowMeta, rowTotals);
+    sortCustomLabels(colLabels, colMeta, colTotals);
+
+    if (colLabels.length > 100) {
+        return {
+            ok: false,
+            reason: "TOO_MANY_COLUMNS",
+            columnCount: colLabels.length
+        };
+    }
+
+    if (!usedRecords) {
+        return { ok: false, reason: "NO_DATA" };
+    }
+
+    return {
+        ok: true,
+        rowAxis,
+        colAxis,
+        ageFilterMode,
+        ageMin,
+        ageMax,
+        rowLabels,
+        colLabels,
+        matrix,
+        rowTotals,
+        colTotals,
+        applicationCount: usedRecords
+    };
+}
+
     function aggregateViewer(viewerResponse) {
         const context = buildViewerContext(viewerResponse);
         const records = context.recordsAll;
@@ -929,7 +1734,11 @@
             ),
             ageMode: context.ageMode,
             ageRows,
-            basicCrossTables: buildBasicCrossTables(context)
+            basicCrossTables: buildBasicCrossTables(context),
+            noteDetail: aggregateNoteDetail(context),
+            indeedTagDetail: aggregateIndeedTags(context),
+            topImageDetail: aggregateTopImages(context),
+            customAxisOptions: customAxisOptions(context)
         };
     }
 
@@ -959,6 +1768,13 @@
         buildViewerContext,
         aggregateCross,
         buildBasicCrossTables,
+        aggregateNoteDetail,
+        aggregateIndeedTags,
+        aggregateTopImages,
+        customAxisOptions,
+        customAxisRequiresJob,
+        customAxisValue,
+        aggregateCustom,
         aggregateViewer,
         aggregateViewerMvp: aggregateViewer,
         formatNumber,
