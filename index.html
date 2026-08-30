@@ -164,7 +164,7 @@
 
                         <div class="grid grid-cols-2 gap-2">
                             <a
-                                href="https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng"
+                                href="https://drive.google.com/drive/folders/1pczMllofAeCpPsMKmaU0fDDUUXgkXy8f"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-xs font-bold hover:bg-gray-50 transition"
@@ -392,6 +392,60 @@
                                 </button>
                             </div>
 
+<div id="newReportIdentityBlock" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4">
+    <div class="text-xs font-extrabold text-indigo-900">
+        新規レポートの名前
+    </div>
+    <div class="mt-1 text-[11px] leading-relaxed text-indigo-700">
+        企業名を入れておくと、個社一覧・企業ID表示名・Viewer共有先確認が最初から分かりやすくなります。
+    </div>
+
+    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+            <label for="newCompanyDisplayNameInput" class="block text-[11px] font-bold text-gray-600 mb-1">
+                企業表示名 <span class="font-normal text-gray-400">（任意）</span>
+            </label>
+            <input
+                id="newCompanyDisplayNameInput"
+                type="text"
+                maxlength="100"
+                autocomplete="off"
+                placeholder="例：株式会社○○"
+                class="w-full border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            >
+            <div class="mt-1 text-[10px] text-gray-500">
+                新規作成時、33_企業IDマスタの全企業IDへ同じ表示名を初期設定します。
+            </div>
+        </div>
+
+        <div>
+            <label for="newReportNameInput" class="block text-[11px] font-bold text-gray-600 mb-1">
+                レポート名 <span class="font-normal text-gray-400">（任意）</span>
+            </label>
+            <div class="flex gap-2">
+                <input
+                    id="newReportNameInput"
+                    type="text"
+                    maxlength="120"
+                    autocomplete="off"
+                    placeholder="例：株式会社○○_有効応募分析"
+                    class="flex-1 min-w-0 border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                >
+                <button
+                    id="suggestNewReportNameBtn"
+                    type="button"
+                    class="shrink-0 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-[10px] font-extrabold text-indigo-700 hover:bg-indigo-50"
+                >
+                    企業名から作成
+                </button>
+            </div>
+            <div class="mt-1 text-[10px] text-gray-500">
+                空欄の場合、企業表示名があれば「企業名_有効応募分析」、両方空欄なら日時名で作成します。
+            </div>
+        </div>
+    </div>
+</div>
+
                             <div class="rounded-xl border border-green-200 bg-white/90 p-4">
                                 <div class="flex items-center justify-between gap-3">
                                     <div>
@@ -401,7 +455,7 @@
                                         </div>
                                     </div>
                                     <a
-                                        href="https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng"
+                                        href="https://drive.google.com/drive/folders/1pczMllofAeCpPsMKmaU0fDDUUXgkXy8f"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         class="shrink-0 text-xs font-bold text-green-700 hover:text-green-900 underline"
@@ -480,7 +534,7 @@
             </div>
         </div>
         <a
-            href="https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng"
+            href="https://drive.google.com/drive/folders/1pczMllofAeCpPsMKmaU0fDDUUXgkXy8f"
             target="_blank"
             rel="noopener noreferrer"
             class="text-xs font-bold text-indigo-700 hover:text-indigo-900 underline shrink-0"
@@ -488,6 +542,237 @@
             出力フォルダを開く
         </a>
     </div>
+
+<div class="mt-4 rounded-xl border border-cyan-200 bg-cyan-50/50 p-4">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+        <div>
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="text-xs font-extrabold text-cyan-950">
+                    システム診断
+                </div>
+                <div
+                    id="managedDiagnosticsOverallBadge"
+                    class="rounded-full border border-cyan-200 bg-white px-2.5 py-1 text-[10px] font-extrabold text-cyan-800"
+                >
+                    未実行
+                </div>
+            </div>
+            <div class="mt-1 text-[11px] leading-relaxed text-cyan-800">
+                API・認証・出力フォルダ・Viewer・個社Sheet構成・監査ログ・画像Worker・Pages公開状態を一括確認します。データ変更は行いません。
+            </div>
+            <div id="managedDiagnosticsTimestamp" class="mt-1 text-[10px] text-cyan-600"></div>
+        </div>
+
+        <button
+            id="runManagedDiagnosticsBtn"
+            type="button"
+            class="shrink-0 rounded-lg border border-cyan-300 bg-white px-4 py-2.5 text-xs font-extrabold text-cyan-800 transition hover:bg-cyan-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            診断を実行
+        </button>
+    </div>
+
+    <div id="managedDiagnosticsSummary" class="hidden mt-3 rounded-lg border p-3 text-xs"></div>
+
+    <div
+        id="managedDiagnosticsChecks"
+        class="hidden mt-3 grid grid-cols-1 xl:grid-cols-2 gap-2"
+    ></div>
+</div>
+
+<div class="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div>
+            <div class="text-xs font-extrabold text-slate-900">
+                個社レポート一覧
+            </div>
+            <div class="mt-1 text-[11px] leading-relaxed text-slate-500">
+                正式な出力先フォルダ内のTHIN_V1レポートを一覧表示します。
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2 lg:w-[520px]">
+        <input
+            id="managedReportListSearch"
+            type="search"
+            placeholder="レポート名・企業表示名で検索"
+            class="flex-1 border border-slate-300 rounded-lg p-2 text-xs focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+        >
+        <button
+            id="refreshManagedReportListBtn"
+            type="button"
+            class="shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-extrabold text-indigo-800 transition hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            一覧を更新
+        </button>
+    </div>
+</div>
+
+<div class="mt-3 grid grid-cols-2 lg:grid-cols-5 gap-2">
+    <div>
+        <label for="managedReportViewerFilter" class="block mb-1 text-[10px] font-bold text-slate-500">
+            Viewer状態
+        </label>
+        <select id="managedReportViewerFilter" class="w-full rounded-lg border border-slate-300 bg-white p-2 text-[11px]">
+            <option value="ALL">すべて</option>
+            <option value="ENABLED">閲覧可</option>
+            <option value="DISABLED">停止中</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="managedReportShareFilter" class="block mb-1 text-[10px] font-bold text-slate-500">
+            共有状態
+        </label>
+        <select id="managedReportShareFilter" class="w-full rounded-lg border border-slate-300 bg-white p-2 text-[11px]">
+            <option value="ALL">すべて</option>
+            <option value="SHARED">共有済み</option>
+            <option value="UNSHARED">未共有</option>
+            <option value="RESHARE_REQUIRED">要再共有</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="managedReportSort" class="block mb-1 text-[10px] font-bold text-slate-500">
+            並び順
+        </label>
+        <select id="managedReportSort" class="w-full rounded-lg border border-slate-300 bg-white p-2 text-[11px]">
+            <option value="UPDATED_DESC">最終更新が新しい順</option>
+            <option value="UPDATED_ASC">最終更新が古い順</option>
+            <option value="ENTERPRISE_ASC">企業名順</option>
+            <option value="REPORT_ASC">レポート名順</option>
+            <option value="VIEWER_DESC">Viewer最終アクセス順</option>
+            <option value="APPLICATION_DESC">応募件数が多い順</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="managedReportFreshnessFilter" class="block mb-1 text-[10px] font-bold text-slate-500">
+            更新状態
+        </label>
+        <select id="managedReportFreshnessFilter" class="w-full rounded-lg border border-slate-300 bg-white p-2 text-[11px]">
+            <option value="ALL">すべて</option>
+            <option value="STALE">更新要確認のみ</option>
+            <option value="FRESH">更新が新しいもの</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="managedReportStaleDays" class="block mb-1 text-[10px] font-bold text-slate-500">
+            更新要確認の基準
+        </label>
+        <select id="managedReportStaleDays" class="w-full rounded-lg border border-slate-300 bg-white p-2 text-[11px]">
+            <option value="30" selected>30日以上</option>
+            <option value="60">60日以上</option>
+            <option value="90">90日以上</option>
+        </select>
+    </div>
+</div>
+
+<div class="mt-4 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-white p-4">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+        <div>
+            <div class="text-xs font-extrabold text-indigo-950">
+                全体運用サマリー
+            </div>
+            <div id="managedOpsDashboardHint" class="mt-1 text-[10px] leading-relaxed text-indigo-700">
+                一覧を読み込むと、今日確認したい状態を集計します。
+            </div>
+        </div>
+        <button
+            id="managedOpsDashboardClearBtn"
+            type="button"
+            class="hidden shrink-0 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-[10px] font-extrabold text-indigo-700 hover:bg-indigo-50"
+        >
+            絞り込みを解除
+        </button>
+    </div>
+
+    <div class="mt-3 grid grid-cols-2 md:grid-cols-5 gap-2">
+        <button
+            type="button"
+            data-dashboard-filter="TOTAL"
+            class="managed-ops-card rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+        >
+            <div class="text-[10px] font-bold text-slate-500">総レポート数</div>
+            <div id="managedOpsTotal" class="mt-1 text-xl font-black text-slate-900">-</div>
+            <div class="mt-1 text-[9px] text-slate-400">全件を表示</div>
+        </button>
+
+        <button
+            type="button"
+            data-dashboard-filter="UNSHARED"
+            class="managed-ops-card rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+        >
+            <div class="text-[10px] font-bold text-slate-500">未共有</div>
+            <div id="managedOpsUnshared" class="mt-1 text-xl font-black text-slate-700">-</div>
+            <div class="mt-1 text-[9px] text-slate-400">企業案内前</div>
+        </button>
+
+        <button
+            type="button"
+            data-dashboard-filter="RESHARE_REQUIRED"
+            class="managed-ops-card rounded-xl border border-red-200 bg-red-50/70 p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+        >
+            <div class="text-[10px] font-bold text-red-600">要再共有</div>
+            <div id="managedOpsReshare" class="mt-1 text-xl font-black text-red-700">-</div>
+            <div class="mt-1 text-[9px] text-red-500">URL・名称変更後</div>
+        </button>
+
+        <button
+            type="button"
+            data-dashboard-filter="VIEWER_STOPPED"
+            class="managed-ops-card rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+        >
+            <div class="text-[10px] font-bold text-amber-700">Viewer停止</div>
+            <div id="managedOpsStopped" class="mt-1 text-xl font-black text-amber-800">-</div>
+            <div class="mt-1 text-[9px] text-amber-600">現在閲覧不可</div>
+        </button>
+
+        <button
+            type="button"
+            data-dashboard-filter="STALE"
+            class="managed-ops-card rounded-xl border border-orange-200 bg-orange-50/70 p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+        >
+            <div id="managedOpsStaleLabel" class="text-[10px] font-bold text-orange-700">30日以上未更新</div>
+            <div id="managedOpsStale" class="mt-1 text-xl font-black text-orange-800">-</div>
+            <div class="mt-1 text-[9px] text-orange-600">更新要確認</div>
+        </button>
+    </div>
+</div>
+
+    <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <div id="managedReportListCount" class="text-[11px] text-slate-500">
+            未読み込み
+        </div>
+        <div id="managedReportListVersion" class="text-[10px] font-mono text-slate-400"></div>
+    </div>
+
+    <div id="managedReportListMessage" class="hidden mt-3 rounded-lg border p-3 text-xs"></div>
+
+    <div class="mt-3 overflow-x-auto max-h-[520px] border border-slate-200 rounded-lg">
+        <table class="w-full min-w-[1050px] text-[11px] border-collapse">
+            <thead class="sticky top-0 bg-slate-100 text-slate-600 z-10">
+                <tr>
+                    <th class="text-left p-2 border-b">レポート / 企業</th>
+                    <th class="text-left p-2 border-b">最終データ更新</th>
+                    <th class="text-left p-2 border-b">Viewer</th>
+                    <th class="text-left p-2 border-b">共有</th>
+                    <th class="text-left p-2 border-b">最終アクセス</th>
+                    <th class="text-right p-2 border-b">応募</th>
+                    <th class="text-left p-2 border-b">操作</th>
+                </tr>
+            </thead>
+            <tbody id="managedReportListBody">
+                <tr>
+                    <td colspan="7" class="p-5 text-center text-slate-400">
+                        「一覧を更新」でレポートを読み込みます。
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <div class="mt-4 flex flex-col sm:flex-row gap-2">
         <input
@@ -517,9 +802,157 @@
                 <a id="managedOpenSheetLink" href="#" target="_blank" rel="noopener noreferrer" class="font-bold text-indigo-700 underline">Google Sheetsを開く</a>
                 <a id="managedOpenViewerLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden font-bold text-blue-700 underline">企業向けViewerを開く</a>
             </div>
-        </div>
 
-        <div class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+            <div class="mt-4 border-t border-amber-200 pt-3">
+                <label for="managedReportNameInput" class="block text-[11px] font-extrabold text-amber-900 mb-1">
+                    レポート名
+                </label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input
+                        id="managedReportNameInput"
+                        type="text"
+                        maxlength="120"
+                        class="flex-1 min-w-0 border border-amber-300 rounded-lg bg-white p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-100"
+                    >
+                    <button
+                        id="managedSuggestReportNameBtn"
+                        type="button"
+                        class="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-2 text-[10px] font-extrabold text-amber-800 hover:bg-amber-50"
+                    >
+                        企業表示名から候補
+                    </button>
+                </div>
+                <div class="mt-1 text-[10px] leading-relaxed text-amber-800/80">
+                    Google Sheetのファイル名・Viewerの共有先確認名・個社一覧名として使います。名称変更だけではViewer tokenは変わりません。
+                </div>
+            </div>
+</div>
+
+<div class="rounded-xl border border-blue-200 bg-blue-50/60 p-4">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+        <div>
+            <div class="text-xs font-extrabold text-blue-950">
+                企業向けViewer URL管理
+            </div>
+            <div class="mt-1 text-[11px] leading-relaxed text-blue-800">
+                企業へ送る閲覧URLのコピー・一時停止・再開・再発行を、この個社レポート単位で管理します。
+            </div>
+        </div>
+        <div class="shrink-0 flex flex-wrap items-center gap-2">
+            <div
+                id="managedViewerStatusBadge"
+                class="rounded-full border border-blue-200 bg-white px-3 py-1 text-[10px] font-extrabold text-blue-800"
+            >
+                読み込み中
+            </div>
+            <div
+                id="managedViewerShareBadge"
+                class="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-extrabold text-slate-700"
+            >
+                共有状態読込中
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+        <button
+            id="managedCopyViewerLinkBtn"
+            type="button"
+            class="rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-xs font-extrabold text-blue-800 transition hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+        >
+            企業共有用リンクをコピー
+        </button>
+
+        <button
+            id="managedToggleViewerBtn"
+            type="button"
+            class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs font-extrabold text-amber-800 transition hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+        >
+            Viewerを停止
+        </button>
+
+        <button
+            id="managedRotateViewerBtn"
+            type="button"
+            class="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-extrabold text-red-800 transition hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+        >
+            Viewer URLを再発行
+        </button>
+
+        <button
+            id="managedToggleSharedBtn"
+            type="button"
+            class="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5 text-xs font-extrabold text-violet-800 transition hover:bg-violet-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+        >
+            共有済みに記録
+        </button>
+    </div>
+
+    <div id="managedViewerShareNote" class="mt-2 text-[10px] leading-relaxed text-violet-700"></div>
+
+    <div class="mt-2 text-[10px] leading-relaxed text-gray-500">
+        URL再発行を行うと、以前の企業向けViewer URLは直ちに無効になります。誤送付やURL流出時に使用してください。
+    </div>
+</div>
+
+<div class="rounded-xl border border-slate-200 bg-white p-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+            <div class="text-xs font-extrabold text-slate-900">
+                運用サマリー
+            </div>
+            <div class="mt-1 text-[11px] text-slate-500">
+                データ更新・Viewer利用状況・実行バージョンを確認できます。
+            </div>
+        </div>
+        <div id="managedVersionSummary" class="text-[10px] font-mono text-slate-500"></div>
+    </div>
+
+    <div class="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-2">
+        <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+            <div class="text-[10px] font-bold text-slate-500">最終データ更新</div>
+            <div id="managedLastDataUpdate" class="mt-1 text-xs font-extrabold text-slate-900">-</div>
+        </div>
+        <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+            <div class="text-[10px] font-bold text-slate-500">Viewer最終アクセス</div>
+            <div id="managedLastViewerAccess" class="mt-1 text-xs font-extrabold text-slate-900">-</div>
+        </div>
+        <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+            <div class="text-[10px] font-bold text-slate-500">分析対象応募</div>
+            <div id="managedApplicationCount" class="mt-1 text-xs font-extrabold text-slate-900">-</div>
+        </div>
+        <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+            <div class="text-[10px] font-bold text-slate-500">求人分析行</div>
+            <div id="managedJobCount" class="mt-1 text-xs font-extrabold text-slate-900">-</div>
+        </div>
+    </div>
+
+    <details class="mt-3 rounded-lg border border-slate-200 bg-slate-50">
+        <summary class="cursor-pointer px-3 py-2.5 text-xs font-extrabold text-slate-700">
+            直近の操作履歴
+        </summary>
+        <div class="border-t border-slate-200 overflow-x-auto max-h-[320px]">
+            <table class="w-full min-w-[850px] text-[10px] border-collapse">
+                <thead class="sticky top-0 bg-slate-100 text-slate-600">
+                    <tr>
+                        <th class="text-left p-2 border-b">日時</th>
+                        <th class="text-left p-2 border-b">種別</th>
+                        <th class="text-left p-2 border-b">結果</th>
+                        <th class="text-left p-2 border-b">経路</th>
+                        <th class="text-left p-2 border-b">詳細</th>
+                    </tr>
+                </thead>
+                <tbody id="managedAuditLogBody"></tbody>
+            </table>
+        </div>
+    </details>
+</div>
+
+<div class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
         <div>
             <div class="text-xs font-extrabold text-emerald-950">
@@ -564,7 +997,27 @@
             <summary class="cursor-pointer px-4 py-3 font-extrabold text-sm text-gray-800">
                 33_企業IDマスタ
             </summary>
-            <div class="border-t border-gray-100 p-4 overflow-x-auto">
+            <div class="border-t border-gray-100 p-4">
+                <div class="mb-3 flex flex-col sm:flex-row gap-2">
+                    <input
+                        id="managedEnterpriseBulkNameInput"
+                        type="text"
+                        maxlength="100"
+                        placeholder="同じ企業表示名を全企業IDへ一括入力"
+                        class="flex-1 min-w-0 border border-gray-300 rounded-lg p-2 text-xs"
+                    >
+                    <button
+                        id="managedApplyEnterpriseBulkNameBtn"
+                        type="button"
+                        class="shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[10px] font-extrabold text-indigo-700 hover:bg-indigo-100"
+                    >
+                        全企業IDへ反映
+                    </button>
+                </div>
+                <div class="mb-3 text-[10px] leading-relaxed text-gray-500">
+                    同一企業に複数の企業IDがある場合に使います。反映後も各行を個別修正できます。
+                </div>
+                <div class="overflow-x-auto">
                 <table class="w-full min-w-[620px] text-xs border-collapse">
                     <thead>
                         <tr class="bg-gray-50 text-gray-600">
@@ -574,6 +1027,7 @@
                     </thead>
                     <tbody id="managedEnterpriseBody"></tbody>
                 </table>
+                </div>
             </div>
         </details>
 
@@ -648,7 +1102,7 @@
 
         <div class="rounded-xl border border-indigo-200 bg-white p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div class="text-[11px] text-gray-500 leading-relaxed">
-                保存すると個社設定・マスタを更新します。移行期間中は旧Google Sheets版の分析表も中央APIで再集計して同期します。
+                保存するとレポート名・個社設定・マスタを更新します。分析結果は企業向けViewerへ次回読み込みから反映されます。
             </div>
             <button
                 id="saveManagedReportBtn"
@@ -977,7 +1431,7 @@
 
         // Google Sheets API連携状態
         const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbwS_-ptDyhVk5yrNtRB8I32WUJen-xdjKUtp-Rf7Dbdhhg4V9Vw3gneD9K7ErZgP_Y/exec";
-        const SHEETS_OUTPUT_FOLDER_URL = "https://drive.google.com/drive/folders/1p5q8E9C-l1PCO7eCcRgdwrfTMTlpyFng";
+        const SHEETS_OUTPUT_FOLDER_URL = "https://drive.google.com/drive/folders/1pczMllofAeCpPsMKmaU0fDDUUXgkXy8f";
         const SHEETS_ACCESS_KEY_DOC_URL = "https://docs.google.com/document/d/1c5u4HqoHo5LQRPrXjbWWUJI00BPjTv0Ekk2VA6KtYIQ/edit";
         const SHEETS_ACCESS_KEY_STORAGE_KEY = "validApplicationAnalysis.sheetsAccessKey";
         const SHEETS_LAST_RESULT_STORAGE_KEY = "validApplicationAnalysis.thinV1.lastSheetResult";
@@ -1634,7 +2088,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-thin-only-v1";
+const SHEETS_APP_VERSION = "2026.08.30-system-diagnostics-v1";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2075,6 +2529,18 @@ function buildSheetsPayloadV3(accessKey = "", requestId = "", targetSpreadsheetU
         manageBaseUrl: new URL("index.html", window.location.href).href.split("#")[0].split("?")[0],
         operationMode: normalizeString(targetSpreadsheetUrl) ? "update" : "create",
         targetSpreadsheetUrl: normalizeString(targetSpreadsheetUrl),
+        companyDisplayName:
+            normalizeString(targetSpreadsheetUrl)
+                ? ""
+                : normalizeString(
+                    document.getElementById("newCompanyDisplayNameInput")?.value
+                ),
+        reportName:
+            normalizeString(targetSpreadsheetUrl)
+                ? ""
+                : normalizeString(
+                    document.getElementById("newReportNameInput")?.value
+                ),
         initialSettings: {
             analysisStartDate: dateRange.min,
             analysisEndDate: dateRange.max,
@@ -2285,9 +2751,17 @@ function updateSheetsOperationUi() {
     const title = document.getElementById("sheetsCreateTitle");
     const btn = document.getElementById("createGoogleSheetBtn");
     const note = document.getElementById("existingSheetModeNote");
+    const identityBlock =
+        document.getElementById("newReportIdentityBlock");
+
     if (!input || !title || !btn || !note) return;
 
     const raw = normalizeString(input.value);
+
+    identityBlock?.classList.toggle(
+        "hidden",
+        !!raw
+    );
     const id = extractSpreadsheetIdFromUrl(raw);
 
     if (!raw) {
@@ -2454,10 +2928,22 @@ function mapSheetsApiError(data) {
             "再試行中のrequestIdと更新先Sheetが一致しません。いったん再集計するか、更新先URLを確認してください。",
         MANAGE_LOAD_ERROR:
             "既存レポートの設定読み込み中にエラーが発生しました。",
+        MANAGE_LIST_ERROR:
+            "個社レポート一覧の取得中にエラーが発生しました。",
+        MANAGE_DIAGNOSTICS_ERROR:
+            "システム診断の実行中にエラーが発生しました。",
         MANAGE_SAVE_ERROR:
             "設定・マスタの保存中にエラーが発生しました。",
+        REPORT_NAME_REQUIRED:
+            "レポート名を入力してください。",
         IMAGE_RETRY_ERROR:
             "画像URLの再取得中にエラーが発生しました。",
+        VIEWER_ACCESS_UPDATE_ERROR:
+            "企業向けViewerの閲覧状態変更中にエラーが発生しました。",
+        VIEWER_ROTATE_ERROR:
+            "企業向けViewer URLの再発行中にエラーが発生しました。",
+        VIEWER_SHARE_STATUS_ERROR:
+            "企業向けViewerの共有状態更新中にエラーが発生しました。",
         INTERNAL_ERROR:
             "API GAS内部でエラーが発生しました。同じボタンから再試行できます。"
     };
@@ -2521,7 +3007,7 @@ function sheetsStageLabel(data) {
         normalizeString(data?.status);
 
     const labels = {
-        CREATED: "テンプレート複製完了",
+        CREATED: "新規Spreadsheet作成完了",
         OPENED: "スプレッドシートを開きました",
         DATA_WRITTEN: "データ書き込み完了",
         REPORT_DONE: "レポート生成完了",
@@ -3009,6 +3495,21 @@ function setWorkflowMode(
         );
     }
 
+    if (
+        nextMode === "manage" &&
+        getStoredSheetsAccessKey() &&
+        !managedReportListLoaded &&
+        !managedReportListBusy
+    ) {
+        setTimeout(
+            () =>
+                loadManagedReportList({
+                    silent: true
+                }),
+            0
+        );
+    }
+
     if (scroll) {
         document
             .getElementById(
@@ -3078,6 +3579,13 @@ let managedReportState = null;
 let managedImageRows = [];
 let managedReportBusy = false;
 
+let managedReportList = [];
+let managedReportListLoaded = false;
+let managedReportListBusy = false;
+
+let managedDiagnosticsBusy = false;
+let managedDiagnosticsResult = null;
+
 const MANAGED_CUSTOM_AXES_BASE = [
     "対応状況",
     "応募年月",
@@ -3117,6 +3625,1468 @@ function manageEscapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
+function diagnosticStatusUi(status) {
+    const value =
+        normalizeString(
+            status
+        ).toUpperCase();
+
+    if (value === "ERROR") {
+        return {
+            label: "ERROR",
+            badge:
+                "border-red-300 bg-red-100 text-red-800",
+            card:
+                "border-red-200 bg-red-50/60",
+            icon: "×"
+        };
+    }
+
+    if (value === "WARNING") {
+        return {
+            label: "WARNING",
+            badge:
+                "border-amber-300 bg-amber-100 text-amber-800",
+            card:
+                "border-amber-200 bg-amber-50/60",
+            icon: "!"
+        };
+    }
+
+    return {
+        label: "OK",
+        badge:
+            "border-emerald-300 bg-emerald-100 text-emerald-800",
+        card:
+            "border-emerald-200 bg-emerald-50/50",
+        icon: "✓"
+    };
+}
+
+function setManagedDiagnosticsBusy(flag) {
+    managedDiagnosticsBusy =
+        !!flag;
+
+    const button =
+        document.getElementById(
+            "runManagedDiagnosticsBtn"
+        );
+
+    if (button) {
+        button.disabled =
+            managedDiagnosticsBusy;
+
+        button.textContent =
+            managedDiagnosticsBusy
+                ? "診断中..."
+                : "診断を実行";
+    }
+}
+
+function renderManagedDiagnostics(
+    diagnostics
+) {
+    managedDiagnosticsResult =
+        diagnostics || null;
+
+    const badge =
+        document.getElementById(
+            "managedDiagnosticsOverallBadge"
+        );
+
+    const timestamp =
+        document.getElementById(
+            "managedDiagnosticsTimestamp"
+        );
+
+    const summary =
+        document.getElementById(
+            "managedDiagnosticsSummary"
+        );
+
+    const checksBox =
+        document.getElementById(
+            "managedDiagnosticsChecks"
+        );
+
+    if (
+        !diagnostics ||
+        !Array.isArray(
+            diagnostics.checks
+        )
+    ) {
+        if (badge) {
+            badge.textContent =
+                "取得失敗";
+
+            badge.className =
+                "rounded-full border border-red-300 bg-red-100 px-2.5 py-1 text-[10px] font-extrabold text-red-800";
+        }
+
+        return;
+    }
+
+    const overallUi =
+        diagnosticStatusUi(
+            diagnostics
+                .overallStatus
+        );
+
+    if (badge) {
+        badge.textContent =
+            overallUi.label;
+
+        badge.className =
+            `rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${overallUi.badge}`;
+    }
+
+    if (timestamp) {
+        timestamp.textContent =
+            `最終診断：${formatManagedDateTime(diagnostics.generatedAt)} / API ${diagnostics.apiVersion || "-"}`;
+    }
+
+    const counts =
+        diagnostics.counts || {};
+
+    if (summary) {
+        const overall =
+            normalizeString(
+                diagnostics
+                    .overallStatus
+            ).toUpperCase();
+
+        summary.className =
+            overall === "ERROR"
+                ? "mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800"
+                : overall === "WARNING"
+                    ? "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800"
+                    : "mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800";
+
+        summary.textContent =
+            `OK ${Number(counts.ok || 0)}件 / WARNING ${Number(counts.warning || 0)}件 / ERROR ${Number(counts.error || 0)}件 / 個社レポート ${Number(diagnostics.reportCount || 0).toLocaleString()}件`;
+
+        summary.classList.remove(
+            "hidden"
+        );
+    }
+
+    if (!checksBox) return;
+
+    checksBox.innerHTML =
+        diagnostics.checks
+            .map(check => {
+                const ui =
+                    diagnosticStatusUi(
+                        check.status
+                    );
+
+                const recommendation =
+                    normalizeString(
+                        check.recommendation
+                    );
+
+                return `
+                    <div class="rounded-lg border p-3 ${ui.card}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="text-[9px] font-bold uppercase tracking-wide text-slate-400">
+                                    ${manageEscapeHtml(check.group || "")}
+                                </div>
+                                <div class="mt-0.5 text-xs font-extrabold text-slate-900">
+                                    ${manageEscapeHtml(check.label || "")}
+                                </div>
+                            </div>
+
+                            <span class="shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-extrabold ${ui.badge}">
+                                ${ui.icon} ${ui.label}
+                            </span>
+                        </div>
+
+                        <div class="mt-2 text-[10px] leading-relaxed text-slate-600 break-words">
+                            ${manageEscapeHtml(check.detail || "")}
+                        </div>
+
+                        ${
+                            recommendation
+                                ? `
+                                    <div class="mt-2 rounded-md bg-white/70 px-2 py-1.5 text-[9px] leading-relaxed text-slate-500">
+                                        対応：${manageEscapeHtml(recommendation)}
+                                    </div>
+                                `
+                                : ""
+                        }
+                    </div>
+                `;
+            })
+            .join("");
+
+    checksBox.classList.remove(
+        "hidden"
+    );
+}
+
+async function runManagedDiagnostics() {
+    if (managedDiagnosticsBusy) {
+        return;
+    }
+
+    if (!getStoredSheetsAccessKey()) {
+        setManagedReportStatus(
+            "システム診断には社内用アクセスキーが必要です。右上の詳細設定から保存してください。",
+            "warning"
+        );
+
+        openSheetsSettingsAndFocus();
+        return;
+    }
+
+    setManagedDiagnosticsBusy(
+        true
+    );
+
+    const summary =
+        document.getElementById(
+            "managedDiagnosticsSummary"
+        );
+
+    if (summary) {
+        summary.className =
+            "mt-3 rounded-lg border border-cyan-200 bg-white p-3 text-xs text-cyan-800";
+
+        summary.textContent =
+            "中央APIと関連サービスを確認しています...";
+
+        summary.classList.remove(
+            "hidden"
+        );
+    }
+
+    try {
+        const data =
+            await postManagementAction(
+                "manageDiagnostics"
+            );
+
+        renderManagedDiagnostics(
+            data.diagnostics
+        );
+
+    } catch (error) {
+        const badge =
+            document.getElementById(
+                "managedDiagnosticsOverallBadge"
+            );
+
+        if (badge) {
+            badge.textContent =
+                "ERROR";
+
+            badge.className =
+                "rounded-full border border-red-300 bg-red-100 px-2.5 py-1 text-[10px] font-extrabold text-red-800";
+        }
+
+        if (summary) {
+            summary.className =
+                "mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800";
+
+            summary.textContent =
+                error?.name ===
+                    "AbortError"
+                    ? "システム診断がタイムアウトしました。もう一度お試しください。"
+                    : (
+                        error?.message ||
+                        String(error)
+                    );
+
+            summary.classList.remove(
+                "hidden"
+            );
+        }
+
+    } finally {
+        setManagedDiagnosticsBusy(
+            false
+        );
+    }
+}
+
+function setManagedReportListMessage(
+    message,
+    type = "info"
+) {
+    const el =
+        document.getElementById(
+            "managedReportListMessage"
+        );
+
+    if (!el) return;
+
+    const classes = {
+        info:
+            "mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700",
+        warning:
+            "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800",
+        error:
+            "mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700",
+        success:
+            "mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-700"
+    };
+
+    el.className =
+        classes[type] ||
+        classes.info;
+
+    el.textContent =
+        message;
+
+    el.classList.remove(
+        "hidden"
+    );
+}
+
+function setManagedReportListBusy(flag) {
+    managedReportListBusy =
+        !!flag;
+
+    const btn =
+        document.getElementById(
+            "refreshManagedReportListBtn"
+        );
+
+    if (btn) {
+        btn.disabled =
+            managedReportListBusy;
+
+        btn.textContent =
+            managedReportListBusy
+                ? "読み込み中..."
+                : "一覧を更新";
+    }
+}
+
+function reportUpdateAgeDays(report) {
+    const raw =
+        normalizeString(
+            report?.lastDataUpdateAt
+        );
+
+    if (!raw) {
+        return null;
+    }
+
+    const time =
+        Date.parse(raw);
+
+    if (!Number.isFinite(time)) {
+        return null;
+    }
+
+    return Math.max(
+        0,
+        Math.floor(
+            (
+                Date.now() -
+                time
+            ) /
+            86400000
+        )
+    );
+}
+
+function reportShareStatus(report) {
+    const status =
+        normalizeString(
+            report?.viewerShareStatus
+        ).toUpperCase();
+
+    if (
+        status === "SHARED" ||
+        status === "RESHARE_REQUIRED"
+    ) {
+        return status;
+    }
+
+    return "UNSHARED";
+}
+
+function managedReportStaleThreshold() {
+    return Math.max(
+        1,
+        Number(
+            document.getElementById(
+                "managedReportStaleDays"
+            )?.value ||
+            30
+        )
+    );
+}
+
+function isManagedReportStale(
+    report
+) {
+    const ageDays =
+        reportUpdateAgeDays(
+            report
+        );
+
+    return (
+        ageDays === null ||
+        ageDays >=
+            managedReportStaleThreshold()
+    );
+}
+
+function managedOpsSummary() {
+    const list =
+        Array.isArray(
+            managedReportList
+        )
+            ? managedReportList
+            : [];
+
+    return {
+        total:
+            list.length,
+        unshared:
+            list.filter(
+                report =>
+                    reportShareStatus(
+                        report
+                    ) ===
+                    "UNSHARED"
+            ).length,
+        reshareRequired:
+            list.filter(
+                report =>
+                    reportShareStatus(
+                        report
+                    ) ===
+                    "RESHARE_REQUIRED"
+            ).length,
+        viewerStopped:
+            list.filter(
+                report =>
+                    report.viewerEnabled ===
+                    false
+            ).length,
+        stale:
+            list.filter(
+                isManagedReportStale
+            ).length
+    };
+}
+
+function renderManagedOpsDashboard() {
+    const summary =
+        managedOpsSummary();
+
+    const threshold =
+        managedReportStaleThreshold();
+
+    const setText = (
+        id,
+        value
+    ) => {
+        const el =
+            document.getElementById(
+                id
+            );
+
+        if (el) {
+            el.textContent =
+                value;
+        }
+    };
+
+    setText(
+        "managedOpsTotal",
+        summary.total.toLocaleString()
+    );
+
+    setText(
+        "managedOpsUnshared",
+        summary.unshared.toLocaleString()
+    );
+
+    setText(
+        "managedOpsReshare",
+        summary.reshareRequired.toLocaleString()
+    );
+
+    setText(
+        "managedOpsStopped",
+        summary.viewerStopped.toLocaleString()
+    );
+
+    setText(
+        "managedOpsStale",
+        summary.stale.toLocaleString()
+    );
+
+    setText(
+        "managedOpsStaleLabel",
+        `${threshold}日以上未更新`
+    );
+
+    const attention =
+        summary.reshareRequired +
+        summary.viewerStopped +
+        summary.stale;
+
+    const hint =
+        document.getElementById(
+            "managedOpsDashboardHint"
+        );
+
+    if (hint) {
+        if (!managedReportListLoaded) {
+            hint.textContent =
+                "一覧を読み込むと、今日確認したい状態を集計します。";
+
+        } else if (attention > 0) {
+            hint.textContent =
+                `要確認：要再共有 ${summary.reshareRequired}件 / Viewer停止 ${summary.viewerStopped}件 / ${threshold}日以上未更新 ${summary.stale}件。状態は重複する場合があります。`;
+
+        } else {
+            hint.textContent =
+                "要再共有・Viewer停止・更新要確認のレポートはありません。";
+        }
+    }
+
+    const clearBtn =
+        document.getElementById(
+            "managedOpsDashboardClearBtn"
+        );
+
+    const viewerFilter =
+        document.getElementById(
+            "managedReportViewerFilter"
+        )?.value ||
+        "ALL";
+
+    const shareFilter =
+        document.getElementById(
+            "managedReportShareFilter"
+        )?.value ||
+        "ALL";
+
+    const freshnessFilter =
+        document.getElementById(
+            "managedReportFreshnessFilter"
+        )?.value ||
+        "ALL";
+
+    const query =
+        normalizeString(
+            document.getElementById(
+                "managedReportListSearch"
+            )?.value
+        );
+
+    const filtered =
+        viewerFilter !== "ALL" ||
+        shareFilter !== "ALL" ||
+        freshnessFilter !== "ALL" ||
+        !!query;
+
+    clearBtn?.classList.toggle(
+        "hidden",
+        !filtered
+    );
+
+    document
+        .querySelectorAll(
+            "[data-dashboard-filter]"
+        )
+        .forEach(card => {
+            const type =
+                card.dataset.dashboardFilter;
+
+            let active = false;
+
+            if (type === "UNSHARED") {
+                active =
+                    shareFilter ===
+                    "UNSHARED";
+
+            } else if (
+                type ===
+                "RESHARE_REQUIRED"
+            ) {
+                active =
+                    shareFilter ===
+                    "RESHARE_REQUIRED";
+
+            } else if (
+                type ===
+                "VIEWER_STOPPED"
+            ) {
+                active =
+                    viewerFilter ===
+                    "DISABLED";
+
+            } else if (
+                type ===
+                "STALE"
+            ) {
+                active =
+                    freshnessFilter ===
+                    "STALE";
+
+            } else if (
+                type ===
+                "TOTAL"
+            ) {
+                active =
+                    !filtered;
+            }
+
+            card.classList.toggle(
+                "ring-2",
+                active
+            );
+
+            card.classList.toggle(
+                "ring-indigo-400",
+                active
+            );
+        });
+}
+
+function clearManagedReportListFilters() {
+    const search =
+        document.getElementById(
+            "managedReportListSearch"
+        );
+
+    const viewer =
+        document.getElementById(
+            "managedReportViewerFilter"
+        );
+
+    const share =
+        document.getElementById(
+            "managedReportShareFilter"
+        );
+
+    const freshness =
+        document.getElementById(
+            "managedReportFreshnessFilter"
+        );
+
+    if (search) {
+        search.value = "";
+    }
+
+    if (viewer) {
+        viewer.value =
+            "ALL";
+    }
+
+    if (share) {
+        share.value =
+            "ALL";
+    }
+
+    if (freshness) {
+        freshness.value =
+            "ALL";
+    }
+}
+
+function applyManagedOpsDashboardFilter(
+    filterType
+) {
+    clearManagedReportListFilters();
+
+    const viewer =
+        document.getElementById(
+            "managedReportViewerFilter"
+        );
+
+    const share =
+        document.getElementById(
+            "managedReportShareFilter"
+        );
+
+    const freshness =
+        document.getElementById(
+            "managedReportFreshnessFilter"
+        );
+
+    if (
+        filterType ===
+        "UNSHARED"
+    ) {
+        if (share) {
+            share.value =
+                "UNSHARED";
+        }
+
+    } else if (
+        filterType ===
+        "RESHARE_REQUIRED"
+    ) {
+        if (share) {
+            share.value =
+                "RESHARE_REQUIRED";
+        }
+
+    } else if (
+        filterType ===
+        "VIEWER_STOPPED"
+    ) {
+        if (viewer) {
+            viewer.value =
+                "DISABLED";
+        }
+
+    } else if (
+        filterType ===
+        "STALE"
+    ) {
+        if (freshness) {
+            freshness.value =
+                "STALE";
+        }
+    }
+
+    renderManagedReportList();
+
+    document
+        .getElementById(
+            "managedReportListBody"
+        )
+        ?.closest(
+            ".overflow-x-auto"
+        )
+        ?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+}
+
+function filteredManagedReportList() {
+    const query =
+        normalizeString(
+            document.getElementById(
+                "managedReportListSearch"
+            )?.value
+        ).toLowerCase();
+
+    const viewerFilter =
+        document.getElementById(
+            "managedReportViewerFilter"
+        )?.value ||
+        "ALL";
+
+    const shareFilter =
+        document.getElementById(
+            "managedReportShareFilter"
+        )?.value ||
+        "ALL";
+
+    const freshnessFilter =
+        document.getElementById(
+            "managedReportFreshnessFilter"
+        )?.value ||
+        "ALL";
+
+    const sortMode =
+        document.getElementById(
+            "managedReportSort"
+        )?.value ||
+        "UPDATED_DESC";
+
+    const rows =
+        managedReportList.filter(
+            report => {
+                if (query) {
+                    const hit =
+                        [
+                            report.fileName,
+                            report.enterpriseLabel
+                        ].some(value =>
+                            normalizeString(value)
+                                .toLowerCase()
+                                .includes(query)
+                        );
+
+                    if (!hit) {
+                        return false;
+                    }
+                }
+
+                const enabled =
+                    report.viewerEnabled !== false;
+
+                if (
+                    viewerFilter === "ENABLED" &&
+                    !enabled
+                ) {
+                    return false;
+                }
+
+                if (
+                    viewerFilter === "DISABLED" &&
+                    enabled
+                ) {
+                    return false;
+                }
+
+                if (
+                    shareFilter !== "ALL" &&
+                    reportShareStatus(report) !==
+                        shareFilter
+                ) {
+                    return false;
+                }
+
+                const stale =
+                    isManagedReportStale(
+                        report
+                    );
+
+                if (
+                    freshnessFilter ===
+                        "STALE" &&
+                    !stale
+                ) {
+                    return false;
+                }
+
+                if (
+                    freshnessFilter ===
+                        "FRESH" &&
+                    stale
+                ) {
+                    return false;
+                }
+
+                return true;
+            }
+        );
+
+    const dateValue = value =>
+        Date.parse(
+            normalizeString(
+                value
+            )
+        ) || 0;
+
+    const textValue = value =>
+        normalizeString(
+            value
+        );
+
+    rows.sort(
+        (a, b) => {
+            if (
+                sortMode ===
+                "UPDATED_ASC"
+            ) {
+                return (
+                    dateValue(
+                        a.lastDataUpdateAt
+                    ) -
+                    dateValue(
+                        b.lastDataUpdateAt
+                    )
+                );
+            }
+
+            if (
+                sortMode ===
+                "ENTERPRISE_ASC"
+            ) {
+                return textValue(
+                    a.enterpriseLabel ||
+                    a.fileName
+                ).localeCompare(
+                    textValue(
+                        b.enterpriseLabel ||
+                        b.fileName
+                    ),
+                    "ja"
+                );
+            }
+
+            if (
+                sortMode ===
+                "REPORT_ASC"
+            ) {
+                return textValue(
+                    a.fileName
+                ).localeCompare(
+                    textValue(
+                        b.fileName
+                    ),
+                    "ja"
+                );
+            }
+
+            if (
+                sortMode ===
+                "VIEWER_DESC"
+            ) {
+                return (
+                    dateValue(
+                        b.lastViewerAccessAt
+                    ) -
+                    dateValue(
+                        a.lastViewerAccessAt
+                    )
+                );
+            }
+
+            if (
+                sortMode ===
+                "APPLICATION_DESC"
+            ) {
+                return (
+                    Number(
+                        b.applicationCount || 0
+                    ) -
+                    Number(
+                        a.applicationCount || 0
+                    )
+                );
+            }
+
+            return (
+                dateValue(
+                    b.lastDataUpdateAt
+                ) -
+                dateValue(
+                    a.lastDataUpdateAt
+                )
+            );
+        }
+    );
+
+    return rows;
+}
+
+function renderManagedReportList() {
+    const body =
+        document.getElementById(
+            "managedReportListBody"
+        );
+
+    const count =
+        document.getElementById(
+            "managedReportListCount"
+        );
+
+    if (!body) return;
+
+    const rows =
+        filteredManagedReportList();
+
+    if (count) {
+        count.textContent =
+            managedReportListLoaded
+                ? `${rows.length.toLocaleString()} / ${managedReportList.length.toLocaleString()}件`
+                : "未読み込み";
+    }
+
+    renderManagedOpsDashboard();
+
+    if (!rows.length) {
+        body.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-5 text-center text-slate-400">
+                    ${
+                        managedReportListLoaded
+                            ? "該当するレポートはありません。"
+                            : "「一覧を更新」でレポートを読み込みます。"
+                    }
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const staleDays =
+        Math.max(
+            0,
+            Number(
+                document.getElementById(
+                    "managedReportStaleDays"
+                )?.value || 0
+            )
+        );
+
+    body.innerHTML =
+        rows.map(report => {
+            const enabled =
+                report.viewerEnabled !== false;
+
+            const shareStatus =
+                reportShareStatus(
+                    report
+                );
+
+            const viewerBadge =
+                enabled
+                    ? `<span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-extrabold text-emerald-700">閲覧可</span>`
+                    : `<span class="inline-flex rounded-full bg-amber-100 px-2 py-1 text-[10px] font-extrabold text-amber-800">停止中</span>`;
+
+            const shareBadge =
+                shareStatus === "SHARED"
+                    ? `<span class="inline-flex rounded-full bg-violet-100 px-2 py-1 text-[10px] font-extrabold text-violet-700">共有済み</span>`
+                    : shareStatus === "RESHARE_REQUIRED"
+                        ? `<span class="inline-flex rounded-full bg-red-100 px-2 py-1 text-[10px] font-extrabold text-red-700">要再共有</span>`
+                        : `<span class="inline-flex rounded-full bg-slate-100 px-2 py-1 text-[10px] font-extrabold text-slate-600">未共有</span>`;
+
+            const enterprise =
+                normalizeString(
+                    report.enterpriseLabel
+                );
+
+            const updateText =
+                formatManagedDateTime(
+                    report.lastDataUpdateAt
+                );
+
+            const updateMode =
+                normalizeString(
+                    report.lastDataUpdateMode
+                );
+
+            const ageDays =
+                reportUpdateAgeDays(
+                    report
+                );
+
+            const stale =
+                isManagedReportStale(
+                    report
+                );
+
+            const rowClass =
+                stale
+                    ? "bg-amber-50 hover:bg-amber-100"
+                    : "bg-white hover:bg-slate-50";
+
+            const staleBadge =
+                stale
+                    ? `<div class="mt-1"><span class="inline-flex rounded-full bg-amber-200 px-2 py-0.5 text-[9px] font-extrabold text-amber-900">${
+                        ageDays === null
+                            ? "更新日時なし"
+                            : `${ageDays.toLocaleString()}日経過`
+                    }</span></div>`
+                    : "";
+
+            const shareActionLabel =
+                shareStatus === "SHARED"
+                    ? "共有解除"
+                    : shareStatus === "RESHARE_REQUIRED"
+                        ? "再共有済み"
+                        : "共有済み";
+
+            return `
+                <tr class="${rowClass}">
+                    <td class="p-2 border-b border-slate-100 align-top">
+                        <div class="font-extrabold text-slate-900">
+                            ${manageEscapeHtml(report.fileName || "有効応募分析")}
+                        </div>
+                        ${
+                            enterprise
+                                ? `<div class="mt-1 text-[10px] text-slate-500">${manageEscapeHtml(enterprise)}</div>`
+                                : ""
+                        }
+                    </td>
+
+                    <td class="p-2 border-b border-slate-100 align-top whitespace-nowrap">
+                        <div>${manageEscapeHtml(updateText)}</div>
+                        ${
+                            updateMode
+                                ? `<div class="mt-1 text-[10px] text-slate-400">${manageEscapeHtml(updateMode)}</div>`
+                                : ""
+                        }
+                        ${staleBadge}
+                    </td>
+
+                    <td class="p-2 border-b border-slate-100 align-top">
+                        ${viewerBadge}
+                    </td>
+
+                    <td class="p-2 border-b border-slate-100 align-top">
+                        ${shareBadge}
+                        ${
+                            report.viewerSharedAt
+                                ? `<div class="mt-1 text-[9px] text-slate-400">${manageEscapeHtml(formatManagedDateTime(report.viewerSharedAt))}</div>`
+                                : ""
+                        }
+                    </td>
+
+                    <td class="p-2 border-b border-slate-100 align-top whitespace-nowrap">
+                        ${manageEscapeHtml(formatManagedDateTime(report.lastViewerAccessAt))}
+                    </td>
+
+                    <td class="p-2 border-b border-slate-100 align-top text-right font-mono">
+                        ${Number(report.applicationCount || 0).toLocaleString()}
+                    </td>
+
+                    <td class="p-2 border-b border-slate-100 align-top">
+                        <div class="flex flex-wrap gap-1.5">
+                            <button
+                                type="button"
+                                data-report-action="manage"
+                                data-report-id="${manageEscapeHtml(report.spreadsheetId)}"
+                                class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-[10px] font-extrabold text-white hover:bg-indigo-700"
+                            >
+                                管理
+                            </button>
+
+                            <button
+                                type="button"
+                                data-report-action="viewer"
+                                data-report-id="${manageEscapeHtml(report.spreadsheetId)}"
+                                class="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-[10px] font-extrabold text-blue-700 hover:bg-blue-100 disabled:opacity-40"
+                                ${report.viewerUrl && enabled ? "" : "disabled"}
+                            >
+                                Viewer
+                            </button>
+
+                            <button
+                                type="button"
+                                data-report-action="share"
+                                data-report-id="${manageEscapeHtml(report.spreadsheetId)}"
+                                data-report-share-status="${shareStatus}"
+                                class="rounded-md border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[10px] font-extrabold text-violet-700 hover:bg-violet-100"
+                            >
+                                ${shareActionLabel}
+                            </button>
+
+                            <button
+                                type="button"
+                                data-report-action="update"
+                                data-report-id="${manageEscapeHtml(report.spreadsheetId)}"
+                                class="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[10px] font-extrabold text-emerald-700 hover:bg-emerald-100"
+                            >
+                                CSV更新
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+    body.querySelectorAll(
+        "button[data-report-action]"
+    ).forEach(button => {
+        button.addEventListener(
+            "click",
+            async () => {
+                const id =
+                    normalizeString(
+                        button.dataset.reportId
+                    );
+
+                const action =
+                    normalizeString(
+                        button.dataset.reportAction
+                    );
+
+                const report =
+                    managedReportList.find(
+                        item =>
+                            normalizeString(
+                                item.spreadsheetId
+                            ) === id
+                    );
+
+                if (!report) return;
+
+                if (action === "viewer") {
+                    if (report.viewerUrl) {
+                        window.open(
+                            report.viewerUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                        );
+                    }
+
+                    return;
+                }
+
+                if (action === "share") {
+                    await setReportListShareStatus(
+                        report
+                    );
+
+                    return;
+                }
+
+                const target =
+                    report.spreadsheetUrl ||
+                    `https://docs.google.com/spreadsheets/d/${id}/edit`;
+
+                const manageInput =
+                    document.getElementById(
+                        "manageSheetUrlInput"
+                    );
+
+                const updateInput =
+                    document.getElementById(
+                        "existingSheetUrlInput"
+                    );
+
+                if (manageInput) {
+                    manageInput.value =
+                        target;
+                }
+
+                if (updateInput) {
+                    updateInput.value =
+                        target;
+
+                    updateSheetsOperationUi();
+                }
+
+                try {
+                    localStorage.setItem(
+                        SHEETS_UPDATE_TARGET_STORAGE_KEY,
+                        target
+                    );
+                } catch (_) {}
+
+                if (action === "update") {
+                    setWorkflowMode(
+                        "etl",
+                        {
+                            scroll: true
+                        }
+                    );
+
+                    return;
+                }
+
+                loadManagedReportState()
+                    .then(() => {
+                        document
+                            .getElementById(
+                                "managedReportEditor"
+                            )
+                            ?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start"
+                            });
+                    });
+            }
+        );
+    });
+}
+
+async function setReportListShareStatus(
+    report
+) {
+    if (!report) return;
+
+    const current =
+        reportShareStatus(
+            report
+        );
+
+    const next =
+        current === "SHARED"
+            ? "UNSHARED"
+            : "SHARED";
+
+    const label =
+        report.fileName ||
+        "有効応募分析";
+
+    const message =
+        next === "SHARED"
+            ? current === "RESHARE_REQUIRED"
+                ? `「${label}」を再共有済みとして記録します。実際に新しいViewer URLを企業へ再案内済みであることを確認してください。`
+                : `「${label}」を共有済みとして記録します。実際に企業へViewer URLを案内済みであることを確認してください。`
+            : `「${label}」を未共有へ戻します。`;
+
+    if (
+        !window.confirm(
+            message
+        )
+    ) {
+        return;
+    }
+
+    setManagedReportListBusy(
+        true
+    );
+
+    try {
+        const data =
+            await postManagementAction(
+                "manageViewerSetShareStatus",
+                {
+                    targetSpreadsheetUrl:
+                        report.spreadsheetUrl,
+                    shareStatus:
+                        next
+                }
+            );
+
+        if (
+            managedReportState
+                ?.metadata
+                ?.spreadsheetId ===
+            report.spreadsheetId
+        ) {
+            renderManagedReportState(
+                data
+            );
+        }
+
+        await loadManagedReportList({
+            silent: true
+        });
+
+        setManagedReportListMessage(
+            data.message ||
+                "共有状態を更新しました。",
+            "success"
+        );
+
+    } catch (error) {
+        setManagedReportListMessage(
+            error?.message ||
+                String(error),
+            "error"
+        );
+
+    } finally {
+        setManagedReportListBusy(
+            false
+        );
+    }
+}
+
+async function loadManagedReportList(
+    {
+        silent = false
+    } = {}
+) {
+    if (managedReportListBusy) {
+        return;
+    }
+
+    if (!getStoredSheetsAccessKey()) {
+        if (!silent) {
+            setManagedReportListMessage(
+                "個社レポート一覧の取得には社内用アクセスキーが必要です。右上の詳細設定から保存してください。",
+                "warning"
+            );
+
+            openSheetsSettingsAndFocus();
+        }
+
+        return;
+    }
+
+    setManagedReportListBusy(
+        true
+    );
+
+    if (!silent) {
+        setManagedReportListMessage(
+            "出力フォルダ内の個社レポートを確認しています...",
+            "info"
+        );
+    }
+
+    try {
+        const data =
+            await postManagementAction(
+                "manageListReports"
+            );
+
+        managedReportList =
+            Array.isArray(
+                data.reports
+            )
+                ? data.reports
+                : [];
+
+        managedReportListLoaded =
+            true;
+
+        if (
+            data.summary &&
+            Number(
+                document.getElementById(
+                    "managedReportStaleDays"
+                )?.value || 30
+            ) === 30
+        ) {
+            const clientSummary =
+                managedOpsSummary();
+
+            const mismatch =
+                Number(data.summary.total || 0) !==
+                    clientSummary.total ||
+                Number(data.summary.unshared || 0) !==
+                    clientSummary.unshared ||
+                Number(data.summary.reshareRequired || 0) !==
+                    clientSummary.reshareRequired ||
+                Number(data.summary.viewerStopped || 0) !==
+                    clientSummary.viewerStopped ||
+                Number(data.summary.stale || 0) !==
+                    clientSummary.stale;
+
+            if (mismatch) {
+                console.warn(
+                    "Operations summary mismatch",
+                    {
+                        server:
+                            data.summary,
+                        client:
+                            clientSummary
+                    }
+                );
+            }
+        }
+
+        const version =
+            document.getElementById(
+                "managedReportListVersion"
+            );
+
+        if (version) {
+            version.textContent =
+                `API: ${data.apiVersion || "-"}`;
+        }
+
+        renderManagedReportList();
+
+        if (!silent) {
+            setManagedReportListMessage(
+                `${managedReportList.length.toLocaleString()}件の個社レポートを読み込みました。`,
+                "success"
+            );
+        }
+
+    } catch (error) {
+        setManagedReportListMessage(
+            error?.name === "AbortError"
+                ? "個社レポート一覧の取得がタイムアウトしました。もう一度お試しください。"
+                : (
+                    error?.message ||
+                    String(error)
+                ),
+            "error"
+        );
+
+    } finally {
+        setManagedReportListBusy(
+            false
+        );
+    }
+}
+
 function setManagedReportStatus(message, type = "info") {
     const el = document.getElementById("managedReportStatus");
     if (!el) return;
@@ -3139,7 +5109,10 @@ function setManagedReportBusy(flag) {
     [
         "loadManagedReportBtn",
         "saveManagedReportBtn",
-        "managedRetryImagesBtn"
+        "managedRetryImagesBtn",
+        "managedToggleViewerBtn",
+        "managedRotateViewerBtn",
+        "managedToggleSharedBtn"
     ].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = managedReportBusy;
@@ -3158,11 +5131,19 @@ async function postManagementAction(action, payload = {}) {
 
     const controller = new AbortController();
 
+    const normalizedAction =
+        String(
+            action || ""
+        ).toLowerCase();
+
     const timeoutMs =
-        String(action || "").toLowerCase() ===
-        "manageretryimages"
+        normalizedAction ===
+            "manageretryimages"
             ? 330000
-            : 180000;
+            : normalizedAction ===
+                "managediagnostics"
+                ? 240000
+                : 180000;
 
     const timeoutId = setTimeout(
         () => controller.abort(),
@@ -3180,6 +5161,8 @@ async function postManagementAction(action, payload = {}) {
             body: JSON.stringify({
                 action,
                 schemaVersion: SHEETS_SCHEMA_VERSION,
+                pagesVersion:
+                    SHEETS_APP_VERSION,
                 accessKey,
                 viewerBaseUrl:
                     new URL(
@@ -3530,6 +5513,633 @@ function renderManagedCustom(custom = {}) {
     }
 }
 
+function renderManagedViewerAccess(
+    metadata = {}
+) {
+    const enabled =
+        metadata.viewerEnabled !== false;
+
+    const viewerUrl =
+        normalizeString(
+            metadata.viewerUrl
+        );
+
+    const badge =
+        document.getElementById(
+            "managedViewerStatusBadge"
+        );
+
+    const copyBtn =
+        document.getElementById(
+            "managedCopyViewerLinkBtn"
+        );
+
+    const toggleBtn =
+        document.getElementById(
+            "managedToggleViewerBtn"
+        );
+
+    const rotateBtn =
+        document.getElementById(
+            "managedRotateViewerBtn"
+        );
+
+    const shareBadge =
+        document.getElementById(
+            "managedViewerShareBadge"
+        );
+
+    const shareBtn =
+        document.getElementById(
+            "managedToggleSharedBtn"
+        );
+
+    const shareNote =
+        document.getElementById(
+            "managedViewerShareNote"
+        );
+
+    const shareStatus =
+        reportShareStatus(
+            metadata
+        );
+
+    if (badge) {
+        badge.textContent =
+            enabled
+                ? "閲覧可"
+                : "閲覧停止中";
+
+        badge.className =
+            enabled
+                ? "shrink-0 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-[10px] font-extrabold text-emerald-800"
+                : "shrink-0 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-[10px] font-extrabold text-amber-900";
+    }
+
+    if (copyBtn) {
+        copyBtn.disabled =
+            !viewerUrl;
+
+        copyBtn.dataset.viewerUrl =
+            viewerUrl;
+    }
+
+    if (toggleBtn) {
+        toggleBtn.disabled =
+            !viewerUrl;
+
+        toggleBtn.dataset.viewerEnabled =
+            enabled
+                ? "true"
+                : "false";
+
+        toggleBtn.textContent =
+            enabled
+                ? "Viewerを停止"
+                : "Viewerを再開";
+    }
+
+    if (rotateBtn) {
+        rotateBtn.disabled =
+            !viewerUrl;
+    }
+
+    if (shareBadge) {
+        if (
+            shareStatus ===
+            "SHARED"
+        ) {
+            shareBadge.textContent =
+                "共有済み";
+
+            shareBadge.className =
+                "rounded-full border border-violet-300 bg-violet-100 px-3 py-1 text-[10px] font-extrabold text-violet-800";
+
+        } else if (
+            shareStatus ===
+            "RESHARE_REQUIRED"
+        ) {
+            shareBadge.textContent =
+                "要再共有";
+
+            shareBadge.className =
+                "rounded-full border border-red-300 bg-red-100 px-3 py-1 text-[10px] font-extrabold text-red-800";
+
+        } else {
+            shareBadge.textContent =
+                "未共有";
+
+            shareBadge.className =
+                "rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-slate-700";
+        }
+    }
+
+    if (shareBtn) {
+        shareBtn.disabled =
+            !viewerUrl;
+
+        shareBtn.dataset.shareStatus =
+            shareStatus;
+
+        shareBtn.textContent =
+            shareStatus === "SHARED"
+                ? "未共有に戻す"
+                : shareStatus === "RESHARE_REQUIRED"
+                    ? "再共有済みに記録"
+                    : "共有済みに記録";
+    }
+
+    if (shareNote) {
+        const sharedAt =
+            formatManagedDateTime(
+                metadata.viewerSharedAt
+            );
+
+        if (
+            shareStatus ===
+            "RESHARE_REQUIRED"
+        ) {
+            shareNote.textContent =
+                `要再共有：${metadata.viewerReshareReason || "Viewer情報が変更されました。"} 新しい企業向けURLを再案内後、「再共有済みに記録」を押してください。`;
+
+        } else if (
+            shareStatus ===
+            "SHARED"
+        ) {
+            shareNote.textContent =
+                sharedAt === "-"
+                    ? "企業向けViewerは共有済みとして記録されています。"
+                    : `最終共有記録：${sharedAt}`;
+
+        } else {
+            shareNote.textContent =
+                "URLをコピーしただけでは共有済みにはなりません。実際に企業へ案内した後に記録してください。";
+        }
+    }
+}
+
+async function copyManagedViewerShareLink() {
+    const metadata =
+        managedReportState?.metadata || {};
+
+    const viewerUrl =
+        normalizeString(
+            metadata.viewerUrl
+        );
+
+    if (!viewerUrl) {
+        setManagedReportStatus(
+            "企業向けViewer URLがありません。",
+            "warning"
+        );
+        return;
+    }
+
+    const reportName =
+        normalizeString(
+            metadata.fileName
+        ) ||
+        "有効応募分析";
+
+    const text =
+        `${reportName}\n有効応募分析レポート\n${viewerUrl}`;
+
+    try {
+        await navigator.clipboard.writeText(
+            text
+        );
+
+        setManagedReportStatus(
+            `「${reportName}」の企業共有用Viewerリンクをコピーしました。送付前に企業名をご確認ください。`,
+            "success"
+        );
+
+    } catch (_) {
+        window.prompt(
+            "以下をコピーしてください。",
+            text
+        );
+    }
+}
+
+async function setManagedViewerEnabled(
+    enabled
+) {
+    if (managedReportBusy) return;
+
+    const metadata =
+        managedReportState?.metadata || {};
+
+    const target =
+        normalizeString(
+            metadata.spreadsheetUrl
+        );
+
+    if (!target) {
+        setManagedReportStatus(
+            "対象Sheetを読み込んでください。",
+            "warning"
+        );
+        return;
+    }
+
+    const fileName =
+        metadata.fileName ||
+        "有効応募分析";
+
+    const confirmed =
+        window.confirm(
+            enabled
+                ? `「${fileName}」の企業向けViewerを再開します。現在のViewer URLが再び利用可能になります。`
+                : `「${fileName}」の企業向けViewerを停止します。企業は現在のViewer URLを開けなくなります。`
+        );
+
+    if (!confirmed) return;
+
+    setManagedReportBusy(true);
+
+    setManagedReportStatus(
+        enabled
+            ? `「${fileName}」のViewerを再開しています...`
+            : `「${fileName}」のViewerを停止しています...`,
+        "info"
+    );
+
+    try {
+        const data =
+            await postManagementAction(
+                "manageViewerSetEnabled",
+                {
+                    targetSpreadsheetUrl:
+                        target,
+                    viewerEnabled:
+                        enabled
+                }
+            );
+
+        renderManagedReportState(
+            data
+        );
+
+        setManagedReportStatus(
+            data.message ||
+                (
+                    enabled
+                        ? "Viewerを再開しました。"
+                        : "Viewerを停止しました。"
+                ),
+            "success"
+        );
+
+    } catch (error) {
+        setManagedReportStatus(
+            error?.message ||
+                String(error),
+            "error"
+        );
+
+    } finally {
+        setManagedReportBusy(false);
+    }
+}
+
+async function setManagedViewerShareStatus() {
+    if (managedReportBusy) return;
+
+    const metadata =
+        managedReportState
+            ?.metadata ||
+        {};
+
+    const target =
+        normalizeString(
+            metadata.spreadsheetUrl
+        );
+
+    if (!target) {
+        setManagedReportStatus(
+            "対象Sheetを読み込んでください。",
+            "warning"
+        );
+        return;
+    }
+
+    const current =
+        reportShareStatus(
+            metadata
+        );
+
+    const next =
+        current === "SHARED"
+            ? "UNSHARED"
+            : "SHARED";
+
+    const fileName =
+        metadata.fileName ||
+        "有効応募分析";
+
+    const confirmed =
+        window.confirm(
+            next === "SHARED"
+                ? current === "RESHARE_REQUIRED"
+                    ? `「${fileName}」を再共有済みとして記録します。\n\n新しいViewer URLを企業へ再案内済みであることを確認してください。`
+                    : `「${fileName}」を共有済みとして記録します。\n\n企業へViewer URLを実際に案内済みであることを確認してください。`
+                : `「${fileName}」を未共有へ戻します。`
+        );
+
+    if (!confirmed) return;
+
+    setManagedReportBusy(
+        true
+    );
+
+    setManagedReportStatus(
+        next === "SHARED"
+            ? "共有済みとして記録しています..."
+            : "未共有へ戻しています...",
+        "info"
+    );
+
+    try {
+        const data =
+            await postManagementAction(
+                "manageViewerSetShareStatus",
+                {
+                    targetSpreadsheetUrl:
+                        target,
+                    shareStatus:
+                        next
+                }
+            );
+
+        renderManagedReportState(
+            data
+        );
+
+        managedReportListLoaded =
+            false;
+
+        loadManagedReportList({
+            silent: true
+        });
+
+        setManagedReportStatus(
+            data.message ||
+                "共有状態を更新しました。",
+            "success"
+        );
+
+    } catch (error) {
+        setManagedReportStatus(
+            error?.message ||
+                String(error),
+            "error"
+        );
+
+    } finally {
+        setManagedReportBusy(
+            false
+        );
+    }
+}
+
+async function rotateManagedViewerUrl() {
+    if (managedReportBusy) return;
+
+    const metadata =
+        managedReportState?.metadata || {};
+
+    const target =
+        normalizeString(
+            metadata.spreadsheetUrl
+        );
+
+    if (!target) {
+        setManagedReportStatus(
+            "対象Sheetを読み込んでください。",
+            "warning"
+        );
+        return;
+    }
+
+    const fileName =
+        metadata.fileName ||
+        "有効応募分析";
+
+    const confirmed =
+        window.confirm(
+            `「${fileName}」の企業向けViewer URLを再発行します。\n\n以前のViewer URLは直ちに無効になります。企業へすでに送付済みの場合は、新しいURLを再案内する必要があります。`
+        );
+
+    if (!confirmed) return;
+
+    setManagedReportBusy(true);
+
+    setManagedReportStatus(
+        `「${fileName}」のViewer URLを再発行しています...`,
+        "info"
+    );
+
+    try {
+        const data =
+            await postManagementAction(
+                "manageViewerRotate",
+                {
+                    targetSpreadsheetUrl:
+                        target
+                }
+            );
+
+        renderManagedReportState(
+            data
+        );
+
+        setManagedReportStatus(
+            data.message ||
+                "Viewer URLを再発行しました。",
+            "success"
+        );
+
+    } catch (error) {
+        setManagedReportStatus(
+            error?.message ||
+                String(error),
+            "error"
+        );
+
+    } finally {
+        setManagedReportBusy(false);
+    }
+}
+
+function formatManagedDateTime(value) {
+    const text =
+        normalizeString(
+            value
+        );
+
+    if (!text) return "-";
+
+    const d =
+        new Date(text);
+
+    if (
+        Number.isNaN(
+            d.getTime()
+        )
+    ) {
+        return text;
+    }
+
+    return new Intl.DateTimeFormat(
+        "ja-JP",
+        {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    ).format(d);
+}
+
+function renderManagedOperations(
+    data = {}
+) {
+    const metadata =
+        data.metadata || {};
+
+    const setText = (
+        id,
+        value
+    ) => {
+        const el =
+            document.getElementById(
+                id
+            );
+
+        if (el) {
+            el.textContent =
+                value;
+        }
+    };
+
+    const dataUpdate =
+        formatManagedDateTime(
+            metadata
+                .lastDataUpdateAt
+        );
+
+    const dataMode =
+        normalizeString(
+            metadata
+                .lastDataUpdateMode
+        );
+
+    setText(
+        "managedLastDataUpdate",
+        dataUpdate === "-"
+            ? "-"
+            : (
+                dataUpdate +
+                (
+                    dataMode
+                        ? ` (${dataMode})`
+                        : ""
+                )
+            )
+    );
+
+    setText(
+        "managedLastViewerAccess",
+        formatManagedDateTime(
+            metadata
+                .lastViewerAccessAt
+        )
+    );
+
+    setText(
+        "managedApplicationCount",
+        Number(
+            metadata
+                .applicationCount || 0
+        ).toLocaleString() +
+        "件"
+    );
+
+    setText(
+        "managedJobCount",
+        Number(
+            metadata
+                .jobAnalysisCount || 0
+        ).toLocaleString() +
+        "件"
+    );
+
+    setText(
+        "managedVersionSummary",
+        `API: ${metadata.apiVersion || "-"} / Pages: ${SHEETS_APP_VERSION}`
+    );
+
+    const body =
+        document.getElementById(
+            "managedAuditLogBody"
+        );
+
+    if (!body) return;
+
+    const rows =
+        Array.isArray(
+            data.auditLog
+        )
+            ? data.auditLog
+            : [];
+
+    if (!rows.length) {
+        body.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-4 text-center text-slate-400">
+                    操作履歴はまだありません。
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    body.innerHTML =
+        rows.map(row => {
+            const result =
+                normalizeString(
+                    row.result
+                );
+
+            const resultClass =
+                result === "ERROR"
+                    ? "text-red-700 font-extrabold"
+                    : "text-emerald-700 font-extrabold";
+
+            return `
+                <tr class="bg-white">
+                    <td class="p-2 border-b border-slate-100 whitespace-nowrap">
+                        ${manageEscapeHtml(formatManagedDateTime(row.at))}
+                    </td>
+                    <td class="p-2 border-b border-slate-100 font-mono">
+                        ${manageEscapeHtml(row.eventType || "")}
+                    </td>
+                    <td class="p-2 border-b border-slate-100 ${resultClass}">
+                        ${manageEscapeHtml(result)}
+                    </td>
+                    <td class="p-2 border-b border-slate-100">
+                        ${manageEscapeHtml(row.source || "")}
+                    </td>
+                    <td class="p-2 border-b border-slate-100">
+                        ${manageEscapeHtml(row.detail || "")}
+                    </td>
+                </tr>
+            `;
+        }).join("");
+}
+
 function renderManagedReportState(data) {
     managedReportState = data;
     managedImageRows = Array.isArray(data.imageMaster)
@@ -3539,10 +6149,18 @@ function renderManagedReportState(data) {
     const metadata = data.metadata || {};
     const editor = document.getElementById("managedReportEditor");
     const name = document.getElementById("managedReportName");
+    const reportNameInput =
+        document.getElementById("managedReportNameInput");
     const sheetLink = document.getElementById("managedOpenSheetLink");
     const viewerLink = document.getElementById("managedOpenViewerLink");
 
     if (name) name.textContent = metadata.fileName || "有効応募分析";
+
+    if (reportNameInput) {
+        reportNameInput.value =
+            metadata.fileName ||
+            "有効応募分析";
+    }
     if (sheetLink) sheetLink.href = metadata.spreadsheetUrl || "#";
 
     if (viewerLink) {
@@ -3554,6 +6172,14 @@ function renderManagedReportState(data) {
             viewerLink.classList.add("hidden");
         }
     }
+
+    renderManagedViewerAccess(
+        metadata
+    );
+
+    renderManagedOperations(
+        data
+    );
 
     const quickViewerBtn =
         document.getElementById(
@@ -3654,6 +6280,9 @@ async function loadManagedReportState({ auto = false } = {}) {
 
         renderManagedReportState(data);
 
+        managedReportListLoaded =
+            false;
+
         setManagedReportStatus(
             `「${data.metadata?.fileName || "有効応募分析"}」の設定・マスタを読み込みました。`,
             "success"
@@ -3676,6 +6305,161 @@ async function loadManagedReportState({ auto = false } = {}) {
 
     } finally {
         setManagedReportBusy(false);
+    }
+}
+
+function buildSuggestedReportName(
+    names
+) {
+    const unique = [];
+
+    (names || [])
+        .map(value =>
+            normalizeString(
+                value
+            )
+        )
+        .filter(Boolean)
+        .forEach(name => {
+            if (
+                !unique.includes(
+                    name
+                )
+            ) {
+                unique.push(
+                    name
+                );
+            }
+        });
+
+    if (!unique.length) {
+        return "";
+    }
+
+    const base =
+        unique.length === 1
+            ? unique[0]
+            : `${unique[0]}ほか${unique.length - 1}件`;
+
+    return `${base}_有効応募分析`;
+}
+
+function currentManagedEnterpriseNames() {
+    return Array.from(
+        document.querySelectorAll(
+            "#managedEnterpriseBody input[data-enterprise-id]"
+        )
+    ).map(input =>
+        normalizeString(
+            input.value
+        )
+    ).filter(Boolean);
+}
+
+function suggestManagedReportName() {
+    const suggested =
+        buildSuggestedReportName(
+            currentManagedEnterpriseNames()
+        );
+
+    if (!suggested) {
+        setManagedReportStatus(
+            "先に33_企業IDマスタの表示名を入力してください。",
+            "warning"
+        );
+        return;
+    }
+
+    const input =
+        document.getElementById(
+            "managedReportNameInput"
+        );
+
+    if (input) {
+        input.value =
+            suggested;
+
+        input.focus();
+    }
+}
+
+function applyManagedEnterpriseBulkName() {
+    const bulk =
+        normalizeString(
+            document.getElementById(
+                "managedEnterpriseBulkNameInput"
+            )?.value
+        );
+
+    if (!bulk) {
+        setManagedReportStatus(
+            "一括入力する企業表示名を入力してください。",
+            "warning"
+        );
+        return;
+    }
+
+    const inputs =
+        Array.from(
+            document.querySelectorAll(
+                "#managedEnterpriseBody input[data-enterprise-id]"
+            )
+        );
+
+    inputs.forEach(input => {
+        input.value =
+            bulk;
+    });
+
+    const reportNameInput =
+        document.getElementById(
+            "managedReportNameInput"
+        );
+
+    if (
+        reportNameInput &&
+        (
+            !normalizeString(
+                reportNameInput.value
+            ) ||
+            /^有効応募分析_\d{8}_\d{6}$/.test(
+                normalizeString(
+                    reportNameInput.value
+                )
+            )
+        )
+    ) {
+        reportNameInput.value =
+            `${bulk}_有効応募分析`;
+    }
+}
+
+function suggestNewReportName() {
+    const company =
+        normalizeString(
+            document.getElementById(
+                "newCompanyDisplayNameInput"
+            )?.value
+        );
+
+    if (!company) {
+        setSheetsCreateStatus(
+            "先に企業表示名を入力してください。",
+            "warning"
+        );
+        return;
+    }
+
+    const reportInput =
+        document.getElementById(
+            "newReportNameInput"
+        );
+
+    if (reportInput) {
+        reportInput.value =
+            `${company}_有効応募分析`;
+
+        reportInput.focus();
     }
 }
 
@@ -3846,15 +6630,34 @@ async function saveManagedReportState() {
         managedReportState?.metadata?.fileName ||
         "有効応募分析";
 
+    const requestedName =
+        normalizeString(
+            document.getElementById("managedReportNameInput")?.value
+        );
+
+    if (!requestedName) {
+        setManagedReportStatus(
+            "レポート名を入力してください。",
+            "warning"
+        );
+        document.getElementById("managedReportNameInput")?.focus();
+        return;
+    }
+
+    const renameNote =
+        requestedName !== fileName
+            ? `\n\nレポート名を「${fileName}」から「${requestedName}」へ変更します。`
+            : "";
+
     const confirmed = window.confirm(
-        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。`
+        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。${renameNote}`
     );
 
     if (!confirmed) return;
 
     setManagedReportBusy(true);
     setManagedReportStatus(
-        `「${fileName}」へ設定・マスタを保存しています。旧Sheet分析表の再描画は行いません...`,
+        `「${fileName}」へレポート名・設定・マスタを保存しています...`,
         "info"
     );
 
@@ -3863,6 +6666,10 @@ async function saveManagedReportState() {
             "manageSave",
             {
                 targetSpreadsheetUrl: target,
+                reportName:
+                    normalizeString(
+                        document.getElementById("managedReportNameInput")?.value
+                    ),
                 settings: collectManagedSettings(),
                 keywordMaster: collectManagedKeywords(),
                 enterpriseMaster: collectManagedEnterprise(),
@@ -3882,6 +6689,13 @@ async function saveManagedReportState() {
             `「${data.metadata?.fileName || fileName}」へ保存しました。Viewerにも次回読み込みから即反映されます。`,
             "success"
         );
+
+        managedReportListLoaded =
+            false;
+
+        loadManagedReportList({
+            silent: true
+        });
 
     } catch (error) {
         const message =
@@ -3908,10 +6722,205 @@ const saveManagedReportBtn =
 const managedImageFilter =
     document.getElementById("managedImageFilter");
 
+const runManagedDiagnosticsBtn =
+    document.getElementById(
+        "runManagedDiagnosticsBtn"
+    );
+
+if (runManagedDiagnosticsBtn) {
+    runManagedDiagnosticsBtn.addEventListener(
+        "click",
+        runManagedDiagnostics
+    );
+}
+
+const managedReportListSearch =
+    document.getElementById(
+        "managedReportListSearch"
+    );
+
+const managedSuggestReportNameBtn =
+    document.getElementById(
+        "managedSuggestReportNameBtn"
+    );
+
+const managedApplyEnterpriseBulkNameBtn =
+    document.getElementById(
+        "managedApplyEnterpriseBulkNameBtn"
+    );
+
+const suggestNewReportNameBtn =
+    document.getElementById(
+        "suggestNewReportNameBtn"
+    );
+
+if (managedSuggestReportNameBtn) {
+    managedSuggestReportNameBtn.addEventListener(
+        "click",
+        suggestManagedReportName
+    );
+}
+
+if (managedApplyEnterpriseBulkNameBtn) {
+    managedApplyEnterpriseBulkNameBtn.addEventListener(
+        "click",
+        applyManagedEnterpriseBulkName
+    );
+}
+
+if (suggestNewReportNameBtn) {
+    suggestNewReportNameBtn.addEventListener(
+        "click",
+        suggestNewReportName
+    );
+}
+
+const refreshManagedReportListBtn =
+    document.getElementById(
+        "refreshManagedReportListBtn"
+    );
+
+const managedReportViewerFilter =
+    document.getElementById(
+        "managedReportViewerFilter"
+    );
+
+const managedReportShareFilter =
+    document.getElementById(
+        "managedReportShareFilter"
+    );
+
+const managedReportSort =
+    document.getElementById(
+        "managedReportSort"
+    );
+
+const managedReportFreshnessFilter =
+    document.getElementById(
+        "managedReportFreshnessFilter"
+    );
+
+const managedReportStaleDays =
+    document.getElementById(
+        "managedReportStaleDays"
+    );
+
+[
+    managedReportViewerFilter,
+    managedReportShareFilter,
+    managedReportFreshnessFilter,
+    managedReportSort,
+    managedReportStaleDays
+].forEach(control => {
+    control?.addEventListener(
+        "change",
+        renderManagedReportList
+    );
+});
+
+document
+    .querySelectorAll(
+        "[data-dashboard-filter]"
+    )
+    .forEach(card => {
+        card.addEventListener(
+            "click",
+            () =>
+                applyManagedOpsDashboardFilter(
+                    card.dataset.dashboardFilter
+                )
+        );
+    });
+
+document
+    .getElementById(
+        "managedOpsDashboardClearBtn"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+            clearManagedReportListFilters();
+            renderManagedReportList();
+        }
+    );
+
+if (managedReportListSearch) {
+    managedReportListSearch.addEventListener(
+        "input",
+        renderManagedReportList
+    );
+}
+
+if (refreshManagedReportListBtn) {
+    refreshManagedReportListBtn.addEventListener(
+        "click",
+        () =>
+            loadManagedReportList()
+    );
+}
+
 const managedRetryImagesBtn =
     document.getElementById(
         "managedRetryImagesBtn"
     );
+
+const managedCopyViewerLinkBtn =
+    document.getElementById(
+        "managedCopyViewerLinkBtn"
+    );
+
+const managedToggleViewerBtn =
+    document.getElementById(
+        "managedToggleViewerBtn"
+    );
+
+const managedRotateViewerBtn =
+    document.getElementById(
+        "managedRotateViewerBtn"
+    );
+
+const managedToggleSharedBtn =
+    document.getElementById(
+        "managedToggleSharedBtn"
+    );
+
+if (managedToggleSharedBtn) {
+    managedToggleSharedBtn.addEventListener(
+        "click",
+        setManagedViewerShareStatus
+    );
+}
+
+if (managedCopyViewerLinkBtn) {
+    managedCopyViewerLinkBtn.addEventListener(
+        "click",
+        copyManagedViewerShareLink
+    );
+}
+
+if (managedToggleViewerBtn) {
+    managedToggleViewerBtn.addEventListener(
+        "click",
+        () => {
+            const currentlyEnabled =
+                managedToggleViewerBtn
+                    .dataset
+                    .viewerEnabled ===
+                "true";
+
+            setManagedViewerEnabled(
+                !currentlyEnabled
+            );
+        }
+    );
+}
+
+if (managedRotateViewerBtn) {
+    managedRotateViewerBtn.addEventListener(
+        "click",
+        rotateManagedViewerUrl
+    );
+}
 
 if (managedRetryImagesBtn) {
     managedRetryImagesBtn.addEventListener(
