@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>有効応募分析</title>
+    <title>有効応募分析 管理ツール</title>
     <!-- ファビコン設定 -->
     <link rel="icon" href="favicon.png" type="image/png">
     
@@ -120,7 +120,7 @@
 
                 <!-- Google Sheets連携 -->
                 <div class="pt-1">
-                    <label class="block font-bold text-sm text-gray-700 mb-3">Google Sheets連携設定</label>
+                    <label class="block font-bold text-sm text-gray-700 mb-3">Viewer連携・保存設定</label>
 
                     <div class="space-y-3">
                         <div class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3">
@@ -169,7 +169,7 @@
                                 rel="noopener noreferrer"
                                 class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-xs font-bold hover:bg-gray-50 transition"
                             >
-                                出力フォルダを開く
+                                保存データを開く
                             </a>
                             <a
                                 href="https://docs.google.com/document/d/1c5u4HqoHo5LQRPrXjbWWUJI00BPjTv0Ekk2VA6KtYIQ/edit"
@@ -185,7 +185,7 @@
 
                         <p class="text-[11px] leading-relaxed text-gray-500">
                             アクセスキーはこのブラウザのlocalStorageに保存します。
-                            生成・更新するスプレッドシートにはアクセスキーを保存しません。
+                            バックエンドの保存データにはアクセスキーを保存しません。
                         </p>
                     </div>
                 </div>
@@ -199,7 +199,7 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         CSVをダウンロード
                     </button>
-                    <p class="text-xs text-gray-500 mt-3 flex items-center"><svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> データ集計を実行後にダウンロード可能になります。</p>
+                    <p class="text-xs text-gray-500 mt-3 flex items-center"><svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 分析データを作成後にダウンロード可能になります。</p>
                 </div>
             </div>
         </div>
@@ -251,7 +251,7 @@
             <div class="flex justify-between items-center mb-10 pb-6 border-b border-gray-200/60">
                 <h1 class="text-3xl font-extrabold tracking-tight flex items-center">
                     <span class="text-4xl mr-3 drop-shadow-md transform -translate-y-1">🌸</span>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">有効応募分析</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">有効応募分析 管理ツール</span>
                 </h1>
                 <button id="openSettingsBtn" class="p-3 text-gray-500 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-full shadow-sm border border-gray-100 transition-all focus:outline-none hover:shadow-md hover:-translate-y-0.5 group" title="詳細設定・CSVダウンロード">
                     <svg class="w-6 h-6 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -272,7 +272,7 @@
                         CSVを使う
                     </div>
                     <div class="mt-1 text-base font-extrabold text-indigo-950">
-                        新規集計・データ更新
+                        データ取込・Viewer反映
                     </div>
                 </div>
                 <div class="rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-extrabold text-white">
@@ -280,7 +280,7 @@
                 </div>
             </div>
             <div class="mt-2 text-xs leading-relaxed text-indigo-800/80">
-                応募CSV・求人CSVを読み込み、新しい企業レポートを作成するか、既存レポートの元データを更新します。
+                応募CSV・求人CSVから分析データを作り、新しいViewerまたは既存Viewerへ反映します。
             </div>
         </button>
 
@@ -296,7 +296,7 @@
                         CSV不要
                     </div>
                     <div class="mt-1 text-base font-extrabold text-slate-900">
-                        既存レポートの設定・マスタ管理
+                        個社Viewerの設定・共有管理
                     </div>
                 </div>
                 <div class="rounded-full bg-slate-700 px-2.5 py-1 text-[10px] font-extrabold text-white">
@@ -304,13 +304,13 @@
                 </div>
             </div>
             <div class="mt-2 text-xs leading-relaxed text-slate-600">
-                個社Sheetから設定・KW・企業表示名・画像URL・カスタム分析初期値だけを読み込み、編集・保存します。
+                個社ごとの設定・KW・企業表示名・画像URL・共有状態を読み込み、Viewerへ反映します。
             </div>
         </button>
     </div>
 
     <div id="workflowModeHint" class="mt-3 rounded-xl border border-indigo-100 bg-white/80 px-4 py-3 text-[11px] leading-relaxed text-gray-600">
-        現在：新規集計・データ更新モード
+        現在：データ取込・Viewer反映モード
     </div>
 </div>
 
@@ -357,27 +357,21 @@
             <button id="runBtn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-4 rounded-2xl font-extrabold hover:from-indigo-700 hover:to-blue-700 transition-all shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(79,70,229,0.6)] hover:-translate-y-1 flex items-center justify-center text-xl overflow-hidden relative group">
                 <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
                 <svg class="w-6 h-6 mr-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="relative z-10 tracking-wide">データ集計を実行</span>
+                <span class="relative z-10 tracking-wide">分析データを作成</span>
             </button>
 
             <div id="message" class="mt-6 text-center text-sm font-semibold p-4 rounded-xl hidden"></div>
 
 <div id="resultArea" class="mt-8 hidden border-t border-gray-200/60 pt-8">
                 <div class="flex flex-col items-center gap-5">
-                    <button id="goToDashboardBtn" class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-10 py-4 rounded-2xl font-extrabold hover:from-emerald-600 hover:to-teal-600 transition-all text-xl shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(16,185,129,0.6)] hover:-translate-y-1 flex items-center relative overflow-hidden group">
-                        <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
-                        <span class="relative z-10 tracking-wide mr-2">分析ダッシュボードへ進む</span>
-                        <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                    </button>
-
-                    <!-- Google Sheets生成 / 既存レポート更新 -->
+<!-- Google Sheets生成 / 既存レポート更新 -->
                     <div id="sheetsCreateArea" class="w-full max-w-2xl rounded-2xl border border-green-200 bg-green-50/70 p-5">
                         <div class="flex flex-col gap-4">
                             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                 <div class="min-w-0">
-                                    <div id="sheetsCreateTitle" class="font-extrabold text-green-900 text-base">Google Sheetsレポートを新規作成</div>
+                                    <div id="sheetsCreateTitle" class="font-extrabold text-green-900 text-base">分析Viewerへ反映</div>
                                     <div id="sheetsCreateSummary" class="text-xs text-green-800 mt-1.5 leading-relaxed">
-                                        今回の集計結果から、共有・再集計できるGoogle Sheets版レポートを作成します。
+                                        作成した分析データを保存し、企業向けViewerで確認できる状態へ反映します。
                                     </div>
                                     <div class="text-[11px] text-green-700/80 mt-2">
                                         氏名・メールアドレス全文・詳細な居住住所・重複行明細は送信しません。
@@ -388,16 +382,16 @@
                                     type="button"
                                     class="shrink-0 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-extrabold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    新規レポートを作成
+                                    分析Viewerへ反映
                                 </button>
                             </div>
 
 <div id="newReportIdentityBlock" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4">
     <div class="text-xs font-extrabold text-indigo-900">
-        新規レポートの名前
+        新しいViewerの基本情報
     </div>
     <div class="mt-1 text-[11px] leading-relaxed text-indigo-700">
-        企業名を入れておくと、個社一覧・企業ID表示名・Viewer共有先確認が最初から分かりやすくなります。
+        企業表示名を設定しておくと、個社Viewer一覧と企業共有時の宛先確認が分かりやすくなります。
     </div>
 
     <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -410,48 +404,64 @@
                 type="text"
                 maxlength="100"
                 autocomplete="off"
-                placeholder="例：株式会社○○"
+                placeholder="例：株式会社○○（「様」は自動付与）"
                 class="w-full border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
             >
             <div class="mt-1 text-[10px] text-gray-500">
-                新規作成時、33_企業IDマスタの全企業IDへ同じ表示名を初期設定します。
+                企業共有用の表示名です。「様」または「御中」が無い場合は「様」を自動付与します。
             </div>
         </div>
 
         <div>
-            <label for="newReportNameInput" class="block text-[11px] font-bold text-gray-600 mb-1">
-                レポート名 <span class="font-normal text-gray-400">（任意）</span>
-            </label>
-            <div class="flex gap-2">
-                <input
-                    id="newReportNameInput"
-                    type="text"
-                    maxlength="120"
-                    autocomplete="off"
-                    placeholder="例：株式会社○○_有効応募分析"
-                    class="flex-1 min-w-0 border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                >
+            <div class="mb-1 flex items-center justify-between gap-2">
+                <label for="newReportNameInput" class="text-[11px] font-bold text-gray-600">
+                    Viewer名 <span class="font-normal text-gray-400">（任意）</span>
+                </label>
                 <button
                     id="suggestNewReportNameBtn"
                     type="button"
-                    class="shrink-0 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-[10px] font-extrabold text-indigo-700 hover:bg-indigo-50"
+                    class="rounded-md border border-indigo-200 bg-white px-2 py-1 text-[9px] font-extrabold text-indigo-700 hover:bg-indigo-50"
+                    title="企業表示名を使ってViewer名欄だけを入力します"
                 >
-                    企業名から作成
+                    企業表示名から入力
                 </button>
             </div>
+            <input
+                id="newReportNameInput"
+                type="text"
+                maxlength="120"
+                autocomplete="off"
+                placeholder="例：株式会社○○様_有効応募分析"
+                class="w-full border border-gray-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            >
             <div class="mt-1 text-[10px] text-gray-500">
-                空欄の場合、企業表示名があれば「企業名_有効応募分析」、両方空欄なら日時名で作成します。
+                個社一覧とViewerの共有先確認に使う名称です。空欄なら企業表示名から自動設定します。
             </div>
         </div>
     </div>
 </div>
 
+<label class="flex items-start gap-2 rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2.5 text-[11px] text-blue-800 cursor-pointer">
+    <input
+        id="etlAutoOpenViewerCheckbox"
+        type="checkbox"
+        class="mt-0.5 rounded border-blue-300 text-blue-600 focus:ring-blue-300"
+        checked
+    >
+    <span>
+        <span class="font-extrabold">反映完了後にViewerを新しいタブで開く</span>
+        <span class="block mt-0.5 text-[10px] text-blue-700/80">
+            デフォルトON。新規タブがブロックされた場合は完了後のViewerリンクから確認できます。
+        </span>
+    </span>
+</label>
+
                             <div class="rounded-xl border border-green-200 bg-white/90 p-4">
                                 <div class="flex items-center justify-between gap-3">
                                     <div>
-                                        <div class="text-xs font-extrabold text-gray-700">既存レポートを更新する場合</div>
+                                        <div class="text-xs font-extrabold text-gray-700">既存Viewerへデータを反映する場合</div>
                                         <div class="text-[11px] text-gray-500 mt-1">
-                                            過去のGoogle Sheets URLを貼り付けると、新規作成せず、そのレポートの分析元データを更新します。
+                                            個社一覧の「データ更新」から入ると反映先は自動設定されます。URL直接指定は詳細操作として利用できます。
                                         </div>
                                     </div>
                                     <a
@@ -501,7 +511,7 @@
                                     rel="noopener noreferrer"
                                     class="hidden inline-flex items-center mt-3 ml-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition"
                                 >
-                                    企業向けWebレポートを開く
+                                    企業向けViewerを開く
                                 </a>
                                 <button
                                     id="copyViewerShareBtn"
@@ -522,15 +532,15 @@
 </div><!-- /workflowModeEtlPanel -->
 
 <div id="workflowModeManagePanel" class="hidden">
-<!-- 既存Google Sheetsの設定・マスタ管理 -->
+<!-- 個社Viewerの設定・共有管理 -->
 <div id="managedReportArea" class="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-5 shadow-sm">
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div>
             <div class="font-extrabold text-indigo-950 text-base">
-                既存レポートの設定・マスタ管理
+                個社Viewerの設定・共有管理
             </div>
             <div class="text-xs text-indigo-800/80 mt-1 leading-relaxed">
-                CSVを読み直さなくても、既存Google Sheetsの個社設定・KW・企業表示名・画像URL・カスタム分析初期値を編集できます。
+                CSVを読み直さず、個社Viewerの設定・KW・企業表示名・画像URL・共有状態を管理できます。
             </div>
         </div>
         <a
@@ -539,7 +549,7 @@
             rel="noopener noreferrer"
             class="text-xs font-bold text-indigo-700 hover:text-indigo-900 underline shrink-0"
         >
-            出力フォルダを開く
+            保存データを開く
         </a>
     </div>
 
@@ -584,10 +594,10 @@
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div>
             <div class="text-xs font-extrabold text-slate-900">
-                個社レポート一覧
+                個社Viewer一覧
             </div>
             <div class="mt-1 text-[11px] leading-relaxed text-slate-500">
-                正式な出力先フォルダ内のTHIN_V1レポートを一覧表示します。
+                現在管理している企業向けViewerを一覧表示します。
             </div>
         </div>
 
@@ -595,7 +605,7 @@
         <input
             id="managedReportListSearch"
             type="search"
-            placeholder="レポート名・企業表示名で検索"
+            placeholder="Viewer名・企業表示名で検索"
             class="flex-1 border border-slate-300 rounded-lg p-2 text-xs focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
         >
         <button
@@ -640,7 +650,7 @@
             <option value="UPDATED_DESC">最終更新が新しい順</option>
             <option value="UPDATED_ASC">最終更新が古い順</option>
             <option value="ENTERPRISE_ASC">企業名順</option>
-            <option value="REPORT_ASC">レポート名順</option>
+            <option value="REPORT_ASC">Viewer名順</option>
             <option value="VIEWER_DESC">Viewer最終アクセス順</option>
             <option value="APPLICATION_DESC">応募件数が多い順</option>
         </select>
@@ -694,7 +704,7 @@
             data-dashboard-filter="TOTAL"
             class="managed-ops-card rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
         >
-            <div class="text-[10px] font-bold text-slate-500">総レポート数</div>
+            <div class="text-[10px] font-bold text-slate-500">総Viewer数</div>
             <div id="managedOpsTotal" class="mt-1 text-xl font-black text-slate-900">-</div>
             <div class="mt-1 text-[9px] text-slate-400">全件を表示</div>
         </button>
@@ -754,7 +764,7 @@
         <table class="w-full min-w-[1050px] text-[11px] border-collapse">
             <thead class="sticky top-0 bg-slate-100 text-slate-600 z-10">
                 <tr>
-                    <th class="text-left p-2 border-b">レポート / 企業</th>
+                    <th class="text-left p-2 border-b">Viewer / 企業</th>
                     <th class="text-left p-2 border-b">最終データ更新</th>
                     <th class="text-left p-2 border-b">Viewer</th>
                     <th class="text-left p-2 border-b">共有</th>
@@ -774,7 +784,15 @@
     </div>
 </div>
 
-    <div class="mt-4 flex flex-col sm:flex-row gap-2">
+    <details class="mt-4 rounded-xl border border-slate-200 bg-white">
+        <summary class="cursor-pointer px-4 py-3 text-[11px] font-extrabold text-slate-600">
+            保存先をURLで直接指定（詳細）
+        </summary>
+        <div class="border-t border-slate-100 p-4">
+            <div class="mb-2 text-[10px] leading-relaxed text-slate-500">
+                通常は個社Viewer一覧の「管理」から開いてください。URL指定はトラブル対応などの詳細操作向けです。
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
         <input
             id="manageSheetUrlInput"
             type="url"
@@ -792,6 +810,9 @@
         </button>
     </div>
 
+        </div>
+    </details>
+
     <div id="managedReportStatus" class="hidden mt-3 text-xs rounded-lg border p-3 whitespace-pre-wrap"></div>
 
     <div id="managedReportEditor" class="hidden mt-5 space-y-4">
@@ -799,14 +820,24 @@
             <div class="text-[11px] font-extrabold text-amber-800">編集対象確認</div>
             <div id="managedReportName" class="mt-1 text-base font-extrabold text-amber-950 break-all"></div>
             <div class="mt-2 flex flex-wrap gap-3 text-xs">
-                <a id="managedOpenSheetLink" href="#" target="_blank" rel="noopener noreferrer" class="font-bold text-indigo-700 underline">Google Sheetsを開く</a>
+                <a id="managedOpenSheetLink" href="#" target="_blank" rel="noopener noreferrer" class="font-bold text-indigo-700 underline">保存データを開く</a>
                 <a id="managedOpenViewerLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden font-bold text-blue-700 underline">企業向けViewerを開く</a>
             </div>
 
             <div class="mt-4 border-t border-amber-200 pt-3">
-                <label for="managedReportNameInput" class="block text-[11px] font-extrabold text-amber-900 mb-1">
-                    レポート名
-                </label>
+                <div class="mb-1 flex items-center justify-between gap-2">
+                    <label for="managedReportNameInput" class="text-[11px] font-extrabold text-amber-900">
+                        Viewer名
+                    </label>
+                    <button
+                        id="managedSuggestReportNameBtn"
+                        type="button"
+                        class="rounded-md border border-amber-300 bg-white px-2 py-1 text-[9px] font-extrabold text-amber-800 hover:bg-amber-50"
+                        title="企業表示名を使ってViewer名欄だけを入力します"
+                    >
+                        企業表示名から入力
+                    </button>
+                </div>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <input
                         id="managedReportNameInput"
@@ -814,16 +845,9 @@
                         maxlength="120"
                         class="flex-1 min-w-0 border border-amber-300 rounded-lg bg-white p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-100"
                     >
-                    <button
-                        id="managedSuggestReportNameBtn"
-                        type="button"
-                        class="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-2 text-[10px] font-extrabold text-amber-800 hover:bg-amber-50"
-                    >
-                        企業表示名から候補
-                    </button>
                 </div>
                 <div class="mt-1 text-[10px] leading-relaxed text-amber-800/80">
-                    Google Sheetのファイル名・Viewerの共有先確認名・個社一覧名として使います。名称変更だけではViewer tokenは変わりません。
+                    個社一覧とViewer共有先確認に使う名称です。名称変更だけではViewer URLの認証キーは変わりません。
                 </div>
             </div>
 </div>
@@ -1100,16 +1124,27 @@
             </div>
         </details>
 
-        <div class="rounded-xl border border-indigo-200 bg-white p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div class="text-[11px] text-gray-500 leading-relaxed">
-                保存するとレポート名・個社設定・マスタを更新します。分析結果は企業向けViewerへ次回読み込みから反映されます。
+        <div class="rounded-xl border border-indigo-200 bg-white p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div>
+                <div class="text-[11px] text-gray-600 leading-relaxed">
+                    変更内容を保存し、企業向けViewerへ反映します。
+                </div>
+                <label class="mt-2 flex items-center gap-2 text-[10px] text-blue-700 cursor-pointer">
+                    <input
+                        id="manageAutoOpenViewerCheckbox"
+                        type="checkbox"
+                        class="rounded border-blue-300 text-blue-600 focus:ring-blue-300"
+                        checked
+                    >
+                    反映完了後にViewerを新しいタブで開く
+                </label>
             </div>
             <button
                 id="saveManagedReportBtn"
                 type="button"
                 class="shrink-0 px-6 py-3 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-extrabold transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                設定・マスタを保存
+                設定をViewerへ反映
             </button>
         </div>
     </div>
@@ -1122,10 +1157,10 @@
             class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left transition hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
         >
             <div class="text-xs font-extrabold text-emerald-900">
-                この企業のCSVデータを更新
+                この企業のデータを更新
             </div>
             <div class="mt-1 text-[11px] leading-relaxed text-emerald-700">
-                対象Sheet URLを引き継いだまま、CSV読込モードへ移動します。
+                この企業を反映先として設定したまま、CSV取込画面へ移動します。
             </div>
         </button>
 
@@ -1436,6 +1471,7 @@
         const SHEETS_ACCESS_KEY_STORAGE_KEY = "validApplicationAnalysis.sheetsAccessKey";
         const SHEETS_LAST_RESULT_STORAGE_KEY = "validApplicationAnalysis.thinV1.lastSheetResult";
         const SHEETS_UPDATE_TARGET_STORAGE_KEY = "validApplicationAnalysis.thinV1.updateTargetUrl";
+        const VIEWER_AUTO_OPEN_STORAGE_KEY = "validApplicationAnalysis.viewerAutoOpen";
         const SHEETS_POST_TIMEOUT_MS = 330000; // 5分30秒。1回のAPI処理待機上限。
 const SHEETS_MAX_AUTO_RESUME_MS = 900000; // 自動再開は最大15分。
 const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
@@ -1525,7 +1561,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
             }
         });
 
-        // 保存済みのGoogle Sheets連携設定を初期表示へ反映
+        // 保存済みのViewer連携・保存設定を初期表示へ反映
         loadSheetsConnectionSettingsIntoModal();
 
         // Chart.js プラグインの登録
@@ -2088,7 +2124,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-system-diagnostics-v1";
+const SHEETS_APP_VERSION = "2026.08.30-management-ux-v1";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2532,7 +2568,7 @@ function buildSheetsPayloadV3(accessKey = "", requestId = "", targetSpreadsheetU
         companyDisplayName:
             normalizeString(targetSpreadsheetUrl)
                 ? ""
-                : normalizeString(
+                : normalizeCompanyDisplayNameForUi(
                     document.getElementById("newCompanyDisplayNameInput")?.value
                 ),
         reportName:
@@ -2765,8 +2801,8 @@ function updateSheetsOperationUi() {
     const id = extractSpreadsheetIdFromUrl(raw);
 
     if (!raw) {
-        title.textContent = "Google Sheetsレポートを新規作成";
-        btn.textContent = "新規レポートを作成";
+        title.textContent = "分析Viewerへ反映";
+        btn.textContent = "分析Viewerへ反映";
         note.className = "mt-2 text-[11px] leading-relaxed text-gray-500";
         note.textContent = "空欄なら新規作成します。URLを入力した場合は、集計設定・KWマスタ・企業表示名・画像マスタ等を引き継いで更新します。";
         return;
@@ -2903,7 +2939,7 @@ function mapSheetsApiError(data) {
         SCHEMA_MISMATCH:
             "Pages側とAPI GAS側のデータ仕様が一致していません。API GASのSCHEMA_VERSIONが3.0か確認してください。",
         NO_APPLICATION_DATA:
-            "応募データがありません。先にデータ集計を実行してください。",
+            "応募データがありません。先に分析データを作成してください。",
         INVALID_PAYLOAD:
             "Google Sheetsへ送るデータの形式に問題があります。",
         INVALID_DATASET:
@@ -2929,13 +2965,13 @@ function mapSheetsApiError(data) {
         MANAGE_LOAD_ERROR:
             "既存レポートの設定読み込み中にエラーが発生しました。",
         MANAGE_LIST_ERROR:
-            "個社レポート一覧の取得中にエラーが発生しました。",
+            "個社Viewer一覧の取得中にエラーが発生しました。",
         MANAGE_DIAGNOSTICS_ERROR:
             "システム診断の実行中にエラーが発生しました。",
         MANAGE_SAVE_ERROR:
             "設定・マスタの保存中にエラーが発生しました。",
         REPORT_NAME_REQUIRED:
-            "レポート名を入力してください。",
+            "Viewer名を入力してください。",
         IMAGE_RETRY_ERROR:
             "画像URLの再取得中にエラーが発生しました。",
         VIEWER_ACCESS_UPDATE_ERROR:
@@ -3008,10 +3044,10 @@ function sheetsStageLabel(data) {
 
     const labels = {
         CREATED: "新規Spreadsheet作成完了",
-        OPENED: "スプレッドシートを開きました",
-        DATA_WRITTEN: "データ書き込み完了",
-        REPORT_DONE: "レポート生成完了",
-        READY: "作成完了"
+        OPENED: "保存領域を準備しました",
+        DATA_WRITTEN: "分析データ保存完了",
+        REPORT_DONE: "Viewer反映準備完了",
+        READY: "Viewer反映完了"
     };
 
     if (labels[stage]) {
@@ -3019,10 +3055,10 @@ function sheetsStageLabel(data) {
     }
 
     if (status === "PROCESSING") {
-        return "Google Sheets処理中";
+        return "Viewer反映処理中";
     }
 
-    return "Google Sheets作成処理中";
+    return "Viewer反映処理中";
 }
 
 async function postSheetsPayloadUntilReady(
@@ -3119,6 +3155,212 @@ async function postSheetsPayloadUntilReady(
     }
 }
 
+function normalizeCompanyDisplayNameForUi(value) {
+    const name =
+        normalizeString(value)
+            .replace(/\s+/g, " ")
+            .trim();
+
+    if (!name) return "";
+
+    return /(様|御中)$/.test(name)
+        ? name
+        : `${name}様`;
+}
+
+function getViewerAutoOpenPreference() {
+    try {
+        const stored =
+            localStorage.getItem(
+                VIEWER_AUTO_OPEN_STORAGE_KEY
+            );
+
+        return stored === null
+            ? true
+            : stored !== "false";
+    } catch (_) {
+        return true;
+    }
+}
+
+function setViewerAutoOpenPreference(enabled) {
+    const value = !!enabled;
+
+    try {
+        localStorage.setItem(
+            VIEWER_AUTO_OPEN_STORAGE_KEY,
+            value ? "true" : "false"
+        );
+    } catch (_) {}
+
+    [
+        "etlAutoOpenViewerCheckbox",
+        "manageAutoOpenViewerCheckbox"
+    ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = value;
+    });
+}
+
+function initializeViewerAutoOpenControls() {
+    const enabled =
+        getViewerAutoOpenPreference();
+
+    [
+        "etlAutoOpenViewerCheckbox",
+        "manageAutoOpenViewerCheckbox"
+    ].forEach(id => {
+        const el =
+            document.getElementById(id);
+
+        if (!el) return;
+
+        el.checked = enabled;
+
+        el.addEventListener(
+            "change",
+            () =>
+                setViewerAutoOpenPreference(
+                    el.checked
+                )
+        );
+    });
+}
+
+function writeReservedViewerTab(
+    tab,
+    title,
+    message,
+    tone = "info"
+) {
+    if (!tab || tab.closed) return;
+
+    const palettes = {
+        info: ["#eff6ff", "#1d4ed8"],
+        success: ["#ecfdf5", "#047857"],
+        warning: ["#fffbeb", "#b45309"],
+        error: ["#fef2f2", "#b91c1c"]
+    };
+
+    const palette =
+        palettes[tone] ||
+        palettes.info;
+
+    try {
+        tab.document.open();
+        tab.document.write(`
+            <!doctype html>
+            <html lang="ja">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width,initial-scale=1">
+                <title>${manageEscapeHtml(title)}</title>
+            </head>
+            <body style="margin:0;background:${palette[0]};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0f172a;">
+                <main style="max-width:680px;margin:12vh auto;padding:32px;">
+                    <div style="background:white;border:1px solid #e2e8f0;border-radius:18px;padding:28px;box-shadow:0 12px 30px rgba(15,23,42,.08);">
+                        <div style="font-size:20px;font-weight:800;color:${palette[1]};">${manageEscapeHtml(title)}</div>
+                        <div style="margin-top:12px;font-size:14px;line-height:1.8;color:#475569;">${manageEscapeHtml(message)}</div>
+                    </div>
+                </main>
+            </body>
+            </html>
+        `);
+        tab.document.close();
+    } catch (_) {}
+}
+
+function reserveViewerTab(message) {
+    if (!getViewerAutoOpenPreference()) {
+        return null;
+    }
+
+    let tab = null;
+
+    try {
+        tab =
+            window.open(
+                "about:blank",
+                "_blank"
+            );
+    } catch (_) {
+        tab = null;
+    }
+
+    if (!tab) return null;
+
+    writeReservedViewerTab(
+        tab,
+        "有効応募分析 Viewer",
+        message ||
+            "Viewerへの反映完了を待っています。",
+        "info"
+    );
+
+    try {
+        tab.opener = null;
+    } catch (_) {}
+
+    return tab;
+}
+
+function openViewerInReservedTab(
+    tab,
+    viewerUrl,
+    viewerEnabled = true
+) {
+    if (!tab || tab.closed) {
+        return false;
+    }
+
+    const url =
+        normalizeString(viewerUrl);
+
+    if (!viewerEnabled) {
+        writeReservedViewerTab(
+            tab,
+            "Viewerは現在停止中です",
+            "反映は完了しましたが、この企業のViewerは閲覧停止中です。管理画面から再開できます。",
+            "warning"
+        );
+        return false;
+    }
+
+    if (!url) {
+        writeReservedViewerTab(
+            tab,
+            "Viewer URLを取得できませんでした",
+            "反映処理は完了しています。管理Pagesの個社Viewer一覧からViewerを開いてください。",
+            "warning"
+        );
+        return false;
+    }
+
+    try {
+        tab.location.replace(url);
+        return true;
+    } catch (_) {
+        try {
+            tab.location.href = url;
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+}
+
+function failReservedViewerTab(tab, message) {
+    if (!tab || tab.closed) return;
+
+    writeReservedViewerTab(
+        tab,
+        "Viewerへの反映を完了できませんでした",
+        message ||
+            "管理Pagesへ戻り、エラー内容をご確認ください。",
+        "error"
+    );
+}
+
 async function createGoogleSpreadsheet() {
     if (globalSheetsCreateInFlight || globalFinalData.length === 0) return;
 
@@ -3130,7 +3372,7 @@ async function createGoogleSpreadsheet() {
 
     if (targetSpreadsheetUrl && !targetSpreadsheetId) {
         setSheetsCreateStatus(
-            "既存レポートのGoogle Sheets URLが正しくありません。",
+            "既存Viewerの保存先URLが正しくありません。",
             "warning"
         );
         targetInput?.focus();
@@ -3139,7 +3381,7 @@ async function createGoogleSpreadsheet() {
 
     if (!accessKey) {
         setSheetsCreateStatus(
-            "Google Sheets連携のアクセスキーが未設定です。詳細設定へ入力してください。",
+            "Viewer連携のアクセスキーが未設定です。詳細設定へ入力してください。",
             "warning"
         );
         openSheetsSettingsAndFocus();
@@ -3152,32 +3394,32 @@ async function createGoogleSpreadsheet() {
     if (jobFileCount > 0 && globalJoinCount === 0) {
         const proceed = window.confirm(
             "求人CSVは読み込まれていますが、応募データとの求人突合が0件です。\n\n" +
-            "このまま「応募データのみ」のGoogle Sheetsレポートを作成しますか？\n\n" +
-            "［OK］このまま作成\n［キャンセル］求人CSVを見直す"
+            "このまま「応募データのみ」でViewerへ反映しますか？\n\n" +
+            "［OK］このまま反映\n［キャンセル］求人CSVを見直す"
         );
         if (!proceed) return;
     }
 
     if (targetSpreadsheetId) {
         const proceedUpdate = window.confirm(
-            "既存の有効応募分析レポートを更新します。\n\n" +
-            "更新するもの：\n" +
-            "・90～96番台の分析元データ\n" +
-            "・分析結果タブ\n\n" +
-            "維持するもの：\n" +
-            "・集計設定\n" +
-            "・仕事名KWマスタ\n" +
-            "・企業ID表示名\n" +
-            "・画像マスタの既存URL／メモ\n" +
-            "・カスタム分析設定\n" +
-            "・ファイル名／共有権限／GAS\n\n" +
-            "この既存レポートを更新しますか？"
+            "この企業の分析データを更新し、Viewerへ反映します。\n\n" +
+            "企業表示名・集計設定・KW・画像URL／メモ・カスタム分析設定・Viewer共有設定は維持します。\n\n" +
+            "このViewerへ反映しますか？"
         );
         if (!proceedUpdate) return;
     }
 
+    const viewerTab =
+        reserveViewerTab(
+            targetSpreadsheetId
+                ? "既存Viewerへ最新データを反映しています。完了すると自動で表示します。"
+                : "新しいViewerを準備しています。完了すると自動で表示します。"
+        );
+
     const btn = document.getElementById("createGoogleSheetBtn");
-    const originalText = btn?.textContent.trim() || (targetSpreadsheetId ? "この既存レポートを更新" : "新規レポートを作成");
+    const originalText =
+        btn?.textContent.trim() ||
+        "分析Viewerへ反映";
 
     globalSheetsCreateInFlight = true;
     if (btn) {
@@ -3215,7 +3457,7 @@ async function createGoogleSpreadsheet() {
 
         if (btn) btn.textContent = "送信データ準備中...";
         setSheetsCreateStatus(
-            "Google Sheets送信用データを準備しています...",
+            "Viewer反映用データを準備しています...",
             "info"
         );
 
@@ -3239,12 +3481,12 @@ async function createGoogleSpreadsheet() {
             `送信サイズ: ${formatByteSize(payloadBytes)}\n` +
             `requestId: ${globalPendingSheetsRequestId}\n\n` +
             (targetSpreadsheetId
-                ? `既存レポートのデータ更新・再集計の完了を待っています...`
-                : `テンプレート複製・データ書き込みの完了を待っています...`),
+                ? `既存Viewerへのデータ反映完了を待っています...`
+                : `保存領域の作成・データ反映完了を待っています...`),
             "info"
         );
 
-        if (btn) btn.textContent = targetSpreadsheetId ? "既存レポート更新中..." : "Google Sheets作成中...";
+        if (btn) btn.textContent = targetSpreadsheetId ? "Viewer更新中..." : "Viewer反映中...";
 
 
 const data =
@@ -3259,14 +3501,14 @@ const data =
 
             if (btn) {
                 btn.textContent =
-                    "Google Sheets作成中...";
+                    "Viewer反映中...";
             }
         }
     );
 
 if (!data.spreadsheetUrl) {
     setSheetsCreateStatus(
-        "API処理は成功しましたが、Spreadsheet URLが返りませんでした。",
+        "API処理は成功しましたが、保存先情報が返りませんでした。",
         "error"
     );
     return;
@@ -3274,16 +3516,22 @@ if (!data.spreadsheetUrl) {
 
         setSheetsCreateStatus(
             normalizeString(data.operationMode).toUpperCase() === "UPDATE"
-                ? "既存Google Sheetsレポートの更新が完了しました。"
+                ? "既存Viewerへのデータ反映が完了しました。"
                 : (data.reused
-                    ? "同じrequestIdの作成済みレポートを返しました。"
-                    : "Google Sheetsレポートの作成が完了しました。"),
+                    ? "同じ処理IDの反映済みViewerを確認しました。"
+                    : "分析Viewerへの反映が完了しました。"),
             "success"
         );
 
         showCreatedSheetSuccess(data);
 
-        // 成功後は次回クリックを「新しいSheet作成」とするためrequestIdを破棄。
+        openViewerInReservedTab(
+            viewerTab,
+            data.viewerUrl,
+            data.viewerEnabled !== false
+        );
+
+        // 成功後は次回クリックを新しい反映処理とするためrequestIdを破棄。
         globalPendingSheetsRequestId = "";
 
 
@@ -3298,13 +3546,19 @@ if (!data.spreadsheetUrl) {
         );
 
     const message =
-        "Google Sheets作成処理を完了できませんでした.\n" +
+        "Viewer反映処理を完了できませんでした.\n" +
         (error?.message || String(error)) +
         "\n\n同じボタンから再試行できます。requestIdと生成済みファイルは維持されます。";
 
     setSheetsCreateStatus(
         message,
         "error"
+    );
+
+    failReservedViewerTab(
+        viewerTab,
+        error?.message ||
+            String(error)
     );
 
     if (code === "AUTH_INVALID") {
@@ -3485,8 +3739,8 @@ function setWorkflowMode(
     if (hint) {
         hint.textContent =
             nextMode === "manage"
-                ? "現在：既存レポートの設定・マスタ管理モード（CSV不要）"
-                : "現在：新規集計・データ更新モード";
+                ? "現在：個社Viewerの設定・共有管理モード（CSV不要）"
+                : "現在：データ取込・Viewer反映モード";
     }
 
     if (persist) {
@@ -4598,7 +4852,7 @@ function renderManagedReportList() {
                 <td colspan="7" class="p-5 text-center text-slate-400">
                     ${
                         managedReportListLoaded
-                            ? "該当するレポートはありません。"
+                            ? "該当するViewerはありません。"
                             : "「一覧を更新」でレポートを読み込みます。"
                     }
                 </td>
@@ -4766,7 +5020,7 @@ function renderManagedReportList() {
                                 data-report-id="${manageEscapeHtml(report.spreadsheetId)}"
                                 class="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[10px] font-extrabold text-emerald-700 hover:bg-emerald-100"
                             >
-                                CSV更新
+                                データ更新
                             </button>
                         </div>
                     </td>
@@ -4977,7 +5231,7 @@ async function loadManagedReportList(
     if (!getStoredSheetsAccessKey()) {
         if (!silent) {
             setManagedReportListMessage(
-                "個社レポート一覧の取得には社内用アクセスキーが必要です。右上の詳細設定から保存してください。",
+                "個社Viewer一覧の取得には社内用アクセスキーが必要です。右上の詳細設定から保存してください。",
                 "warning"
             );
 
@@ -5072,7 +5326,7 @@ async function loadManagedReportList(
     } catch (error) {
         setManagedReportListMessage(
             error?.name === "AbortError"
-                ? "個社レポート一覧の取得がタイムアウトしました。もう一度お試しください。"
+                ? "個社Viewer一覧の取得がタイムアウトしました。もう一度お試しください。"
                 : (
                     error?.message ||
                     String(error)
@@ -5334,6 +5588,22 @@ function renderManagedEnterprise(rows) {
             </td>
         </tr>
     `).join("");
+
+    body
+        .querySelectorAll(
+            "input[data-enterprise-id]"
+        )
+        .forEach(input => {
+            input.addEventListener(
+                "blur",
+                () => {
+                    input.value =
+                        normalizeCompanyDisplayNameForUi(
+                            input.value
+                        );
+                }
+            );
+        });
 }
 
 function syncManagedImageRowFromInput(input) {
@@ -6385,7 +6655,7 @@ function suggestManagedReportName() {
 
 function applyManagedEnterpriseBulkName() {
     const bulk =
-        normalizeString(
+        normalizeCompanyDisplayNameForUi(
             document.getElementById(
                 "managedEnterpriseBulkNameInput"
             )?.value
@@ -6436,7 +6706,7 @@ function applyManagedEnterpriseBulkName() {
 
 function suggestNewReportName() {
     const company =
-        normalizeString(
+        normalizeCompanyDisplayNameForUi(
             document.getElementById(
                 "newCompanyDisplayNameInput"
             )?.value
@@ -6480,10 +6750,21 @@ function collectManagedEnterprise() {
         document.querySelectorAll(
             "#managedEnterpriseBody input[data-enterprise-id]"
         )
-    ).map(input => ({
-        enterpriseId: input.dataset.enterpriseId,
-        displayName: input.value
-    }));
+    ).map(input => {
+        const displayName =
+            normalizeCompanyDisplayNameForUi(
+                input.value
+            );
+
+        input.value =
+            displayName;
+
+        return {
+            enterpriseId:
+                input.dataset.enterpriseId,
+            displayName
+        };
+    });
 }
 
 function collectManagedKeywords() {
@@ -6620,7 +6901,7 @@ async function saveManagedReportState() {
         spreadsheetId !== loadedId
     ) {
         setManagedReportStatus(
-            "保存前に、現在入力されているSheetをもう一度読み込んでください。",
+            "反映前に、現在の個社Viewerをもう一度読み込んでください。",
             "warning"
         );
         return;
@@ -6637,7 +6918,7 @@ async function saveManagedReportState() {
 
     if (!requestedName) {
         setManagedReportStatus(
-            "レポート名を入力してください。",
+            "Viewer名を入力してください。",
             "warning"
         );
         document.getElementById("managedReportNameInput")?.focus();
@@ -6646,18 +6927,23 @@ async function saveManagedReportState() {
 
     const renameNote =
         requestedName !== fileName
-            ? `\n\nレポート名を「${fileName}」から「${requestedName}」へ変更します。`
+            ? `\n\nViewer名を「${fileName}」から「${requestedName}」へ変更します。`
             : "";
 
     const confirmed = window.confirm(
-        `「${fileName}」へ設定・マスタを保存します。\n\n共有先・編集対象が正しいことを確認してください。${renameNote}`
+        `「${fileName}」の設定変更をViewerへ反映します。\n\n共有先・編集対象が正しいことを確認してください。${renameNote}`
     );
 
     if (!confirmed) return;
 
+    const viewerTab =
+        reserveViewerTab(
+            "設定変更をViewerへ反映しています。完了すると自動で表示します。"
+        );
+
     setManagedReportBusy(true);
     setManagedReportStatus(
-        `「${fileName}」へレポート名・設定・マスタを保存しています...`,
+        `「${fileName}」へ設定変更を反映しています...`,
         "info"
     );
 
@@ -6685,8 +6971,14 @@ async function saveManagedReportState() {
 
         renderManagedReportState(data);
 
+        openViewerInReservedTab(
+            viewerTab,
+            data.metadata?.viewerUrl,
+            data.metadata?.viewerEnabled !== false
+        );
+
         setManagedReportStatus(
-            `「${data.metadata?.fileName || fileName}」へ保存しました。Viewerにも次回読み込みから即反映されます。`,
+            `「${data.metadata?.fileName || fileName}」へ設定を反映しました。`,
             "success"
         );
 
@@ -6700,10 +6992,16 @@ async function saveManagedReportState() {
     } catch (error) {
         const message =
             error?.name === "AbortError"
-                ? "保存処理がタイムアウトしました。Sheet側を確認してから再試行してください。"
+                ? "反映処理がタイムアウトしました。保存データの状態を確認してから再試行してください。"
                 : (error?.message || String(error));
 
         setManagedReportStatus(message, "error");
+
+        failReservedViewerTab(
+            viewerTab,
+            error?.message ||
+                String(error)
+        );
 
     } finally {
         setManagedReportBusy(false);
@@ -6733,6 +7031,25 @@ if (runManagedDiagnosticsBtn) {
         runManagedDiagnostics
     );
 }
+
+const newCompanyDisplayNameInput =
+    document.getElementById(
+        "newCompanyDisplayNameInput"
+    );
+
+if (newCompanyDisplayNameInput) {
+    newCompanyDisplayNameInput.addEventListener(
+        "blur",
+        () => {
+            newCompanyDisplayNameInput.value =
+                normalizeCompanyDisplayNameForUi(
+                    newCompanyDisplayNameInput.value
+                );
+        }
+    );
+}
+
+initializeViewerAutoOpenControls();
 
 const managedReportListSearch =
     document.getElementById(
@@ -7466,7 +7783,7 @@ if (createGoogleSheetBtn) {
                 return;
             }
 
-            msgEl.innerHTML = "<span class='flex items-center justify-center'><svg class='animate-spin w-5 h-5 mr-2' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg> データ集計中...</span>";
+            msgEl.innerHTML = "<span class='flex items-center justify-center'><svg class='animate-spin w-5 h-5 mr-2' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg> CSVを読み込み、分析データを作成しています...</span>";
             msgEl.className = "mt-6 text-center text-sm font-bold text-blue-600 bg-blue-50 p-4 rounded-xl border border-blue-100 block";
             document.getElementById('resultArea').classList.add('hidden');
 
@@ -7868,13 +8185,6 @@ if (createGoogleSheetBtn) {
             });
         });
 
-        document.getElementById('goToDashboardBtn').addEventListener('click', () => {
-            document.getElementById('etlView').classList.add('hidden');
-            document.getElementById('dashboardView').classList.remove('hidden');
-            currentCategory = "age";
-            updateSidebarHighlight("応募年月");
-            initDashboard(); updateDashboard();
-        });
         document.getElementById('backToEtlBtn').addEventListener('click', () => {
             document.getElementById('dashboardView').classList.add('hidden');
             document.getElementById('etlView').classList.remove('hidden');
