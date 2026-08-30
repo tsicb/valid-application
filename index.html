@@ -633,6 +633,13 @@
                         placeholder="画像ファイル名・状態・求人管理番号で絞り込み"
                         class="flex-1 border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-400"
                     >
+                    <button
+                        id="managedRetryImagesBtn"
+                        type="button"
+                        class="shrink-0 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-extrabold text-cyan-800 transition hover:bg-cyan-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        未取得画像URLを再取得
+                    </button>
                     <div id="managedImageCount" class="text-[11px] text-gray-500"></div>
                 </div>
                 <div class="overflow-x-auto max-h-[520px] border border-gray-200 rounded-lg">
@@ -1671,7 +1678,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-viewer-primary-mode-v1";
+const SHEETS_APP_VERSION = "2026.08.30-template-free-v1";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2491,6 +2498,8 @@ function mapSheetsApiError(data) {
             "既存レポートの設定読み込み中にエラーが発生しました。",
         MANAGE_SAVE_ERROR:
             "設定・マスタの保存中にエラーが発生しました。",
+        IMAGE_RETRY_ERROR:
+            "画像URLの再取得中にエラーが発生しました。",
         INTERNAL_ERROR:
             "API GAS内部でエラーが発生しました。同じボタンから再試行できます。"
     };
@@ -3171,7 +3180,8 @@ function setManagedReportBusy(flag) {
 
     [
         "loadManagedReportBtn",
-        "saveManagedReportBtn"
+        "saveManagedReportBtn",
+        "managedRetryImagesBtn"
     ].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = managedReportBusy;
@@ -3189,9 +3199,16 @@ async function postManagementAction(action, payload = {}) {
     }
 
     const controller = new AbortController();
+
+    const timeoutMs =
+        String(action || "").toLowerCase() ===
+        "manageretryimages"
+            ? 330000
+            : 180000;
+
     const timeoutId = setTimeout(
         () => controller.abort(),
-        180000
+        timeoutMs
     );
 
     try {
@@ -3580,10 +3597,25 @@ function renderManagedSheetReportMode(value) {
         );
 
     if (badge) {
+        const storageLayout =
+            normalizeString(
+                managedReportState
+                    ?.metadata
+                    ?.storageLayout
+            );
+
+        const layoutSuffix =
+            storageLayout === "THIN_V1"
+                ? " / 新構成"
+                : "";
+
         badge.textContent =
-            mode === "VIEWER_ONLY"
-                ? "Viewer正式"
-                : "移行並走";
+            (
+                mode === "VIEWER_ONLY"
+                    ? "Viewer正式"
+                    : "移行並走"
+            ) +
+            layoutSuffix;
 
         badge.className =
             mode === "VIEWER_ONLY"
@@ -3827,6 +3859,94 @@ function collectManagedCustom() {
     };
 }
 
+async function retryManagedImageUrls() {
+    if (managedReportBusy) return;
+
+    const target =
+        normalizeString(
+            document.getElementById(
+                "manageSheetUrlInput"
+            )?.value
+        );
+
+    const spreadsheetId =
+        extractSpreadsheetIdFromUrl(
+            target
+        );
+
+    const loadedId =
+        normalizeString(
+            managedReportState
+                ?.metadata
+                ?.spreadsheetId
+        );
+
+    if (
+        !spreadsheetId ||
+        !loadedId ||
+        spreadsheetId !== loadedId
+    ) {
+        setManagedReportStatus(
+            "画像URL再取得の前に、現在のSheetをもう一度読み込んでください。",
+            "warning"
+        );
+        return;
+    }
+
+    const fileName =
+        managedReportState
+            ?.metadata
+            ?.fileName ||
+        "有効応募分析";
+
+    setManagedReportBusy(true);
+
+    setManagedReportStatus(
+        `「${fileName}」の未取得画像URLを中央APIから再確認しています...`,
+        "info"
+    );
+
+    try {
+        const data =
+            await postManagementAction(
+                "manageRetryImages",
+                {
+                    targetSpreadsheetUrl:
+                        target
+                }
+            );
+
+        renderManagedReportState(
+            data
+        );
+
+        const result =
+            data.imageRetry || {};
+
+        setManagedReportStatus(
+            `画像URL再取得を完了しました。対象 ${Number(result.targetCount || 0).toLocaleString()}種類 / 成功 ${Number(result.successCount || 0).toLocaleString()}種類 / 未取得 ${Number(result.unresolvedCount || 0).toLocaleString()}種類`,
+            "success"
+        );
+
+    } catch (error) {
+        const message =
+            error?.name === "AbortError"
+                ? "画像URL再取得がタイムアウトしました。Sheet側を確認してから再試行してください。"
+                : (
+                    error?.message ||
+                    String(error)
+                );
+
+        setManagedReportStatus(
+            message,
+            "error"
+        );
+
+    } finally {
+        setManagedReportBusy(false);
+    }
+}
+
 async function saveManagedReportState() {
     if (managedReportBusy) return;
 
@@ -3931,6 +4051,18 @@ const saveManagedReportBtn =
 
 const managedImageFilter =
     document.getElementById("managedImageFilter");
+
+const managedRetryImagesBtn =
+    document.getElementById(
+        "managedRetryImagesBtn"
+    );
+
+if (managedRetryImagesBtn) {
+    managedRetryImagesBtn.addEventListener(
+        "click",
+        retryManagedImageUrls
+    );
+}
 
 if (loadManagedReportBtn) {
     loadManagedReportBtn.addEventListener(
