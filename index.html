@@ -1753,7 +1753,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.30-information-architecture-v1";
+const SHEETS_APP_VERSION = "2026.08.30-information-architecture-v1.1";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -7352,24 +7352,6 @@ if (createGoogleSheetBtn) {
                 hideSheetsCreateSuccess();
                 refreshSheetsCreateSummary();
                 refreshImageLookupTestArea(filesB.length > 0);
-
-                // データの最新日からデフォルトの「ビフォーvsアフター」基準日を設定する
-                let maxTime = 0;
-                globalFinalData.forEach(row => {
-                    if (row["応募日時"]) {
-                        const d = new Date(String(row["応募日時"]).replace(/-/g, '/'));
-                        if (!isNaN(d.getTime()) && d.getTime() > maxTime) {
-                            maxTime = d.getTime();
-                        }
-                    }
-                });
-                if (maxTime > 0) {
-                    const maxDateObj = new Date(maxTime);
-                    // 7日前をデフォルト基準日にする
-                    maxDateObj.setDate(maxDateObj.getDate() - 7);
-                    const formatYMD = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                    document.getElementById('baTargetDate').value = formatYMD(maxDateObj);
-                }
 
             } catch (error) {
                 console.error(error);
