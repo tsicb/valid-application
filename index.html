@@ -925,7 +925,7 @@ async function parseCSV(file) {
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.7-datastore-image-io";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.8-compressed-transport";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2092,44 +2092,218 @@ function mapSheetsApiError(data) {
     return messages[code] || rawMessage || `APIエラーが発生しました${code ? ` (${code})` : ""}。`;
 }
 
-async function postSheetsPayload(apiUrl, payload) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), SHEETS_POST_TIMEOUT_MS);
+function uint8ArrayToBase64(bytes) {
+    let binary = "";
+    const chunkSize = 0x8000;
+
+    for (
+        let offset = 0;
+        offset < bytes.length;
+        offset += chunkSize
+    ) {
+        binary += String.fromCharCode(
+            ...bytes.subarray(
+                offset,
+                Math.min(
+                    offset + chunkSize,
+                    bytes.length
+                )
+            )
+        );
+    }
+
+    return btoa(binary);
+}
+
+async function prepareSheetsTransport(payload) {
+    const startedAt =
+        performance.now();
+
+    const rawText =
+        JSON.stringify(payload);
+
+    const rawBytes =
+        new Blob([rawText]).size;
+
+    const fallback = () => ({
+        body: rawText,
+        mode: "PLAIN_JSON",
+        rawBytes,
+        gzipBytes: 0,
+        transportBytes: rawBytes,
+        ratio:
+            rawBytes > 0
+                ? 1
+                : 0,
+        prepareMs:
+            performance.now() -
+            startedAt,
+        compressionMs: 0,
+        base64Ms: 0,
+        envelopeMs: 0
+    });
+
+    if (
+        typeof CompressionStream !==
+            "function"
+    ) {
+        return fallback();
+    }
 
     try {
-        const response = await fetch(apiUrl, {
-            method: "POST",
-            mode: "cors",
-            credentials: "omit",
-            headers: {
-                "Content-Type": "text/plain;charset=UTF-8"
-            },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-        });
+        const compressionStartedAt =
+            performance.now();
 
-        const responseText = await response.text();
+        const gzipBuffer =
+            await new Response(
+                new Blob([rawText])
+                    .stream()
+                    .pipeThrough(
+                        new CompressionStream(
+                            "gzip"
+                        )
+                    )
+            ).arrayBuffer();
+
+        const compressionMs =
+            performance.now() -
+            compressionStartedAt;
+
+        const gzipBytes =
+            gzipBuffer.byteLength;
+
+        const base64StartedAt =
+            performance.now();
+
+        const payloadBase64 =
+            uint8ArrayToBase64(
+                new Uint8Array(
+                    gzipBuffer
+                )
+            );
+
+        const base64Ms =
+            performance.now() -
+            base64StartedAt;
+
+        const envelopeStartedAt =
+            performance.now();
+
+        const body =
+            JSON.stringify({
+                transportEncoding:
+                    "GZIP_BASE64_V1",
+                payloadBase64
+            });
+
+        const transportBytes =
+            new Blob([body]).size;
+
+        const envelopeMs =
+            performance.now() -
+            envelopeStartedAt;
+
+        // 圧縮の効果が薄い場合は従来JSONを送る。
+        if (
+            transportBytes >=
+            rawBytes * 0.95
+        ) {
+            return fallback();
+        }
+
+        return {
+            body,
+            mode:
+                "GZIP_BASE64_V1",
+            rawBytes,
+            gzipBytes,
+            transportBytes,
+            ratio:
+                rawBytes > 0
+                    ? (
+                        transportBytes /
+                        rawBytes
+                    )
+                    : 0,
+            prepareMs:
+                performance.now() -
+                startedAt,
+            compressionMs,
+            base64Ms,
+            envelopeMs
+        };
+
+    } catch (_) {
+        return fallback();
+    }
+}
+
+async function postSheetsPayload(
+    apiUrl,
+    transport
+) {
+    const controller =
+        new AbortController();
+
+    const timeoutId =
+        setTimeout(
+            () => controller.abort(),
+            SHEETS_POST_TIMEOUT_MS
+        );
+
+    try {
+        const response =
+            await fetch(
+                apiUrl,
+                {
+                    method: "POST",
+                    mode: "cors",
+                    credentials: "omit",
+                    headers: {
+                        "Content-Type":
+                            "text/plain;charset=UTF-8"
+                    },
+                    body:
+                        transport.body,
+                    signal:
+                        controller.signal
+                }
+            );
+
+        const responseText =
+            await response.text();
 
         let data;
+
         try {
-            data = JSON.parse(responseText);
+            data =
+                JSON.parse(
+                    responseText
+                );
         } catch (_) {
             throw new Error(
                 `API応答をJSONとして解析できませんでした。HTTP ${response.status}\n` +
-                responseText.slice(0, 500)
+                responseText.slice(
+                    0,
+                    500
+                )
             );
         }
 
         return {
-            httpOk: response.ok,
-            status: response.status,
+            httpOk:
+                response.ok,
+            status:
+                response.status,
             data
         };
+
     } finally {
-        clearTimeout(timeoutId);
+        clearTimeout(
+            timeoutId
+        );
     }
 }
-
 
 function sleepMs(ms) {
     return new Promise(resolve =>
@@ -2258,6 +2432,29 @@ function renderEtlPerformance(apiData = null) {
                 : ""
         ),
         perfRow(
+            "送信payload圧縮",
+            clientApi.transportPrepareMs,
+            clientApi.transportMode
+                ? (
+                    `${normalizeString(clientApi.transportMode)} / ` +
+                    `${formatByteSize(clientApi.rawPayloadBytes || publish.payloadBytes || 0)} → ` +
+                    `${formatByteSize(clientApi.transportBytes || publish.payloadBytes || 0)}`
+                )
+                : ""
+        ),
+        perfRow(
+            "  ├ gzip圧縮",
+            clientApi.transportCompressionMs
+        ),
+        perfRow(
+            "  ├ Base64化",
+            clientApi.transportBase64Ms
+        ),
+        perfRow(
+            "  └ envelope生成",
+            clientApi.transportEnvelopeMs
+        ),
+        perfRow(
             "API往復＋待機 合計",
             clientApi.totalCycleMs
         ),
@@ -2296,15 +2493,30 @@ function renderEtlPerformance(apiData = null) {
         ),
         perfRow(
             "GAS：受付～payload検証",
-            server.preflightMs
+            server.preflightMs,
+            server.transportMode
+                ? `${normalizeString(server.transportMode)} / 受信${Number(server.transportBodyChars || 0).toLocaleString()} chars / 展開${Number(server.transportExpandedChars || 0).toLocaleString()} chars`
+                : ""
         ),
         perfRow(
             "  ├ POST本文取得",
             server.bodyReadMs
         ),
         perfRow(
-            "  ├ JSON解析",
+            "  ├ 外側JSON解析",
             server.jsonParseMs
+        ),
+        perfRow(
+            "  ├ Base64 decode",
+            server.transportBase64DecodeMs
+        ),
+        perfRow(
+            "  ├ gzip展開",
+            server.transportUngzipMs
+        ),
+        perfRow(
+            "  ├ 展開後JSON解析",
+            server.transportInnerParseMs
         ),
         perfRow(
             "  ├ payload検証",
@@ -2360,6 +2572,18 @@ function renderEtlPerformance(apiData = null) {
             server.imageMasterMergeMode
                 ? `${normalizeString(server.imageMasterMergeMode)} / 変更${Number(server.imageMasterChangedRows || 0)}行 / 追加${Number(server.imageMasterAppendedRows || 0)}行`
                 : ""
+        ),
+        perfRow(
+            "     ├ signature生成",
+            server.imageMasterSignatureComputeMs
+        ),
+        perfRow(
+            "     ├ signature状態読込",
+            server.imageMasterSignatureStateReadMs
+        ),
+        perfRow(
+            "     ├ signature状態保存",
+            server.imageMasterSignatureStateWriteMs
         ),
         perfRow(
             "     ├ Sheet確認",
@@ -2590,10 +2814,17 @@ function sheetsStageLabel(data) {
 async function postSheetsPayloadUntilReady(
     apiUrl,
     payload,
-    onStatus
+    onStatus,
+    preparedTransport = null
 ) {
     const startedAt =
         performance.now();
+
+    const transport =
+        preparedTransport ||
+        await prepareSheetsTransport(
+            payload
+        );
 
     let rounds = 0;
     let timeoutCount = 0;
@@ -2632,7 +2863,7 @@ async function postSheetsPayloadUntilReady(
             result =
                 await postSheetsPayload(
                     apiUrl,
-                    payload
+                    transport
                 );
 
             apiRoundTripMs +=
@@ -2713,7 +2944,25 @@ async function postSheetsPayloadUntilReady(
                 scheduledWaitMs,
                 timeoutRecoveryWaitMs,
                 rounds,
-                timeoutCount
+                timeoutCount,
+                transportMode:
+                    transport.mode,
+                rawPayloadBytes:
+                    transport.rawBytes,
+                gzipBytes:
+                    transport.gzipBytes,
+                transportBytes:
+                    transport.transportBytes,
+                transportRatio:
+                    transport.ratio,
+                transportPrepareMs:
+                    transport.prepareMs,
+                transportCompressionMs:
+                    transport.compressionMs,
+                transportBase64Ms:
+                    transport.base64Ms,
+                transportEnvelopeMs:
+                    transport.envelopeMs
             };
 
             return data;
@@ -3161,9 +3410,26 @@ async function createGoogleSpreadsheet({
                 payload
             );
 
+        const transport =
+            await prepareSheetsTransport(
+                payload
+            );
+
+        const transportNote =
+            transport.mode ===
+                "GZIP_BASE64_V1"
+                ? (
+                    `${formatByteSize(transport.rawBytes)} → ` +
+                    `${formatByteSize(transport.transportBytes)} ` +
+                    `(${(transport.ratio * 100).toFixed(1)}%)`
+                )
+                : formatByteSize(
+                    transport.transportBytes
+                );
+
         setSheetsCreateStatus(
             `API GASへ送信しています。\n` +
-            `送信サイズ: ${formatByteSize(payloadBytes)}\n` +
+            `送信サイズ: ${transportNote}\n` +
             (
                 targetSpreadsheetId
                     ? "既存Viewerへの反映完了を待っています..."
@@ -3186,7 +3452,8 @@ async function createGoogleSpreadsheet({
                         runLabel.textContent =
                             "Viewerへ反映しています...";
                     }
-                }
+                },
+                transport
             );
 
         if (!data.spreadsheetUrl) {
@@ -3212,6 +3479,7 @@ async function createGoogleSpreadsheet({
             imageLookupMs,
             payloadBuildMs,
             payloadBytes,
+            transport,
             api:
                 data.clientPerformance ||
                 {}
