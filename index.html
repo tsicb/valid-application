@@ -925,7 +925,7 @@ async function parseCSV(file) {
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.5-finalization-io";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.6-pipeline-timing";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2267,24 +2267,104 @@ function renderEtlPerformance(apiData = null) {
             `${Number(clientApi.rounds || 0)}回`
         ),
         perfRow(
+            "  ├ GASサーバー申告時間",
+            clientApi.serverReportedMs
+        ),
+        perfRow(
+            "  └ 通信・ContentService等",
+            Math.max(
+                0,
+                Number(clientApi.apiRoundTripMs || 0) -
+                Number(clientApi.serverReportedMs || 0)
+            )
+        ),
+        perfRow(
             "うち固定/再試行待機",
             clientApi.scheduledWaitMs
+        ),
+        perfRow(
+            "GAS：API処理全体",
+            server.lastApiCallMs
+        ),
+        perfRow(
+            "GAS：工程計測合計",
+            server.pipelineAccountedMs
+        ),
+        perfRow(
+            "GAS：未分類時間",
+            server.pipelineUnclassifiedMs
+        ),
+        perfRow(
+            "GAS：受付～payload検証",
+            server.preflightMs
+        ),
+        perfRow(
+            "  ├ POST本文取得",
+            server.bodyReadMs
+        ),
+        perfRow(
+            "  ├ JSON解析",
+            server.jsonParseMs
+        ),
+        perfRow(
+            "  ├ payload検証",
+            server.payloadValidationMs
+        ),
+        perfRow(
+            "  └ Script Properties取得",
+            server.scriptPropertiesMs
+        ),
+        perfRow(
+            "GAS：排他・request状態準備",
+            server.requestCoordinationMs
+        ),
+        perfRow(
+            "  └ Lock待機",
+            server.lockWaitMs
         ),
         perfRow(
             "GAS：Spreadsheet作成",
             server.createWorkbookMs
         ),
         perfRow(
-            "GAS：更新先検証",
+            "GAS：初回更新先検証",
             server.targetValidationMs
+        ),
+        perfRow(
+            "GAS：更新先再検証",
+            server.driveRevalidationMs
         ),
         perfRow(
             "GAS：Spreadsheet open",
             server.openSpreadsheetMs
         ),
         perfRow(
+            "GAS：Workbook検証",
+            server.validateWorkbookMs
+        ),
+        perfRow(
+            "GAS：OPENED状態保存",
+            server.openedStateSaveMs
+        ),
+        perfRow(
             "GAS：Sheetデータ書込全体",
             server.dataWriteMs
+        ),
+        perfRow(
+            "  ├ Workbook shell確認",
+            server.prepareShellMs
+        ),
+        perfRow(
+            "  ├ 画像マスタmerge",
+            server.imageMasterMergeMs
+        ),
+        perfRow(
+            "  ├ 企業IDマスタmerge",
+            server.enterpriseMergeMs
+        ),
+        perfRow(
+            "  └ Sheet書込flush",
+            server.writeFlushMs
         ),
         perfRow(
             "GAS：分析データストア保存",
@@ -2292,6 +2372,26 @@ function renderEtlPerformance(apiData = null) {
             server.analysisDataStoreChars
                 ? `${Number(server.analysisDataStoreChars).toLocaleString()} chars / ${normalizeString(server.analysisDataStoreMode)}`
                 : ""
+        ),
+        perfRow(
+            "  ├ JSON生成",
+            server.analysisDataStoreSerializeMs
+        ),
+        perfRow(
+            "  ├ 書込後読み戻し",
+            server.analysisDataStoreVerifyReadMs
+        ),
+        perfRow(
+            "  ├ 検証JSON解析",
+            server.analysisDataStoreVerifyParseMs
+        ),
+        perfRow(
+            "  └ 正式参照切替",
+            server.analysisDataStoreCommitMs
+        ),
+        perfRow(
+            "GAS：DATA_WRITTEN状態保存",
+            server.dataWrittenStateSaveMs
         ),
         perfRow(
             "GAS：旧90応募データ削除",
@@ -2348,7 +2448,12 @@ function renderEtlPerformance(apiData = null) {
             "     └ Portal再描画",
             server.viewerAccessPortalWriteMs,
             server.viewerAccessPortalWriteMs
-                ? "必要時のみ"
+                ? (
+                    Array.isArray(server.viewerAccessChangedKeys) &&
+                    server.viewerAccessChangedKeys.length
+                        ? `変更: ${server.viewerAccessChangedKeys.join(", ")}`
+                        : "必要時のみ"
+                )
                 : "再描画なし"
         ),
         perfRow(
@@ -2370,6 +2475,18 @@ function renderEtlPerformance(apiData = null) {
         perfRow(
             "  └ 最終flush",
             server.finalizeFlushMs
+        ),
+        perfRow(
+            "GAS：REPORT_DONE状態保存",
+            server.reportDoneStateSaveMs
+        ),
+        perfRow(
+            "GAS：READY情報確定",
+            server.readyFinalizeMs
+        ),
+        perfRow(
+            "GAS：READY状態保存",
+            server.readyStateSaveMs
         ),
         datasetRows,
         perfRow(
