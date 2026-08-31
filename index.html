@@ -925,7 +925,7 @@ async function parseCSV(file) {
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.6-pipeline-timing";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.7-datastore-image-io";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2356,7 +2356,34 @@ function renderEtlPerformance(apiData = null) {
         ),
         perfRow(
             "  ├ 画像マスタmerge",
-            server.imageMasterMergeMs
+            server.imageMasterMergeMs,
+            server.imageMasterMergeMode
+                ? `${normalizeString(server.imageMasterMergeMode)} / 変更${Number(server.imageMasterChangedRows || 0)}行 / 追加${Number(server.imageMasterAppendedRows || 0)}行`
+                : ""
+        ),
+        perfRow(
+            "     ├ Sheet確認",
+            server.imageMasterEnsureSheetMs
+        ),
+        perfRow(
+            "     ├ 既存画像マスタ読込",
+            server.imageMasterReadMs
+        ),
+        perfRow(
+            "     ├ merge計算",
+            server.imageMasterComputeMs
+        ),
+        perfRow(
+            "     ├ 変更行書込",
+            server.imageMasterChangedRowsWriteMs
+        ),
+        perfRow(
+            "     ├ 追加行書込",
+            server.imageMasterAppendRowsWriteMs
+        ),
+        perfRow(
+            "     └ 全体再書込",
+            server.imageMasterFullRewriteMs
         ),
         perfRow(
             "  ├ 企業IDマスタmerge",
@@ -2374,8 +2401,20 @@ function renderEtlPerformance(apiData = null) {
                 : ""
         ),
         perfRow(
+            "  ├ Data Store object生成",
+            server.analysisDataStoreBuildObjectMs
+        ),
+        perfRow(
             "  ├ JSON生成",
             server.analysisDataStoreSerializeMs
+        ),
+        perfRow(
+            "  ├ 保存フォルダ取得",
+            server.analysisDataStoreFolderMs
+        ),
+        perfRow(
+            "  ├ 新JSONファイル作成",
+            server.analysisDataStoreCreateMs
         ),
         perfRow(
             "  ├ 書込後読み戻し",
@@ -2386,8 +2425,25 @@ function renderEtlPerformance(apiData = null) {
             server.analysisDataStoreVerifyParseMs
         ),
         perfRow(
-            "  └ 正式参照切替",
+            "  ├ 内容検証",
+            server.analysisDataStoreValidationMs
+        ),
+        perfRow(
+            "  ├ 99状態読込",
+            server.analysisDataStoreStateReadMs
+        ),
+        perfRow(
+            "  ├ 新File ID取得",
+            server.analysisDataStoreFileIdMs
+        ),
+        perfRow(
+            "  ├ 正式参照切替",
             server.analysisDataStoreCommitMs
+        ),
+        perfRow(
+            "  └ 旧JSON整理",
+            server.analysisDataStoreCleanupMs,
+            `${Number(server.analysisDataStoreCleanupFiles || 0)}件`
         ),
         perfRow(
             "GAS：DATA_WRITTEN状態保存",
