@@ -925,7 +925,7 @@ async function parseCSV(file) {
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.8-compressed-transport";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.9-request-state-snapshot";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2555,6 +2555,15 @@ function renderEtlPerformance(apiData = null) {
             server.validateWorkbookMs
         ),
         perfRow(
+            "GAS：99 request-local snapshot",
+            server.requestStateSheetReadMs,
+            `${Number(server.requestStateSheetReadCount || 0)}回実読込 / ${Number(server.requestStateCacheReuseCount || 0)}回再利用 / ${Number(server.requestStateSheetWriteCount || 0)}回書込`
+        ),
+        perfRow(
+            "  └ 99 snapshot書込合計",
+            server.requestStateSheetWriteMs
+        ),
+        perfRow(
             "GAS：OPENED状態保存",
             server.openedStateSaveMs
         ),
@@ -2578,7 +2587,7 @@ function renderEtlPerformance(apiData = null) {
             server.imageMasterSignatureComputeMs
         ),
         perfRow(
-            "     ├ signature状態読込",
+            "     ├ signature snapshot参照",
             server.imageMasterSignatureStateReadMs
         ),
         perfRow(
@@ -2653,7 +2662,7 @@ function renderEtlPerformance(apiData = null) {
             server.analysisDataStoreValidationMs
         ),
         perfRow(
-            "  ├ 99状態読込",
+            "  ├ 99 snapshot参照",
             server.analysisDataStoreStateReadMs
         ),
         perfRow(
@@ -2701,7 +2710,7 @@ function renderEtlPerformance(apiData = null) {
             server.finalizeAuditSheetEnsureMs
         ),
         perfRow(
-            "     ├ 99状態読込",
+            "     ├ 99 snapshot参照",
             server.finalizeStateReadMs
         ),
         perfRow(
