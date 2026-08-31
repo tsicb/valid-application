@@ -405,6 +405,36 @@
     color: #fff;
     border-color: #2563eb;
 }
+.viewer-perf {
+    margin-top: 22px;
+    border: 1px solid #ddd6fe;
+    background: #faf5ff;
+    border-radius: 12px;
+    padding: 11px 13px;
+    color: #475569;
+    font-size: 11px;
+}
+.viewer-perf summary {
+    cursor: pointer;
+    font-weight: 800;
+    color: #6d28d9;
+}
+.viewer-perf-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 86px;
+    gap: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid #ede9fe;
+}
+.viewer-perf-row:last-child {
+    border-bottom: 0;
+}
+.viewer-perf-value {
+    text-align: right;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #6d28d9;
+}
         .footer {
             margin-top: 28px;
             text-align: center;
@@ -618,7 +648,12 @@
     </section>
 </div>
 
-<div class="footer">有効応募分析 Viewer v5.1</div>
+<details id="viewerPerformanceDetails" class="viewer-perf hidden">
+    <summary>読込時間の内訳（高速化確認用）</summary>
+    <div id="viewerPerformanceBody" style="margin-top:8px;"></div>
+</details>
+
+<div class="footer">有効応募分析 Viewer v5.1 / Performance Baseline</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -643,6 +678,9 @@
         }
 
         async function fetchViewerData(token) {
+            const clientStartedAt =
+                performance.now();
+
             const controller = new AbortController();
             const timeoutId = setTimeout(
                 () => controller.abort(),
@@ -672,6 +710,14 @@
                 } catch (_) {
                     throw new Error("閲覧APIの応答を解析できませんでした。");
                 }
+
+                data.clientPerformance = {
+                    fetchAndParseMs:
+                        performance.now() -
+                        clientStartedAt,
+                    responseChars:
+                        text.length
+                };
 
                 if (!data?.ok) {
                     const messages = {
@@ -1513,9 +1559,20 @@ function initializeViewerPeriod(data) {
 }
 
 function renderReport(data) {
+    const renderStartedAt =
+        performance.now();
+
     const core = window.ValidApplicationAnalysisCore;
     const runtimeData = dataForCurrentViewerPeriod(data);
+
+    const aggregateStartedAt =
+        performance.now();
+
     const result = core.aggregateViewer(runtimeData);
+
+    const aggregateMs =
+        performance.now() -
+        aggregateStartedAt;
     const metadata = data.metadata || {};
     const settings = runtimeData.settings || {};
     const displayMap = viewerDisplayMap(data);
@@ -1702,7 +1759,137 @@ function renderReport(data) {
 
     document.getElementById("reportView")
         .classList.remove("hidden");
+
+    data.clientPerformance =
+        data.clientPerformance ||
+        {};
+
+    data.clientPerformance
+        .aggregateMs =
+        aggregateMs;
+
+    data.clientPerformance
+        .renderMs =
+        performance.now() -
+        renderStartedAt;
 }
+
+function viewerPerfSeconds(value) {
+    const number =
+        Number(value);
+
+    return (
+        (
+            Number.isFinite(number)
+                ? number
+                : 0
+        ) /
+        1000
+    ).toFixed(2);
+}
+
+function viewerPerfRow(
+    label,
+    value
+) {
+    return `
+        <div class="viewer-perf-row">
+            <div>${escapeHtml(label)}</div>
+            <div class="viewer-perf-value">${viewerPerfSeconds(value)} 秒</div>
+        </div>
+    `;
+}
+
+function renderViewerPerformance(
+    data
+) {
+    const details =
+        document.getElementById(
+            "viewerPerformanceDetails"
+        );
+
+    const body =
+        document.getElementById(
+            "viewerPerformanceBody"
+        );
+
+    if (
+        !details ||
+        !body
+    ) {
+        return;
+    }
+
+    const client =
+        data?.clientPerformance ||
+        {};
+
+    const server =
+        data?.performance ||
+        {};
+
+    const datasetRows =
+        Object.entries(
+            server.datasets ||
+            {}
+        )
+            .sort(
+                (a, b) =>
+                    Number(b[1] || 0) -
+                    Number(a[1] || 0)
+            )
+            .map(
+                ([key, value]) =>
+                    viewerPerfRow(
+                        `GAS Sheet読込：${key}`,
+                        value
+                    )
+            )
+            .join("");
+
+    body.innerHTML = [
+        viewerPerfRow(
+            "Viewer全体",
+            client.totalLoadMs
+        ),
+        viewerPerfRow(
+            "API取得＋JSON解析",
+            client.fetchAndParseMs
+        ),
+        viewerPerfRow(
+            "ブラウザ集計",
+            client.aggregateMs
+        ),
+        viewerPerfRow(
+            "DOM描画",
+            client.renderMs
+        ),
+        viewerPerfRow(
+            "GAS全体",
+            server.totalMs
+        ),
+        viewerPerfRow(
+            "GAS Spreadsheet open",
+            server.openSpreadsheetMs
+        ),
+        viewerPerfRow(
+            "GAS workbook検証",
+            server.workbookValidationMs
+        ),
+        datasetRows,
+        viewerPerfRow(
+            "GAS 設定読込",
+            server.settingsMs
+        )
+    ]
+        .filter(Boolean)
+        .join("");
+
+    details.classList.remove(
+        "hidden"
+    );
+}
+
         function showError(message) {
             document.getElementById("loadingView").classList.add("hidden");
             document.getElementById("reportView").classList.add("hidden");
@@ -1713,6 +1900,9 @@ function renderReport(data) {
         }
 
         async function loadReport() {
+            const loadStartedAt =
+                performance.now();
+
             const token = getViewerToken();
             const urlName = getViewerUrlName();
 
@@ -1738,6 +1928,19 @@ function renderReport(data) {
                 const data = await fetchViewerData(token);
                 initializeViewerPeriod(data);
                 renderReport(data);
+
+                data.clientPerformance =
+                    data.clientPerformance ||
+                    {};
+
+                data.clientPerformance
+                    .totalLoadMs =
+                    performance.now() -
+                    loadStartedAt;
+
+                renderViewerPerformance(
+                    data
+                );
             } catch (error) {
                 const message =
                     error?.name === "AbortError"
