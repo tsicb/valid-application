@@ -71,6 +71,17 @@
             z-index: 40 !important;
         }
     </style>
+
+<style>
+@keyframes etlProcessingFlow {
+    from { transform: translateX(-120px); }
+    to { transform: translateX(640px); }
+}
+.etl-processing-flow {
+    animation: etlProcessingFlow 1.35s linear infinite;
+}
+</style>
+
 </head>
 <body class="bg-gray-100 font-sans min-h-screen m-0 text-gray-800">
     <div id="etlView" class="min-h-screen w-full overflow-y-auto p-5 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50 relative">
@@ -162,7 +173,13 @@
                             応募CSV
                             <span class="ml-2 text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md">必須・複数可</span>
                         </h2>
-                        <input type="file" id="fileA" accept=".csv" multiple class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                        <input type="file" id="fileA" accept=".csv" multiple autocomplete="off" class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                        <div class="mt-2 flex items-center justify-between gap-3 text-[10px]">
+                            <span id="fileASelectionSummary" class="font-bold text-slate-500">未選択</span>
+                            <button id="clearFileABtn" type="button" class="hidden shrink-0 rounded-md border border-blue-200 bg-white px-2 py-1 font-extrabold text-blue-700 hover:bg-blue-50">
+                                すべてクリア
+                            </button>
+                        </div>
                     </div>
 
                     <div class="p-5 rounded-2xl bg-gradient-to-b from-emerald-50/80 to-white border border-emerald-100 shadow-sm relative">
@@ -171,7 +188,13 @@
                             求人CSV
                             <span class="ml-2 text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md">任意・複数可</span>
                         </h2>
-                        <input type="file" id="fileB" accept=".csv" multiple class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                        <input type="file" id="fileB" accept=".csv" multiple autocomplete="off" class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                        <div class="mt-2 flex items-center justify-between gap-3 text-[10px]">
+                            <span id="fileBSelectionSummary" class="font-bold text-slate-500">未選択</span>
+                            <button id="clearFileBBtn" type="button" class="hidden shrink-0 rounded-md border border-emerald-200 bg-white px-2 py-1 font-extrabold text-emerald-700 hover:bg-emerald-50">
+                                すべてクリア
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -395,6 +418,531 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
         let globalTargetFromSheetPortal = false;
         let globalAccessKeyVerified = false;
         let globalPerformanceTrace = {};
+
+let etlProcessingStartedAt = 0;
+let etlProcessingTimerId = null;
+let etlProcessingActive = false;
+
+const ETL_PROCESSING_STAGES = [
+    "csv",
+    "join",
+    "image",
+    "publish",
+    "viewer"
+];
+
+const ETL_PROCESSING_WIDTHS = {
+    csv: 12,
+    join: 28,
+    image: 43,
+    publish: 58,
+    viewer: 90,
+    done: 100
+};
+
+function updateFileSelectionSummary(
+    inputId,
+    summaryId,
+    clearButtonId
+) {
+    const input =
+        document.getElementById(
+            inputId
+        );
+
+    const summary =
+        document.getElementById(
+            summaryId
+        );
+
+    const clearBtn =
+        document.getElementById(
+            clearButtonId
+        );
+
+    const files =
+        input?.files
+            ? Array.from(
+                input.files
+              )
+            : [];
+
+    if (summary) {
+        summary.textContent =
+            files.length
+                ? `${files.length.toLocaleString()}ファイル選択中`
+                : "未選択";
+    }
+
+    clearBtn?.classList.toggle(
+        "hidden",
+        files.length === 0
+    );
+}
+
+function refreshCsvSelectionSummaries() {
+    updateFileSelectionSummary(
+        "fileA",
+        "fileASelectionSummary",
+        "clearFileABtn"
+    );
+
+    updateFileSelectionSummary(
+        "fileB",
+        "fileBSelectionSummary",
+        "clearFileBBtn"
+    );
+}
+
+function invalidateEtlDerivedStateForCsvChange() {
+    globalFinalData = [];
+    globalJobSnapshot = [];
+    globalImageMasterInitial = [];
+    globalImageLookupStats = {
+        targetCount: 0,
+        successCount: 0,
+        unresolvedCount: 0
+    };
+    globalInputFileInfo = [];
+    globalJoinCount = 0;
+    globalEtlExecutedAt = "";
+    globalDuplicateCount = 0;
+    globalDuplicateData = [];
+    globalPendingSheetsRequestId = "";
+    globalPerformanceTrace = {};
+
+    const downloadBtn =
+        document.getElementById(
+            "downloadBtn"
+        );
+
+    if (downloadBtn) {
+        downloadBtn.disabled = true;
+    }
+
+    document
+        .getElementById(
+            "resultArea"
+        )
+        ?.classList
+        .add(
+            "hidden"
+        );
+
+    document
+        .getElementById(
+            "etlPerformanceDetails"
+        )
+        ?.classList
+        .add(
+            "hidden"
+        );
+
+    hideSheetsCreateSuccess();
+}
+
+function resetCsvSessionState() {
+    const fileA =
+        document.getElementById(
+            "fileA"
+        );
+
+    const fileB =
+        document.getElementById(
+            "fileB"
+        );
+
+    if (fileA) {
+        fileA.value = "";
+    }
+
+    if (fileB) {
+        fileB.value = "";
+    }
+
+    invalidateEtlDerivedStateForCsvChange();
+    refreshCsvSelectionSummaries();
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+    if (message) {
+        message.textContent = "";
+        message.classList.add(
+            "hidden"
+        );
+    }
+}
+
+function clearCsvInput(inputId) {
+    if (
+        globalUnifiedRunInFlight ||
+        globalSheetsCreateInFlight
+    ) {
+        return;
+    }
+
+    const input =
+        document.getElementById(
+            inputId
+        );
+
+    if (input) {
+        input.value = "";
+    }
+
+    invalidateEtlDerivedStateForCsvChange();
+    refreshCsvSelectionSummaries();
+}
+
+function setEtlInputsLocked(locked) {
+    [
+        "fileA",
+        "fileB",
+        "clearFileABtn",
+        "clearFileBBtn",
+        "existingSheetUrlInput",
+        "newCompanyDisplayNameInput",
+        "newReportNameInput",
+        "suggestNewReportNameBtn",
+        "etlAutoOpenViewerCheckbox"
+    ].forEach(
+        id => {
+            const element =
+                document.getElementById(
+                    id
+                );
+
+            if (element) {
+                element.disabled =
+                    !!locked;
+            }
+        }
+    );
+}
+
+function setEtlStageRowState(
+    stage,
+    state
+) {
+    const idMap = {
+        csv: "etlStageCsv",
+        join: "etlStageJoin",
+        image: "etlStageImage",
+        publish: "etlStagePublish",
+        viewer: "etlStageViewer"
+    };
+
+    const row =
+        document.getElementById(
+            idMap[stage]
+        );
+
+    if (!row) return;
+
+    const mark =
+        row.querySelector(
+            ".etl-stage-mark"
+        );
+
+    row.className =
+        "etl-stage-row flex items-center gap-3 rounded-xl px-3 py-2.5 " +
+        (
+            state === "done"
+                ? "bg-emerald-50 text-emerald-800"
+                : state === "active"
+                    ? "bg-indigo-50 text-indigo-800"
+                    : "text-slate-400"
+        );
+
+    if (mark) {
+        const index =
+            ETL_PROCESSING_STAGES
+                .indexOf(stage) + 1;
+
+        mark.className =
+            "etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border bg-white text-[10px] font-extrabold " +
+            (
+                state === "done"
+                    ? "border-emerald-300 text-emerald-700"
+                    : state === "active"
+                        ? "border-indigo-300 text-indigo-700"
+                        : "border-slate-200 text-slate-400"
+            );
+
+        mark.textContent =
+            state === "done"
+                ? "済"
+                : String(index);
+    }
+}
+
+function updateEtlProcessingStage(
+    stage,
+    detail = ""
+) {
+    if (!etlProcessingActive) {
+        return;
+    }
+
+    const stageIndex =
+        ETL_PROCESSING_STAGES
+            .indexOf(stage);
+
+    ETL_PROCESSING_STAGES
+        .forEach(
+            (
+                item,
+                index
+            ) => {
+                setEtlStageRowState(
+                    item,
+                    index < stageIndex
+                        ? "done"
+                        : index === stageIndex
+                            ? "active"
+                            : "pending"
+                );
+            }
+        );
+
+    const knownBar =
+        document.getElementById(
+            "etlProcessingKnownBar"
+        );
+
+    if (knownBar) {
+        knownBar.style.width =
+            `${ETL_PROCESSING_WIDTHS[stage] || 10}%`;
+    }
+
+    const flowBar =
+        document.getElementById(
+            "etlProcessingFlowBar"
+        );
+
+    flowBar?.classList.toggle(
+        "hidden",
+        stage !== "publish" &&
+        stage !== "viewer"
+    );
+
+    const label =
+        document.getElementById(
+            "etlProcessingStepLabel"
+        );
+
+    if (label) {
+        label.textContent =
+            `工程 ${Math.max(stageIndex + 1, 1)} / ${ETL_PROCESSING_STAGES.length}`;
+    }
+
+    const titleMap = {
+        csv: "CSVを読み込んでいます",
+        join: "応募データと求人データを結合しています",
+        image: "TOP画像を確認しています",
+        publish: "Google Sheetへ保存しています",
+        viewer: "Viewerを準備しています"
+    };
+
+    const title =
+        document.getElementById(
+            "etlProcessingTitle"
+        );
+
+    if (title) {
+        title.textContent =
+            titleMap[stage] ||
+            "分析データを処理しています";
+    }
+
+    const detailEl =
+        document.getElementById(
+            "etlProcessingDetail"
+        );
+
+    if (detailEl) {
+        detailEl.textContent =
+            detail ||
+            "処理を続けています。";
+    }
+}
+
+function startEtlProcessingOverlay() {
+    const overlay =
+        document.getElementById(
+            "etlProcessingOverlay"
+        );
+
+    if (!overlay) return;
+
+    etlProcessingActive = true;
+    etlProcessingStartedAt =
+        performance.now();
+
+    setEtlInputsLocked(
+        true
+    );
+
+    overlay.classList.remove(
+        "hidden"
+    );
+    overlay.classList.add(
+        "flex"
+    );
+
+    if (etlProcessingTimerId) {
+        clearInterval(
+            etlProcessingTimerId
+        );
+    }
+
+    const updateElapsed = () => {
+        const elapsedEl =
+            document.getElementById(
+                "etlProcessingElapsed"
+            );
+
+        if (elapsedEl) {
+            const seconds =
+                Math.max(
+                    0,
+                    Math.floor(
+                        (
+                            performance.now() -
+                            etlProcessingStartedAt
+                        ) /
+                        1000
+                    )
+                );
+
+            elapsedEl.textContent =
+                `経過 ${seconds.toLocaleString()}秒`;
+        }
+    };
+
+    updateElapsed();
+
+    etlProcessingTimerId =
+        setInterval(
+            updateElapsed,
+            250
+        );
+
+    updateEtlProcessingStage(
+        "csv",
+        "選択されたShift_JIS形式のCSVを読み込んでいます。"
+    );
+}
+
+function stopEtlProcessingOverlay({
+    completed = false
+} = {}) {
+    const overlay =
+        document.getElementById(
+            "etlProcessingOverlay"
+        );
+
+    if (etlProcessingTimerId) {
+        clearInterval(
+            etlProcessingTimerId
+        );
+
+        etlProcessingTimerId =
+            null;
+    }
+
+    if (completed) {
+        ETL_PROCESSING_STAGES
+            .forEach(
+                stage =>
+                    setEtlStageRowState(
+                        stage,
+                        "done"
+                    )
+            );
+
+        const knownBar =
+            document.getElementById(
+                "etlProcessingKnownBar"
+            );
+
+        if (knownBar) {
+            knownBar.style.width =
+                "100%";
+        }
+
+        document
+            .getElementById(
+                "etlProcessingFlowBar"
+            )
+            ?.classList
+            .add(
+                "hidden"
+            );
+
+        const title =
+            document.getElementById(
+                "etlProcessingTitle"
+            );
+
+        if (title) {
+            title.textContent =
+                "Viewerへの反映が完了しました";
+        }
+
+        const detail =
+            document.getElementById(
+                "etlProcessingDetail"
+            );
+
+        if (detail) {
+            detail.textContent =
+                "処理が完了しました。Viewerを表示します。";
+        }
+
+        const step =
+            document.getElementById(
+                "etlProcessingStepLabel"
+            );
+
+        if (step) {
+            step.textContent =
+                "完了";
+        }
+    }
+
+    const hide = () => {
+        etlProcessingActive = false;
+
+        if (overlay) {
+            overlay.classList.add(
+                "hidden"
+            );
+            overlay.classList.remove(
+                "flex"
+            );
+        }
+
+        setEtlInputsLocked(
+            false
+        );
+
+        updateSheetsOperationUi();
+        refreshCsvSelectionSummaries();
+    };
+
+    if (completed) {
+        setTimeout(
+            hide,
+            450
+        );
+    } else {
+        hide();
+    }
+}
 
         function preprocessKey(rawKey) {
             if (rawKey === null || rawKey === undefined) return "";
@@ -1025,7 +1573,7 @@ async function parseCSV(
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.11-fixed-sjis-enterprise-signature";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.12-loading-ux";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -3247,7 +3795,63 @@ function writeReservedViewerTab(
                         <div style="margin-top:12px;font-size:14px;line-height:1.8;color:#475569;">${manageEscapeHtml(message)}</div>
                     </div>
                 </main>
-            </body>
+            
+    <div id="etlProcessingOverlay" class="hidden fixed inset-0 z-[9999] bg-slate-950/30 backdrop-blur-[1px] items-center justify-center p-4" aria-live="polite" aria-busy="true">
+        <div class="w-full max-w-xl rounded-3xl border border-white/70 bg-white p-6 shadow-2xl">
+            <div class="flex items-start gap-4">
+                <div class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                    <svg id="etlProcessingSpinner" class="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle class="opacity-20" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
+                        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+                    </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div id="etlProcessingTitle" class="text-base font-extrabold text-slate-900">分析データを準備しています</div>
+                    <div id="etlProcessingDetail" class="mt-1 text-xs leading-relaxed text-slate-500">CSVを読み込んでいます。</div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <div class="relative h-2.5 overflow-hidden rounded-full bg-slate-100">
+                    <div id="etlProcessingKnownBar" class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all duration-500 ease-out" style="width:10%"></div>
+                    <div id="etlProcessingFlowBar" class="etl-processing-flow absolute inset-y-0 hidden w-24 rounded-full bg-white/55"></div>
+                </div>
+                <div class="mt-2 flex items-center justify-between gap-3 text-[10px] font-bold text-slate-400">
+                    <span id="etlProcessingStepLabel">工程 1 / 5</span>
+                    <span id="etlProcessingElapsed">経過 0秒</span>
+                </div>
+            </div>
+
+            <div class="mt-5 grid gap-2 text-xs">
+                <div id="etlStageCsv" class="etl-stage-row flex items-center gap-3 rounded-xl bg-indigo-50 px-3 py-2.5 text-indigo-800">
+                    <span class="etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-indigo-300 bg-white text-[10px] font-extrabold">1</span>
+                    <span class="font-bold">CSVを読み込む</span>
+                </div>
+                <div id="etlStageJoin" class="etl-stage-row flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-400">
+                    <span class="etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-extrabold">2</span>
+                    <span class="font-bold">応募データと求人データを結合</span>
+                </div>
+                <div id="etlStageImage" class="etl-stage-row flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-400">
+                    <span class="etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-extrabold">3</span>
+                    <span class="font-bold">TOP画像を確認</span>
+                </div>
+                <div id="etlStagePublish" class="etl-stage-row flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-400">
+                    <span class="etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-extrabold">4</span>
+                    <span class="font-bold">Google Sheetへ保存</span>
+                </div>
+                <div id="etlStageViewer" class="etl-stage-row flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-400">
+                    <span class="etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-extrabold">5</span>
+                    <span class="font-bold">Viewerを準備</span>
+                </div>
+            </div>
+
+            <div class="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-[10px] leading-relaxed text-slate-500">
+                処理は継続しています。この画面を閉じたり再読み込みしたりせず、そのままお待ちください。
+            </div>
+        </div>
+    </div>
+
+</body>
             </html>
         `);
         tab.document.close();
@@ -3478,6 +4082,11 @@ async function createGoogleSpreadsheet({
                 "info"
             );
 
+            updateEtlProcessingStage(
+                "image",
+                `TOP画像を確認しています。対象 ${planSummary.analysisTargetCount.toLocaleString()}種類`
+            );
+
             if (runLabel) {
                 runLabel.textContent =
                     "TOP画像URLを確認しています...";
@@ -3494,6 +4103,11 @@ async function createGoogleSpreadsheet({
                     setSheetsCreateStatus(
                         `TOP画像URLを確認しています。\n${done.toLocaleString()} / ${total.toLocaleString()} 種類 完了`,
                         "info"
+                    );
+
+                    updateEtlProcessingStage(
+                        "image",
+                        `TOP画像 ${done.toLocaleString()} / ${total.toLocaleString()} 種類を確認しました`
                     );
                 }
             );
@@ -3514,6 +4128,11 @@ async function createGoogleSpreadsheet({
             runLabel.textContent =
                 "Viewerへ反映しています...";
         }
+
+        updateEtlProcessingStage(
+            "publish",
+            "送信データを圧縮し、Google Sheetへの保存準備をしています。"
+        );
 
         setSheetsCreateStatus(
             "Viewer反映用データを準備しています...",
@@ -3582,6 +4201,13 @@ async function createGoogleSpreadsheet({
             "info"
         );
 
+        updateEtlProcessingStage(
+            "publish",
+            targetSpreadsheetId
+                ? "既存の個社Sheetへ最新データを保存しています。"
+                : "新しい個社Sheetを作成し、分析データを保存しています。"
+        );
+
         const data =
             await postSheetsPayloadUntilReady(
                 apiUrl,
@@ -3590,6 +4216,15 @@ async function createGoogleSpreadsheet({
                     setSheetsCreateStatus(
                         message,
                         "info"
+                    );
+
+                    updateEtlProcessingStage(
+                        "publish",
+                        normalizeString(
+                            message
+                        )
+                            .split("\n")[0] ||
+                            "Google Sheetへの反映を続けています。"
                     );
 
                     if (runLabel) {
@@ -3614,6 +4249,11 @@ async function createGoogleSpreadsheet({
                 ? "既存Viewerへのデータ反映が完了しました。"
                 : "個社SheetとViewerの作成が完了しました。",
             "success"
+        );
+
+        updateEtlProcessingStage(
+            "viewer",
+            "保存が完了しました。Viewerを開く準備をしています。"
         );
 
         globalPerformanceTrace.publish = {
@@ -7537,6 +8177,75 @@ if (sheetFromHash) {
     updateSheetsOperationUi();
 }
 
+
+const fileAInput =
+    document.getElementById(
+        "fileA"
+    );
+
+const fileBInput =
+    document.getElementById(
+        "fileB"
+    );
+
+fileAInput?.addEventListener(
+    "change",
+    () => {
+        invalidateEtlDerivedStateForCsvChange();
+        refreshCsvSelectionSummaries();
+    }
+);
+
+fileBInput?.addEventListener(
+    "change",
+    () => {
+        invalidateEtlDerivedStateForCsvChange();
+        refreshCsvSelectionSummaries();
+    }
+);
+
+document
+    .getElementById(
+        "clearFileABtn"
+    )
+    ?.addEventListener(
+        "click",
+        () =>
+            clearCsvInput(
+                "fileA"
+            )
+    );
+
+document
+    .getElementById(
+        "clearFileBBtn"
+    )
+    ?.addEventListener(
+        "click",
+        () =>
+            clearCsvInput(
+                "fileB"
+            )
+    );
+
+// Firefox等のフォーム復元・bfcache復元を含め、
+// ページを開き直した時点でCSVだけは必ず新規セッションにする。
+// アクセスキーや更新先Sheet等の永続設定は消さない。
+window.addEventListener(
+    "pageshow",
+    () => {
+        if (
+            !globalUnifiedRunInFlight &&
+            !globalSheetsCreateInFlight
+        ) {
+            resetCsvSessionState();
+        }
+    }
+);
+
+// 通常ロード時も、ブラウザが復元したfile input値に依存しない。
+resetCsvSessionState();
+
         // ==========================================
         // 1. ETL処理ロジック
         // ==========================================
@@ -7658,6 +8367,8 @@ globalUnifiedRunInFlight =
 runBtn.disabled =
     true;
 
+startEtlProcessingOverlay();
+
 runLabel.textContent =
     "CSVを読み込んでいます...";
 
@@ -7747,6 +8458,16 @@ const viewerTab =
                 globalPerformanceTrace.csvReadMs =
                     performance.now() -
                     csvReadStartedAt;
+
+                updateEtlProcessingStage(
+                    "join",
+                    `応募CSV ${dataA.length.toLocaleString()}行` +
+                    (
+                        dataB.length
+                            ? ` ／ 求人CSV ${dataB.length.toLocaleString()}行`
+                            : " ／ 求人CSVなし"
+                    )
+                );
 
                 // JOIN用に先頭行だけ採用するMapとは別に、求人CSV全行を保持する。
                 globalJobSnapshot = dataB.slice();
@@ -7992,6 +8713,11 @@ msgEl.innerHTML = `
             filesB.length > 0
         );
 
+        updateEtlProcessingStage(
+            "image",
+            "公開中求人のTOP画像URLを確認します。対象がない場合はすぐ次へ進みます。"
+        );
+
         runLabel.textContent =
             targetSpreadsheetId
                 ? "Viewerを更新しています..."
@@ -8003,6 +8729,11 @@ msgEl.innerHTML = `
             });
 
         if (published) {
+            updateEtlProcessingStage(
+                "viewer",
+                "保存が完了しました。Viewerを表示する準備をしています。"
+            );
+
             globalPerformanceTrace.totalMs =
                 performance.now() -
                 totalRunStartedAt;
@@ -8022,12 +8753,18 @@ msgEl.innerHTML = `
 
             msgEl.className =
                 "mt-5 text-center text-sm font-bold text-emerald-700 bg-emerald-50 p-5 rounded-xl border border-emerald-200 block";
+
+            stopEtlProcessingOverlay({
+                completed: true
+            });
         } else {
             msgEl.textContent =
                 "分析データは作成済みです。Viewerへの反映は完了していません。表示されているメッセージをご確認ください。";
 
             msgEl.className =
                 "mt-5 text-center text-sm font-bold text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200 block";
+
+            stopEtlProcessingOverlay();
         }
 
     } catch (error) {
@@ -8050,6 +8787,8 @@ msgEl.innerHTML = `
 
         msgEl.className =
             "mt-5 text-center text-sm font-semibold text-red-600 bg-red-50 p-4 rounded-xl border border-red-100 block";
+
+        stopEtlProcessingOverlay();
 
     } finally {
         globalUnifiedRunInFlight =

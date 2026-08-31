@@ -232,6 +232,62 @@
             box-shadow: var(--shadow);
             line-height: 1.7;
         }
+        .viewer-loading-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .viewer-loading-spinner {
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            border-radius: 999px;
+            border: 3px solid #dbeafe;
+            border-top-color: #2563eb;
+            animation: viewerSpin .9s linear infinite;
+        }
+        .viewer-loading-title {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 800;
+        }
+        .viewer-loading-note {
+            margin-top: 2px;
+            color: #64748b;
+            font-size: 12px;
+        }
+        .viewer-loading-track {
+            position: relative;
+            height: 8px;
+            margin-top: 20px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e2e8f0;
+        }
+        .viewer-loading-flow {
+            position: absolute;
+            inset-block: 0;
+            width: 34%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #93c5fd, #2563eb, #93c5fd);
+            animation: viewerLoadingFlow 1.3s ease-in-out infinite;
+        }
+        .viewer-loading-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 8px;
+            color: #94a3b8;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        @keyframes viewerSpin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes viewerLoadingFlow {
+            from { transform: translateX(-110%); }
+            to { transform: translateX(310%); }
+        }
         .error { border-color: #fecaca; color: #991b1b; }
         .hidden { display: none !important; }
 
@@ -454,9 +510,19 @@
 </head>
 <body>
     <div id="loadingView" class="loading">
-        <strong>分析レポートを読み込んでいます...</strong>
-        <div style="margin-top:8px;color:#64748b;font-size:12px;">
-            保存済みデータを取得し、ブラウザ内で集計しています。
+        <div class="viewer-loading-head">
+            <div class="viewer-loading-spinner" aria-hidden="true"></div>
+            <div>
+                <div id="viewerLoadingTitle" class="viewer-loading-title">分析レポートを準備しています</div>
+                <div id="viewerLoadingNote" class="viewer-loading-note">保存済みデータを取得しています。</div>
+            </div>
+        </div>
+        <div class="viewer-loading-track" aria-hidden="true">
+            <div class="viewer-loading-flow"></div>
+        </div>
+        <div class="viewer-loading-meta">
+            <span id="viewerLoadingStage">分析データを取得中</span>
+            <span id="viewerLoadingElapsed">経過 0秒</span>
         </div>
     </div>
 
@@ -1947,6 +2013,8 @@ function renderReport(data) {
         );
     }
 
+    stopViewerLoadingTimer();
+
     document.getElementById("loadingView")
         .classList.add("hidden");
 
@@ -2152,7 +2220,136 @@ function renderViewerPerformance(
     );
 }
 
+
+let viewerLoadingStartedAt = 0;
+let viewerLoadingTimerId = null;
+
+function setViewerLoadingState(
+    stage,
+    note
+) {
+    const title =
+        document.getElementById(
+            "viewerLoadingTitle"
+        );
+
+    const noteEl =
+        document.getElementById(
+            "viewerLoadingNote"
+        );
+
+    const stageEl =
+        document.getElementById(
+            "viewerLoadingStage"
+        );
+
+    const titleMap = {
+        fetch: "分析レポートを準備しています",
+        aggregate: "集計結果を組み立てています"
+    };
+
+    const stageMap = {
+        fetch: "分析データを取得中",
+        aggregate: "ブラウザ内で集計中"
+    };
+
+    if (title) {
+        title.textContent =
+            titleMap[stage] ||
+            titleMap.fetch;
+    }
+
+    if (noteEl) {
+        noteEl.textContent =
+            note ||
+            (
+                stage === "aggregate"
+                    ? "取得したデータから分析表を作成しています。"
+                    : "保存済みデータを取得しています。"
+            );
+    }
+
+    if (stageEl) {
+        stageEl.textContent =
+            stageMap[stage] ||
+            stageMap.fetch;
+    }
+}
+
+function startViewerLoading(
+    reportName = ""
+) {
+    const loading =
+        document.getElementById(
+            "loadingView"
+        );
+
+    loading?.classList.remove(
+        "hidden"
+    );
+
+    viewerLoadingStartedAt =
+        performance.now();
+
+    if (viewerLoadingTimerId) {
+        clearInterval(
+            viewerLoadingTimerId
+        );
+    }
+
+    const updateElapsed = () => {
+        const elapsed =
+            document.getElementById(
+                "viewerLoadingElapsed"
+            );
+
+        if (elapsed) {
+            const seconds =
+                Math.max(
+                    0,
+                    Math.floor(
+                        (
+                            performance.now() -
+                            viewerLoadingStartedAt
+                        ) /
+                        1000
+                    )
+                );
+
+            elapsed.textContent =
+                `経過 ${seconds.toLocaleString()}秒`;
+        }
+    };
+
+    updateElapsed();
+
+    viewerLoadingTimerId =
+        setInterval(
+            updateElapsed,
+            250
+        );
+
+    setViewerLoadingState(
+        "fetch",
+        reportName
+            ? `共有先：${reportName} ／ 保存済みデータを取得しています。`
+            : "保存済みデータを取得しています。"
+    );
+}
+
+function stopViewerLoadingTimer() {
+    if (viewerLoadingTimerId) {
+        clearInterval(
+            viewerLoadingTimerId
+        );
+
+        viewerLoadingTimerId =
+            null;
+    }
+}
+
         function showError(message) {
+            stopViewerLoadingTimer();
             document.getElementById("loadingView").classList.add("hidden");
             document.getElementById("reportView").classList.add("hidden");
 
@@ -2168,12 +2365,9 @@ function renderViewerPerformance(
             const token = getViewerToken();
             const urlName = getViewerUrlName();
 
-            if (urlName) {
-                const loading = document.getElementById("loadingView");
-                loading.innerHTML =
-                    `<strong>共有先確認：${escapeHtml(urlName)}</strong>` +
-                    `<div style="margin-top:8px;color:#64748b;font-size:12px;">保存済みデータを取得し、ブラウザ内で集計しています。</div>`;
-            }
+            startViewerLoading(
+                urlName
+            );
 
             if (!token) {
                 showError(
@@ -2188,6 +2382,19 @@ function renderViewerPerformance(
 
             try {
                 const data = await fetchViewerData(token);
+
+                setViewerLoadingState(
+                    "aggregate",
+                    "データを取得しました。分析結果をブラウザ内で組み立てています。"
+                );
+
+                await new Promise(
+                    resolve =>
+                        requestAnimationFrame(
+                            () => resolve()
+                        )
+                );
+
                 initializeViewerPeriod(data);
                 renderReport(data);
 
