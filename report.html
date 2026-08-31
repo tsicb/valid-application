@@ -653,7 +653,7 @@
     <div id="viewerPerformanceBody" style="margin-top:8px;"></div>
 </details>
 
-<div class="footer">有効応募分析 Viewer v5.1 / Viewer Data Cache</div>
+<div class="footer">有効応募分析 Viewer v5.1 / Analysis Data Store</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -725,7 +725,8 @@
                         VIEWER_NOT_FOUND: "この分析レポートは見つかりませんでした。",
                         VIEWER_DISABLED: "この分析レポートは現在閲覧停止中です。",
                         TARGET_OUTSIDE_OUTPUT_FOLDER: "このレポートは現在の共有対象ではありません。",
-                        TARGET_WORKBOOK_INVALID: "分析レポートのデータ構成を確認できませんでした。"
+                        TARGET_WORKBOOK_INVALID: "分析レポートのデータ構成を確認できませんでした。",
+                        ANALYSIS_DATASTORE_UNAVAILABLE: "分析データを読み込めませんでした。CSVデータ更新をもう一度実行してください。"
                     };
 
                     throw new Error(
@@ -1889,16 +1890,16 @@ function renderViewerPerformance(
             server.workbookValidationMs
         ),
         viewerPerfTextRow(
-            "GAS Viewerキャッシュ",
-            server.cacheStatus || "未使用"
+            "GAS 分析データストア",
+            server.dataStoreStatus || "未使用"
         ),
         viewerPerfRow(
-            "GAS キャッシュファイル読込",
-            server.cacheReadMs
+            "GAS データストア読込",
+            server.dataStoreReadMs
         ),
         viewerPerfRow(
-            "GAS キャッシュJSON解析",
-            server.cacheParseMs
+            "GAS データストアJSON解析",
+            server.dataStoreParseMs
         ),
         datasetRows,
         viewerPerfRow(

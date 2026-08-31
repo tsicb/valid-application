@@ -994,7 +994,7 @@
             </div>
         </div>
         <div class="shrink-0 rounded-full bg-emerald-700 border border-emerald-700 px-3 py-1 text-[10px] font-extrabold text-white">
-            THIN_V1
+            DATASTORE_V1 / THIN_V1移行対応
         </div>
     </div>
 </div>
@@ -1753,7 +1753,7 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.3-viewer-data-cache";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.4-analysis-datastore";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2590,7 +2590,7 @@ function mapSheetsApiError(data) {
         TARGET_WORKBOOK_INVALID:
             "更新先は有効応募分析レポートとして確認できませんでした。別のSheet URLを指定してください。",
         TARGET_STORAGE_LAYOUT_UNSUPPORTED:
-            "このSheetは旧テスト版または現在のTHIN_V1構成ではありません。現行版で新規作成したSheetを指定してください。",
+            "このSheetは現在対応している分析構成ではありません。現行版で作成・更新したSheetを指定してください。",
         REQUEST_TARGET_MISMATCH:
             "再試行中のrequestIdと更新先Sheetが一致しません。いったん再集計するか、更新先URLを確認してください。",
         MANAGE_LOAD_ERROR:
