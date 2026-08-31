@@ -653,7 +653,7 @@
     <div id="viewerPerformanceBody" style="margin-top:8px;"></div>
 </details>
 
-<div class="footer">有効応募分析 Viewer v5.1 / Fast Sheet I/O</div>
+<div class="footer">有効応募分析 Viewer v5.1 / Viewer Data Cache</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -1800,6 +1800,18 @@ function viewerPerfRow(
     `;
 }
 
+function viewerPerfTextRow(
+    label,
+    value
+) {
+    return `
+        <div class="viewer-perf-row">
+            <div>${escapeHtml(label)}</div>
+            <div class="viewer-perf-value">${escapeHtml(String(value ?? ""))}</div>
+        </div>
+    `;
+}
+
 function renderViewerPerformance(
     data
 ) {
@@ -1875,6 +1887,18 @@ function renderViewerPerformance(
         viewerPerfRow(
             "GAS workbook検証",
             server.workbookValidationMs
+        ),
+        viewerPerfTextRow(
+            "GAS Viewerキャッシュ",
+            server.cacheStatus || "未使用"
+        ),
+        viewerPerfRow(
+            "GAS キャッシュファイル読込",
+            server.cacheReadMs
+        ),
+        viewerPerfRow(
+            "GAS キャッシュJSON解析",
+            server.cacheParseMs
         ),
         datasetRows,
         viewerPerfRow(

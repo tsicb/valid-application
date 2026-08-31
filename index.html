@@ -925,7 +925,7 @@ async function parseCSV(file) {
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.2-fast-sheet-io";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.3-viewer-data-cache";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2285,6 +2285,13 @@ function renderEtlPerformance(apiData = null) {
         perfRow(
             "GAS：Sheetデータ書込全体",
             server.dataWriteMs
+        ),
+        perfRow(
+            "GAS：Viewerキャッシュ生成",
+            server.viewerCacheWriteMs,
+            server.viewerCacheChars
+                ? `${Number(server.viewerCacheChars).toLocaleString()} chars / ${normalizeString(server.viewerCacheMode)}`
+                : ""
         ),
         perfRow(
             "GAS：Viewer/メタ情報確定",
