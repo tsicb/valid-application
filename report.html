@@ -653,7 +653,7 @@
     <div id="viewerPerformanceBody" style="margin-top:8px;"></div>
 </details>
 
-<div class="footer">有効応募分析 Viewer v5.1 / Request State Snapshot</div>
+<div class="footer">有効応募分析 Viewer v5.1 / Viewer Response Compression</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -677,17 +677,81 @@
             return (getViewerHashParams().get("name") || "").trim();
         }
 
+
+        function viewerBase64ToBytes(base64) {
+            const binary =
+                atob(base64);
+
+            const bytes =
+                new Uint8Array(
+                    binary.length
+                );
+
+            for (
+                let i = 0;
+                i < binary.length;
+                i++
+            ) {
+                bytes[i] =
+                    binary.charCodeAt(i);
+            }
+
+            return bytes;
+        }
+
+        async function expandViewerGzipBase64(
+            payloadBase64
+        ) {
+            if (
+                typeof DecompressionStream !==
+                    "function"
+            ) {
+                throw new Error(
+                    "このブラウザは圧縮Viewer応答の展開に対応していません。ページを再読み込みしてください。"
+                );
+            }
+
+            const bytes =
+                viewerBase64ToBytes(
+                    payloadBase64
+                );
+
+            const stream =
+                new Blob([
+                    bytes
+                ])
+                    .stream()
+                    .pipeThrough(
+                        new DecompressionStream(
+                            "gzip"
+                        )
+                    );
+
+            return await new Response(
+                stream
+            ).text();
+        }
+
         async function fetchViewerData(token) {
             const clientStartedAt =
                 performance.now();
 
-            const controller = new AbortController();
+            const supportsCompressedResponse =
+                typeof DecompressionStream ===
+                    "function";
+
+            const controller =
+                new AbortController();
+
             const timeoutId = setTimeout(
                 () => controller.abort(),
                 VIEWER_TIMEOUT_MS
             );
 
             try {
+                const fetchStartedAt =
+                    performance.now();
+
                 const response = await fetch(VIEWER_API_URL, {
                     method: "POST",
                     mode: "cors",
@@ -697,26 +761,157 @@
                     },
                     body: JSON.stringify({
                         action: "viewerData",
-                        viewerToken: token
+                        viewerToken: token,
+                        responseTransport:
+                            supportsCompressedResponse
+                                ? "GZIP_BASE64_V1"
+                                : "PLAIN_JSON"
                     }),
                     signal: controller.signal
                 });
 
-                const text = await response.text();
-                let data;
+                const text =
+                    await response.text();
+
+                const fetchMs =
+                    performance.now() -
+                    fetchStartedAt;
+
+                const envelopeParseStartedAt =
+                    performance.now();
+
+                let outer;
 
                 try {
-                    data = JSON.parse(text);
+                    outer =
+                        JSON.parse(
+                            text
+                        );
                 } catch (_) {
-                    throw new Error("閲覧APIの応答を解析できませんでした。");
+                    throw new Error(
+                        "閲覧APIの応答を解析できませんでした。"
+                    );
+                }
+
+                const envelopeParseMs =
+                    performance.now() -
+                    envelopeParseStartedAt;
+
+                let data =
+                    outer;
+
+                let transportMode =
+                    "PLAIN_JSON";
+
+                let decompressMs = 0;
+                let innerParseMs = 0;
+                let sourceChars =
+                    text.length;
+                let gzipBytes = 0;
+                let serverCompressionMs = 0;
+                let serverBase64Ms = 0;
+                let serverTransportElapsedMs = 0;
+
+                if (
+                    outer &&
+                    outer.transportEncoding ===
+                        "GZIP_BASE64_V1"
+                ) {
+                    transportMode =
+                        "GZIP_BASE64_V1";
+
+                    const transportPerf =
+                        outer.transportPerformance ||
+                        {};
+
+                    sourceChars =
+                        Number(
+                            transportPerf
+                                .sourceChars ||
+                            0
+                        );
+
+                    gzipBytes =
+                        Number(
+                            transportPerf
+                                .gzipBytes ||
+                            0
+                        );
+
+                    serverCompressionMs =
+                        Number(
+                            transportPerf
+                                .gzipMs ||
+                            0
+                        );
+
+                    serverBase64Ms =
+                        Number(
+                            transportPerf
+                                .base64Ms ||
+                            0
+                        );
+
+                    serverTransportElapsedMs =
+                        Number(
+                            transportPerf
+                                .serverElapsedMs ||
+                            0
+                        );
+
+                    const decompressStartedAt =
+                        performance.now();
+
+                    const expandedText =
+                        await expandViewerGzipBase64(
+                            outer.payloadBase64 ||
+                            ""
+                        );
+
+                    decompressMs =
+                        performance.now() -
+                        decompressStartedAt;
+
+                    const innerParseStartedAt =
+                        performance.now();
+
+                    try {
+                        data =
+                            JSON.parse(
+                                expandedText
+                            );
+                    } catch (_) {
+                        throw new Error(
+                            "圧縮された閲覧データを解析できませんでした。"
+                        );
+                    }
+
+                    innerParseMs =
+                        performance.now() -
+                        innerParseStartedAt;
+
+                    if (!sourceChars) {
+                        sourceChars =
+                            expandedText.length;
+                    }
                 }
 
                 data.clientPerformance = {
                     fetchAndParseMs:
                         performance.now() -
                         clientStartedAt,
+                    fetchMs,
                     responseChars:
-                        text.length
+                        text.length,
+                    sourceChars,
+                    gzipBytes,
+                    transportMode,
+                    envelopeParseMs,
+                    decompressMs,
+                    innerParseMs,
+                    serverCompressionMs,
+                    serverBase64Ms,
+                    serverTransportElapsedMs
                 };
 
                 if (!data?.ok) {
@@ -1869,6 +2064,44 @@ function renderViewerPerformance(
             "API取得＋JSON解析",
             client.fetchAndParseMs
         ),
+        viewerPerfTextRow(
+            "Viewer応答transport",
+            (
+                client.transportMode ||
+                "PLAIN_JSON"
+            ) +
+            (
+                Number(client.sourceChars || 0)
+                    ? (
+                        " / " +
+                        Number(client.sourceChars || 0).toLocaleString() +
+                        " chars → " +
+                        Number(client.responseChars || 0).toLocaleString() +
+                        " chars"
+                    )
+                    : ""
+            )
+        ),
+        viewerPerfRow(
+            "ブラウザ HTTP受信",
+            client.fetchMs
+        ),
+        viewerPerfRow(
+            "ブラウザ gzip展開",
+            client.decompressMs
+        ),
+        viewerPerfRow(
+            "ブラウザ 展開後JSON解析",
+            client.innerParseMs
+        ),
+        viewerPerfRow(
+            "GAS 応答gzip圧縮",
+            client.serverCompressionMs
+        ),
+        viewerPerfRow(
+            "GAS 応答Base64化",
+            client.serverBase64Ms
+        ),
         viewerPerfRow(
             "ブラウザ集計",
             client.aggregateMs
@@ -1888,6 +2121,10 @@ function renderViewerPerformance(
         viewerPerfRow(
             "GAS workbook検証",
             server.workbookValidationMs
+        ),
+        viewerPerfRow(
+            "GAS Viewer認証state",
+            server.stateAuthMs
         ),
         viewerPerfTextRow(
             "GAS 分析データストア",
