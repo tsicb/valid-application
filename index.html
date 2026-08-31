@@ -401,47 +401,111 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
             return String(rawKey).trim().toUpperCase().replace(/_[0-9]{3,8}$|§.*/g, "");
         }
 
-async function detectCsvEncoding(file) {
-    const sample =
-        new Uint8Array(
-            await file
-                .slice(
-                    0,
-                    65536
+const INPUT_CSV_ENCODING =
+    "Shift_JIS";
+
+function validateFixedCsvFormat(
+    kind,
+    fields,
+    fileName
+) {
+    const normalizedFields =
+        new Set(
+            (fields || [])
+                .map(
+                    field =>
+                        String(
+                            field || ""
+                        ).trim()
                 )
-                .arrayBuffer()
+                .filter(Boolean)
+        );
+
+    const specs = {
+        application: {
+            label:
+                "応募CSV",
+            required: [
+                "仕事番号",
+                "応募日時",
+                "氏名"
+            ],
+            oneOf: [
+                [
+                    "企業コード",
+                    "企業ID"
+                ]
+            ]
+        },
+        job: {
+            label:
+                "求人CSV",
+            required: [
+                "仕事番号",
+                "仕事名",
+                "求人管理番号"
+            ],
+            oneOf: [
+                [
+                    "企業ID",
+                    "企業コード"
+                ]
+            ]
+        }
+    };
+
+    const spec =
+        specs[kind];
+
+    if (!spec) {
+        throw new Error(
+            "CSV種別を確認できませんでした。"
+        );
+    }
+
+    const missing =
+        spec.required.filter(
+            field =>
+                !normalizedFields.has(
+                    field
+                )
+        );
+
+    const missingGroups =
+        spec.oneOf.filter(
+            group =>
+                !group.some(
+                    field =>
+                        normalizedFields.has(
+                            field
+                        )
+                )
         );
 
     if (
-        sample.length >= 3 &&
-        sample[0] === 0xEF &&
-        sample[1] === 0xBB &&
-        sample[2] === 0xBF
+        missing.length ||
+        missingGroups.length
     ) {
-        return "UTF-8";
-    }
+        const details = [
+            ...missing,
+            ...missingGroups.map(
+                group =>
+                    group.join(" または ")
+            )
+        ];
 
-    try {
-        new TextDecoder(
-            "utf-8",
-            {
-                fatal: true
-            }
-        ).decode(sample);
-
-        return "UTF-8";
-
-    } catch (_) {
-        return "Shift_JIS";
+        throw new Error(
+            `${spec.label}「${fileName}」の形式を確認できませんでした。\n` +
+            `このツールは天職市場のShift_JIS固定CSVを読み込みます。\n` +
+            `不足または文字化けしている必須項目: ${details.join(" / ")}`
+        );
     }
 }
 
-async function parseCSV(file) {
-    const encoding =
-        await detectCsvEncoding(
-            file
-        );
-
+async function parseCSV(
+    file,
+    kind
+) {
     const rows =
         await new Promise(
             (
@@ -453,7 +517,8 @@ async function parseCSV(file) {
                     {
                         header: true,
                         skipEmptyLines: true,
-                        encoding,
+                        encoding:
+                            INPUT_CSV_ENCODING,
                         transformHeader:
                             function(header) {
                                 const cleanHeader =
@@ -468,10 +533,45 @@ async function parseCSV(file) {
                                     : cleanHeader;
                             },
                         complete:
-                            results =>
-                                resolve(
-                                    results.data
-                                ),
+                            results => {
+                                try {
+                                    validateFixedCsvFormat(
+                                        kind,
+                                        results
+                                            .meta
+                                            ?.fields ||
+                                            [],
+                                        file.name
+                                    );
+
+                                    if (
+                                        Array.isArray(
+                                            results.errors
+                                        ) &&
+                                        results.errors.some(
+                                            error =>
+                                                error &&
+                                                error.type ===
+                                                    "Quotes"
+                                        )
+                                    ) {
+                                        throw new Error(
+                                            `${kind === "application" ? "応募CSV" : "求人CSV"}「${file.name}」のCSV構造を確認できませんでした。`
+                                        );
+                                    }
+
+                                    resolve(
+                                        results.data
+                                    );
+
+                                } catch (
+                                    validationError
+                                ) {
+                                    reject(
+                                        validationError
+                                    );
+                                }
+                            },
                         error:
                             err =>
                                 reject(
@@ -484,10 +584,10 @@ async function parseCSV(file) {
 
     return {
         rows,
-        encoding
+        encoding:
+            INPUT_CSV_ENCODING
     };
 }
-
 
         function convertCodes(rawVal, mapObj) {
             if (!rawVal) return "";
@@ -925,7 +1025,7 @@ async function parseCSV(file) {
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.10-viewer-response-compression";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.11-fixed-sjis-enterprise-signature";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2413,7 +2513,7 @@ function renderEtlPerformance(apiData = null) {
 
     const rows = [
         perfRow(
-            "CSV読込・文字コード判定",
+            "CSV読込（Shift_JIS固定）",
             trace.csvReadMs
         ),
         perfRow(
@@ -2620,7 +2720,42 @@ function renderEtlPerformance(apiData = null) {
         ),
         perfRow(
             "  ├ 企業IDマスタmerge",
-            server.enterpriseMergeMs
+            server.enterpriseMergeMs,
+            server.enterpriseMergeMode
+                ? (
+                    `${normalizeString(server.enterpriseMergeMode)} / ` +
+                    `入力${Number(server.enterpriseIncomingIds || 0)}件 / ` +
+                    `追加${Number(server.enterpriseAppendedIds || 0)}件`
+                )
+                : ""
+        ),
+        perfRow(
+            "     ├ 企業ID signature生成",
+            server.enterpriseSignatureComputeMs
+        ),
+        perfRow(
+            "     ├ 企業ID signature snapshot参照",
+            server.enterpriseSignatureStateReadMs
+        ),
+        perfRow(
+            "     ├ 企業ID signature状態保存",
+            server.enterpriseSignatureStateWriteMs
+        ),
+        perfRow(
+            "     ├ 33 Sheet確認",
+            server.enterpriseEnsureSheetMs
+        ),
+        perfRow(
+            "     ├ 33 既存マスタ読込",
+            server.enterpriseReadMs
+        ),
+        perfRow(
+            "     ├ 企業ID merge計算",
+            server.enterpriseComputeMs
+        ),
+        perfRow(
+            "     └ 33 書込",
+            server.enterpriseWriteMs
         ),
         perfRow(
             "  └ Sheet書込flush",
@@ -7545,7 +7680,8 @@ const viewerTab =
                             .map(
                                 file =>
                                     parseCSV(
-                                        file
+                                        file,
+                                        "application"
                                     )
                             )
                     );
@@ -7572,7 +7708,8 @@ const viewerTab =
                                 .map(
                                     file =>
                                         parseCSV(
-                                            file
+                                            file,
+                                            "job"
                                         )
                                 )
                         );
@@ -7595,7 +7732,7 @@ const viewerTab =
                         rowCount: dataA_arrays[i]?.length || 0,
                         encoding:
                             parsedA[i]?.encoding ||
-                            "自動判定" 
+                            INPUT_CSV_ENCODING 
                     })),
                     ...Array.from(filesB).map((file, i) => ({
                         type: "求人CSV",
@@ -7603,7 +7740,7 @@ const viewerTab =
                         rowCount: dataB_arrays?.[i]?.length || 0,
                         encoding:
                             parsedB[i]?.encoding ||
-                            "自動判定" 
+                            INPUT_CSV_ENCODING 
                     }))
                 ];
 
