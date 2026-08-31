@@ -321,7 +321,7 @@
         // TOP画像URL解決専用 Cloudflare Worker
         // ※ 任意URLは渡さず、求人管理番号(jobId)のみを渡す専用API。
         const TENICHI_IMAGE_WORKER_URL = "https://tenichi-image-proxy-test.tkarasa.workers.dev/";
-        const IMAGE_LOOKUP_MAX_CONCURRENCY = 5;
+        const IMAGE_LOOKUP_MAX_CONCURRENCY = 10;
         const IMAGE_LOOKUP_TIMEOUT_MS = 15000;
         const salaryTypeMap = { "1": "時給", "2": "日給", "3": "月給", "4": "年俸", "5": "年収", "6": "完全歩合制", "99": "その他" };
         const featureCodeMap = { "1": "未経験者活躍", "2": "第2新卒活躍", "3": "育児・介護休暇あり", "4": "女性が活躍", "5": "シフト勤務", "6": "服装自由", "7": "転勤なし", "8": "残業なし", "9": "平均年齢20代", "10": "上場企業", "11": "ベンチャー", "12": "フレックスタイム制あり", "13": "寮・社宅あり", "14": "長期休暇あり", "15": "フリーター活躍", "16": "マイカー通勤OK", "17": "研修・教育制度充実", "18": "語学を活かせれる", "19": "中途入社50%以上", "20": "海外勤務・海外出張あり", "21": "在宅ワーク", "22": "オフィスカジュアル", "23": "職場見学可", "25": "2018年新卒採用", "26": "土日祝日休み", "27": "短時間ワーク", "28": "新卒採用", "29": "障がい者採用", "30": "リモート面接OK", "31": "面接時マスク着用", "32": "社員登用あり", "33": "週1日からOK", "34": "週2・3日からOK", "35": "シフト自由", "36": "高収入", "37": "即日勤務OK", "38": "急募", "39": "駅近5分以内", "40": "交通費支給", "41": "資格取得支援あり", "42": "ストックオプションあり", "43": "時差出勤", "44": "男性が活躍", "45": "残業少なめ", "46": "残業多め", "47": "20代活躍中", "48": "30代活躍中", "49": "ミドル活躍中", "50": "シニア活躍中", "51": "主婦・主夫活躍中", "52": "送迎あり", "53": "資格・スキルを活かせる", "54": "制服あり", "55": "扶養内OK", "56": "賞与あり", "57": "給与前払い制度あり", "58": "副業・ＷワークOK", "59": "早朝勤務", "60": "朝ゆっくり", "61": "夕方開始", "62": "深夜勤務", "63": "長期", "64": "短期", "65": "単発", "66": "期間限定", "67": "髪型・髪色自由", "68": "髭OK", "69": "ネイル・ピアスOK", "70": "週払い・日払いあり", "71": "外国人活躍中", "72": "無期雇用派遣" }; 
@@ -917,15 +917,15 @@ async function parseCSV(file) {
 // v2では応募1行ごとに求人本文・待遇等を重複保持していたため、
 // 実データで100MB超のpayloadになった。
 //
-// v3では以下の3層へ分離する。
+// v3.1では分析に必要な2層だけを送る。
 // 1. applicationData      : 1応募1行。求人参照IDだけを持つ。
 // 2. jobAnalysisMaster    : JOINに実際に使われた求人を1求人1行で保持。
-// 3. jobSnapshot          : アップロード求人CSV全行の軽量スナップショット。
+// 求人CSV全行スナップショットは運用上不要なため廃止。
 //
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.1-performance-baseline";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.2-fast-sheet-io";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -968,39 +968,6 @@ const JOB_ANALYSIS_HEADERS = [
     "勤務地都道府県",
     "最寄駅",
     "求人備考",
-    "給与区分コード",
-    "給与区分",
-    "給与金額MIN",
-    "給与金額MAX",
-    "メイン画像ファイル名",
-    "メイン画像あり",
-    "求人画像枚数",
-    "動画タイトル",
-    "求人動画あり",
-    "特徴コード",
-    "特徴",
-    "Indeed求人タグコード",
-    "Indeed求人タグ",
-    "Indeed求人タグ数",
-    "求人原稿文字数"
-];
-
-// 求人CSVスナップショットは、将来のゼロ応募求人等の拡張を見据えつつ、
-// 長文本文を除いた「分析に使える軽量列」に限定する。
-const JOB_SNAPSHOT_HEADERS = [
-    "企業ID",
-    "仕事番号",
-    "求人管理番号",
-    "公開情報区分",
-    "仕事名",
-    "Indeed用求人タイトル",
-    "職種",
-    "雇用形態",
-    "募集背景",
-    "求人勤務地名称",
-    "勤務地住所",
-    "勤務地都道府県",
-    "最寄駅",
     "給与区分コード",
     "給与区分",
     "給与金額MIN",
@@ -1239,21 +1206,6 @@ function buildNormalizedSheetsModel() {
     };
 }
 
-function buildJobSnapshotDataset() {
-    if (!globalJobSnapshot.length) {
-        return { headers: JOB_SNAPSHOT_HEADERS, rows: [] };
-    }
-
-    const rows = globalJobSnapshot.map(rawRow => {
-        const record = buildJobSnapshotRecord(rawRow);
-        return JOB_SNAPSHOT_HEADERS.map(header => record[header] ?? "");
-    });
-
-    return {
-        headers: JOB_SNAPSHOT_HEADERS,
-        rows
-    };
-}
 
 function buildProcessInfoDataset(normalizedModel) {
     const joinRate = globalFinalData.length > 0
@@ -1271,7 +1223,6 @@ function buildProcessInfoDataset(normalizedModel) {
         ["求人突合済応募数", globalJoinCount],
         ["求人突合率", Number(joinRate.toFixed(2))],
         ["JOIN済み求人マスタ件数", normalizedModel.jobAnalysisMaster.rows.length],
-        ["求人CSVスナップショット行数", globalJobSnapshot.length],
         ["画像分析対象数", globalImageLookupStats.targetCount],
         ["画像URL取得成功数", globalImageLookupStats.successCount],
         ["画像URL未取得数", globalImageLookupStats.unresolvedCount]
@@ -1384,7 +1335,6 @@ function buildSheetsPayloadV3(accessKey = "", requestId = "", targetSpreadsheetU
         datasets: {
             applicationData: normalizedModel.applicationData,
             jobAnalysisMaster: normalizedModel.jobAnalysisMaster,
-            jobSnapshot: buildJobSnapshotDataset(),
             processInfo: buildProcessInfoDataset(normalizedModel),
             inputFiles: buildInputFilesDataset(),
             codeMaster: buildCodeMasterDataset(),
@@ -1468,7 +1418,6 @@ async function runSheetsPayloadVerification() {
             `【主要データ件数】\n` +
             `応募データ: ${d.applicationData.rows.length.toLocaleString()}行 × ${d.applicationData.headers.length}列\n` +
             `求人分析マスタ: ${d.jobAnalysisMaster.rows.length.toLocaleString()}行 × ${d.jobAnalysisMaster.headers.length}列\n` +
-            `求人CSVスナップショット: ${d.jobSnapshot.rows.length.toLocaleString()}行 × ${d.jobSnapshot.headers.length}列\n` +
             `コードマスタ: ${d.codeMaster.rows.length.toLocaleString()}行\n` +
             `Indeed求人タグマスタ: ${d.indeedTagMaster.rows.length.toLocaleString()}行\n` +
             `画像マスタ初期値: ${d.imageMasterInitial.rows.length.toLocaleString()}行\n\n` +
