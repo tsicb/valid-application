@@ -925,7 +925,7 @@ async function parseCSV(file) {
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.08.31-etl-v2.4-analysis-datastore";
+const SHEETS_APP_VERSION = "2026.08.31-etl-v2.5-finalization-io";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -2303,6 +2303,73 @@ function renderEtlPerformance(apiData = null) {
         perfRow(
             "GAS：Viewer/メタ情報確定",
             server.finalizeViewerMs
+        ),
+        perfRow(
+            "  └ Workbook確定",
+            server.finalizeThinWorkbookMs
+        ),
+        perfRow(
+            "     ├ 34カスタム設定確認",
+            server.finalizeCustomAnalysisEnsureMs
+        ),
+        perfRow(
+            "     ├ 35Viewer表示設定確認",
+            server.finalizeDisplaySettingsEnsureMs
+        ),
+        perfRow(
+            "     ├ 監査Sheet確認",
+            server.finalizeAuditSheetEnsureMs
+        ),
+        perfRow(
+            "     ├ 99状態読込",
+            server.finalizeStateReadMs
+        ),
+        perfRow(
+            "     └ 99状態一括書込",
+            server.finalizeStateWriteMs
+        ),
+        perfRow(
+            "  └ Viewerアクセス確定",
+            server.ensureViewerAccessMs
+        ),
+        perfRow(
+            "     ├ Viewer状態再書込",
+            server.viewerAccessStateWriteMs
+        ),
+        perfRow(
+            "     ├ Viewer mapping読込",
+            server.viewerAccessMappingReadMs
+        ),
+        perfRow(
+            "     ├ Viewer mapping保存",
+            server.viewerAccessMappingWriteMs
+        ),
+        perfRow(
+            "     └ Portal再描画",
+            server.viewerAccessPortalWriteMs,
+            server.viewerAccessPortalWriteMs
+                ? "必要時のみ"
+                : "再描画なし"
+        ),
+        perfRow(
+            "  └ 監査ログ記録",
+            server.auditEventMs
+        ),
+        perfRow(
+            "  └ Report Registry更新",
+            server.reportRegistryMs
+        ),
+        perfRow(
+            "     ├ 企業表示名取得",
+            server.reportRegistryEnterpriseLabelMs
+        ),
+        perfRow(
+            "     └ Registry Property保存",
+            server.reportRegistryPropertyWriteMs
+        ),
+        perfRow(
+            "  └ 最終flush",
+            server.finalizeFlushMs
         ),
         datasetRows,
         perfRow(
