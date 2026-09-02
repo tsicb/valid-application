@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="referrer" content="no-referrer">
-    <title>有効応募分析 Viewer管理</title>
+    <title>有効応募分析｜分析レポート管理</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -129,11 +129,11 @@
 <body>
 <main class="shell">
     <section class="card">
-        <div class="eyebrow">VIEWER CONTROL</div>
-        <h1>企業向けViewer管理</h1>
+        <div class="eyebrow">ANALYSIS REPORT CONTROL</div>
+        <h1>分析レポート一覧・管理</h1>
         <div class="sub">
-            この画面ではViewerの閲覧停止・再開・URL再発行だけを行います。
-            集計設定やマスタは個社Google Sheetで変更してください。
+            この画面では分析レポートの閲覧停止・再開・共有URL再発行を行います。
+            集計設定やマスタの変更は個社管理シートで行います。
         </div>
 
         <div id="keyArea" class="field hidden">
@@ -148,28 +148,28 @@
             </div>
         </div>
 
-        <div id="status" class="status">Viewer情報を確認しています...</div>
+        <div id="status" class="status">分析レポート情報を確認しています...</div>
 
         <div id="controlArea" class="hidden">
             <div class="meta">
-                <div class="key">Viewer名</div>
+                <div class="key">分析レポート名</div>
                 <div id="reportName">-</div>
                 <div class="key">閲覧状態</div>
                 <div id="viewerState">-</div>
-                <div class="key">Viewer URL</div>
+                <div class="key">共有URL</div>
                 <div id="viewerUrl" class="viewer-url">-</div>
             </div>
 
             <div class="actions">
-                <a id="openViewerBtn" class="link-button" href="#" target="_blank" rel="noopener noreferrer">Viewerを開く</a>
+                <a id="openViewerBtn" class="link-button" href="#" target="_blank" rel="noopener noreferrer">分析レポートを開く</a>
                 <button id="copyViewerBtn" type="button">URLをコピー</button>
                 <button id="toggleViewerBtn" type="button" class="warning">閲覧を停止</button>
-                <button id="rotateViewerBtn" type="button" class="danger">Viewer URLを再発行</button>
-                <a id="openSheetBtn" class="link-button" href="#" target="_blank" rel="noopener noreferrer">個社Sheetへ戻る</a>
+                <button id="rotateViewerBtn" type="button" class="danger">共有URLを再発行</button>
+                <a id="openSheetBtn" class="link-button" href="#" target="_blank" rel="noopener noreferrer">個社管理シートへ戻る</a>
             </div>
         </div>
     </section>
-    <div class="footer">有効応募分析 Viewer管理 / 2026.09.02-etl-v2.15-folder-navigation</div>
+    <div class="footer">有効応募分析｜分析レポート管理 / 2026.09.02-etl-v2.17-final-user-terminology</div>
 </main>
 
 <script>
@@ -178,7 +178,7 @@
 const API_URL =
     "https://script.google.com/macros/s/AKfycbwS_-ptDyhVk5yrNtRB8I32WUJen-xdjKUtp-Rf7Dbdhhg4V9Vw3gneD9K7ErZgP_Y/exec";
 const SCHEMA_VERSION = "3.0";
-const PAGES_VERSION = "2026.09.02-etl-v2.15-folder-navigation";
+const PAGES_VERSION = "2026.09.02-etl-v2.17-final-user-terminology";
 const ACCESS_KEY_STORAGE_KEY =
     "validApplicationAnalysis.sheetsAccessKey";
 
@@ -248,7 +248,7 @@ async function callApi(action, extra = {}) {
 
     const sheetId = targetSheetId();
     if (!sheetId) {
-        throw new Error("対象Sheet IDがURLに含まれていません。個社SheetのViewer管理リンクから開いてください。");
+        throw new Error("対象の個社管理シートIDがURLに含まれていません。個社管理シートの「分析レポート管理」リンクから開いてください。");
     }
 
     const response = await fetch(API_URL, {
@@ -324,8 +324,8 @@ function render(data) {
 
     setStatus(
         enabled
-            ? "Viewerは現在閲覧可能です。"
-            : "Viewerは現在閲覧停止中です。",
+            ? "分析レポートは現在閲覧可能です。"
+            : "分析レポートは現在閲覧停止中です。",
         enabled ? "ok" : "warn"
     );
 }
@@ -342,7 +342,7 @@ async function loadState() {
     }
 
     setBusy(true);
-    setStatus("Viewer情報を読み込んでいます...");
+    setStatus("分析レポート情報を読み込んでいます...");
 
     try {
         const data = await callApi("manageLoad");
@@ -376,9 +376,9 @@ document.getElementById("copyViewerBtn")
         if (!url) return;
         try {
             await navigator.clipboard.writeText(url);
-            setStatus("Viewer URLをコピーしました。","ok");
+            setStatus("分析レポートの共有URLをコピーしました。","ok");
         } catch (_) {
-            window.prompt("Viewer URLをコピーしてください。",url);
+            window.prompt("分析レポートの共有URLをコピーしてください。",url);
         }
     });
 
@@ -390,8 +390,8 @@ document.getElementById("toggleViewerBtn")
 
         if (!window.confirm(
             next
-                ? "Viewerの閲覧を再開しますか？"
-                : "Viewerの閲覧を停止しますか？"
+                ? "分析レポートの閲覧を再開しますか？"
+                : "分析レポートの閲覧を停止しますか？"
         )) return;
 
         setBusy(true);
@@ -415,16 +415,16 @@ document.getElementById("rotateViewerBtn")
         if (busy || !currentState) return;
 
         if (!window.confirm(
-            "Viewer URLを再発行します。以前のURLは無効になります。\n\n企業へ共有済みの場合は、新しいURLの再案内が必要です。\n\n実行しますか？"
+            "分析レポートの共有URLを再発行します。以前のURLは無効になります。\n\n企業へ共有済みの場合は、新しいURLの再案内が必要です。\n\n実行しますか？"
         )) return;
 
         setBusy(true);
-        setStatus("Viewer URLを再発行しています...");
+        setStatus("分析レポートの共有URLを再発行しています...");
 
         try {
             const data = await callApi("manageViewerRotate");
             render(data);
-            setStatus("Viewer URLを再発行しました。新しいURLをご利用ください。","ok");
+            setStatus("分析レポートの共有URLを再発行しました。新しいURLをご利用ください。","ok");
         } catch (error) {
             setStatus(error?.message || String(error),"error");
         } finally {

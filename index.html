@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>有効応募分析 CSVデータ更新</title>
+    <meta name="vaa-ui-version" content="2026.09.02-etl-theme-v20">
+    <title>有効応募分析｜データ作成・更新</title>
     <!-- ファビコン設定 -->
     <link rel="icon" href="favicon.png" type="image/png">
     
@@ -220,25 +221,409 @@
 }
 </style>
 
+
+<style>
+/* =========================================================
+   有効応募分析 ETL theme v20
+   Main: #148ecc / Accent: #eeff16
+   ========================================================= */
+:root {
+    --vaa-blue: #148ecc;
+    --vaa-blue-dark: #0d6795;
+    --vaa-blue-deep: #0a5278;
+    --vaa-blue-soft: #edf8fd;
+    --vaa-blue-soft-2: #dff3fc;
+    --vaa-yellow: #eeff16;
+    --vaa-yellow-soft: #fbffd7;
+    --vaa-yellow-soft-2: #f7ffc0;
+    --vaa-ink: #173043;
+    --vaa-muted: #64748b;
+    --vaa-line: rgba(20, 142, 204, .18);
+}
+
+.vaa-etl-theme {
+    color: var(--vaa-ink);
+    background:
+        radial-gradient(circle at 7% 5%, rgba(20,142,204,.14), transparent 30%),
+        radial-gradient(circle at 94% 92%, rgba(238,255,22,.18), transparent 26%),
+        linear-gradient(135deg, #f7fbfd 0%, #ffffff 52%, #fdffe8 100%);
+}
+
+.vaa-etl-theme .vaa-shell {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(20,142,204,.15);
+    box-shadow:
+        0 24px 70px -30px rgba(13,103,149,.30),
+        0 8px 22px -18px rgba(15,23,42,.22);
+}
+
+.vaa-etl-theme .vaa-shell::before {
+    content: "";
+    position: absolute;
+    z-index: 30;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background:
+        linear-gradient(
+            90deg,
+            var(--vaa-blue) 0 78%,
+            var(--vaa-yellow) 78% 100%
+        );
+}
+
+.vaa-brand-blob-blue {
+    background: rgba(20,142,204,.16);
+}
+.vaa-brand-blob-yellow {
+    background: rgba(238,255,22,.20);
+}
+
+.vaa-brand-title {
+    position: relative;
+    display: inline-block;
+    color: var(--vaa-blue-deep);
+}
+.vaa-brand-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -7px;
+    width: 54px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--vaa-yellow);
+}
+
+.vaa-nav-link {
+    display: inline-flex;
+    align-items: center;
+    border-radius: .75rem;
+    border: 1px solid var(--vaa-line);
+    background: #fff;
+    padding: .5rem .75rem;
+    color: var(--vaa-blue-dark);
+    font-size: 11px;
+    font-weight: 800;
+    box-shadow: 0 3px 10px rgba(20,142,204,.06);
+    transition: .18s ease;
+}
+.vaa-nav-link:hover {
+    border-color: rgba(20,142,204,.42);
+    background: var(--vaa-blue-soft);
+    transform: translateY(-1px);
+}
+.vaa-nav-link--report {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(20,142,204,.08),
+            rgba(238,255,22,.10)
+        );
+}
+.vaa-nav-link--report::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin-left: 7px;
+    border-radius: 999px;
+    background: var(--vaa-yellow);
+    box-shadow: 0 0 0 1px rgba(13,103,149,.10);
+}
+
+.vaa-file-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(20,142,204,.16);
+    background: #fff;
+    box-shadow: 0 7px 20px -18px rgba(13,103,149,.35);
+}
+.vaa-file-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: var(--vaa-blue);
+}
+.vaa-file-card--job::before {
+    background: var(--vaa-yellow);
+}
+.vaa-file-card--job {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(238,255,22,.06),
+            #fff 42%
+        );
+}
+.vaa-file-title {
+    color: var(--vaa-blue-deep);
+}
+.vaa-file-badge-required {
+    background: var(--vaa-blue-soft);
+    color: var(--vaa-blue-dark);
+}
+.vaa-file-badge-optional {
+    background: var(--vaa-yellow-soft);
+    color: #59610a;
+}
+
+.vaa-etl-theme #fileA::file-selector-button,
+.vaa-etl-theme #fileB::file-selector-button {
+    border: 0;
+    border-radius: .75rem;
+    margin-right: .75rem;
+    padding: .625rem 1rem;
+    background: var(--vaa-blue);
+    color: #fff;
+    font-size: .875rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .18s ease, transform .18s ease;
+}
+.vaa-etl-theme #fileA:hover::file-selector-button,
+.vaa-etl-theme #fileB:hover::file-selector-button {
+    background: var(--vaa-blue-dark);
+}
+
+.vaa-section-panel {
+    border-color: rgba(20,142,204,.15);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20,142,204,.025),
+            rgba(248,250,252,.80)
+        );
+}
+
+.vaa-identity-card {
+    border-color: rgba(20,142,204,.20);
+    background: #fff;
+}
+.vaa-identity-title {
+    color: var(--vaa-blue-dark);
+}
+
+.vaa-option-card {
+    border: 1px solid rgba(20,142,204,.16);
+    background:
+        linear-gradient(
+            135deg,
+            var(--vaa-blue-soft),
+            rgba(251,255,215,.55)
+        );
+    color: var(--vaa-blue-dark);
+}
+
+.vaa-primary-action {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            100deg,
+            var(--vaa-blue) 0%,
+            var(--vaa-blue-dark) 100%
+        );
+    box-shadow:
+        0 14px 28px -16px rgba(13,103,149,.72);
+}
+.vaa-primary-action::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22%;
+    height: 4px;
+    background: var(--vaa-yellow);
+}
+.vaa-primary-action:hover {
+    background:
+        linear-gradient(
+            100deg,
+            #117fb8 0%,
+            var(--vaa-blue-deep) 100%
+        );
+    transform: translateY(-1px);
+}
+.vaa-primary-action:disabled {
+    transform: none;
+}
+
+.vaa-etl-theme input[type="text"]:focus,
+.vaa-etl-theme input[type="url"]:focus,
+.vaa-etl-theme input[type="password"]:focus {
+    border-color: var(--vaa-blue) !important;
+    box-shadow: 0 0 0 3px rgba(20,142,204,.12) !important;
+}
+
+.vaa-etl-theme input[type="checkbox"] {
+    accent-color: var(--vaa-blue);
+}
+
+/* Brand mapping for legacy Tailwind utility classes still used by JS. */
+.vaa-etl-theme .text-indigo-600,
+.vaa-etl-theme .text-indigo-700,
+.vaa-etl-theme .text-blue-600,
+.vaa-etl-theme .text-blue-700 {
+    color: var(--vaa-blue-dark) !important;
+}
+.vaa-etl-theme .text-indigo-800,
+.vaa-etl-theme .text-indigo-900,
+.vaa-etl-theme .text-blue-800,
+.vaa-etl-theme .text-blue-900 {
+    color: var(--vaa-blue-deep) !important;
+}
+.vaa-etl-theme .bg-indigo-50,
+.vaa-etl-theme .bg-blue-50 {
+    background-color: var(--vaa-blue-soft) !important;
+}
+.vaa-etl-theme .bg-indigo-100,
+.vaa-etl-theme .bg-blue-100 {
+    background-color: var(--vaa-blue-soft-2) !important;
+}
+.vaa-etl-theme .bg-indigo-600,
+.vaa-etl-theme .bg-blue-600 {
+    background-color: var(--vaa-blue) !important;
+}
+.vaa-etl-theme .bg-indigo-700,
+.vaa-etl-theme .bg-blue-700 {
+    background-color: var(--vaa-blue-dark) !important;
+}
+.vaa-etl-theme .border-indigo-100,
+.vaa-etl-theme .border-indigo-200,
+.vaa-etl-theme .border-blue-100,
+.vaa-etl-theme .border-blue-200 {
+    border-color: rgba(20,142,204,.18) !important;
+}
+.vaa-etl-theme .border-indigo-300,
+.vaa-etl-theme .border-blue-300,
+.vaa-etl-theme .border-indigo-400,
+.vaa-etl-theme .border-blue-400,
+.vaa-etl-theme .border-indigo-500 {
+    border-color: rgba(20,142,204,.42) !important;
+}
+.vaa-etl-theme .hover\:bg-indigo-50:hover,
+.vaa-etl-theme .hover\:bg-blue-50:hover,
+.vaa-etl-theme .hover\:bg-indigo-100:hover,
+.vaa-etl-theme .hover\:bg-blue-100:hover {
+    background-color: var(--vaa-blue-soft) !important;
+}
+.vaa-etl-theme .hover\:bg-indigo-700:hover,
+.vaa-etl-theme .hover\:bg-blue-700:hover {
+    background-color: var(--vaa-blue-dark) !important;
+}
+.vaa-etl-theme .hover\:border-indigo-300:hover,
+.vaa-etl-theme .hover\:border-blue-300:hover {
+    border-color: rgba(20,142,204,.42) !important;
+}
+.vaa-etl-theme .hover\:text-indigo-700:hover,
+.vaa-etl-theme .hover\:text-blue-700:hover {
+    color: var(--vaa-blue-dark) !important;
+}
+.vaa-etl-theme .from-indigo-500,
+.vaa-etl-theme .from-indigo-600,
+.vaa-etl-theme .from-blue-500,
+.vaa-etl-theme .from-blue-600 {
+    --tw-gradient-from: var(--vaa-blue) var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgb(20 142 204 / 0) var(--tw-gradient-to-position) !important;
+}
+.vaa-etl-theme .to-indigo-600,
+.vaa-etl-theme .to-indigo-700,
+.vaa-etl-theme .to-blue-500,
+.vaa-etl-theme .to-blue-600,
+.vaa-etl-theme .to-blue-700 {
+    --tw-gradient-to: var(--vaa-blue-dark) var(--tw-gradient-to-position) !important;
+}
+
+/* Semi-transparent legacy blue classes used in runtime states. */
+.vaa-etl-theme .bg-blue-50\/50,
+.vaa-etl-theme .bg-blue-50\/60,
+.vaa-etl-theme .bg-blue-50\/70,
+.vaa-etl-theme .bg-blue-50\/80,
+.vaa-etl-theme .bg-indigo-50\/50,
+.vaa-etl-theme .bg-indigo-50\/60,
+.vaa-etl-theme .bg-indigo-50\/70,
+.vaa-etl-theme .bg-indigo-50\/80 {
+    background-color: rgba(237,248,253,.78) !important;
+}
+
+/* Completion actions: status can stay green, navigation follows product brand. */
+.vaa-etl-theme #openCreatedSheetLink,
+.vaa-etl-theme #openViewerReportLink {
+    background: var(--vaa-blue) !important;
+    color: #fff !important;
+}
+.vaa-etl-theme #openCreatedSheetLink:hover,
+.vaa-etl-theme #openViewerReportLink:hover {
+    background: var(--vaa-blue-dark) !important;
+}
+.vaa-etl-theme #copyViewerShareBtn {
+    border-color: rgba(20,142,204,.22) !important;
+    color: var(--vaa-blue-dark) !important;
+}
+.vaa-etl-theme #copyViewerShareBtn:hover {
+    background: var(--vaa-blue-soft) !important;
+}
+
+/* Loading / progress treatment. */
+.vaa-processing-icon {
+    background: var(--vaa-blue-soft) !important;
+    color: var(--vaa-blue-dark) !important;
+}
+.vaa-processing-bar {
+    background:
+        linear-gradient(
+            90deg,
+            var(--vaa-blue),
+            var(--vaa-blue-dark)
+        ) !important;
+}
+.vaa-processing-stage-active {
+    background: var(--vaa-blue-soft) !important;
+    color: var(--vaa-blue-deep) !important;
+}
+.vaa-processing-stage-active .etl-stage-mark {
+    border-color: rgba(20,142,204,.35) !important;
+    color: var(--vaa-blue-dark) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vaa-nav-link,
+    .vaa-help-button,
+    .vaa-primary-action {
+        transition: none;
+    }
+    .vaa-primary-action:hover,
+    .vaa-nav-link:hover,
+    .vaa-help-button:hover {
+        transform: none;
+    }
+}
+</style>
+
 </head>
 <body class="bg-gray-100 font-sans min-h-screen m-0 text-gray-800">
-    <div id="etlView" class="min-h-screen w-full overflow-y-auto p-5 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50 relative">
+    <div id="etlView" class="vaa-etl-theme min-h-screen w-full overflow-y-auto p-5 md:p-8 relative">
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-            <div class="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] rounded-full bg-blue-200/40 blur-[100px]"></div>
-            <div class="absolute bottom-[-10%] right-[-5%] w-[40%] h-[50%] rounded-full bg-purple-200/30 blur-[100px]"></div>
+            <div class="vaa-brand-blob-blue absolute top-[-10%] left-[-5%] w-[50%] h-[50%] rounded-full blur-[100px]"></div>
+            <div class="vaa-brand-blob-yellow absolute bottom-[-10%] right-[-5%] w-[40%] h-[50%] rounded-full blur-[100px]"></div>
         </div>
 
-        <div class="max-w-4xl mx-auto bg-white/90 backdrop-blur-xl p-6 md:p-9 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 relative z-10 my-4">
+        <div class="vaa-shell max-w-4xl mx-auto bg-white/95 backdrop-blur-xl p-6 md:p-9 rounded-[2rem] relative z-10 my-4">
             <header class="mb-7 pb-5 border-b border-gray-200/60">
                 <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div class="min-w-0">
                         <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
-                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">
-                                有効応募分析 CSVデータ更新
+                            <span class="vaa-brand-title">
+                                有効応募分析｜データ作成・更新
                             </span>
                         </h1>
                         <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                            CSVを選び、1回の実行で分析データ作成から個社Google Sheet保存、Viewer反映まで完了します。
+                            応募・求人CSVを選び、新規作成または既存データの更新から、個社管理シート保存・分析レポート反映まで1回で完了します。
                         </p>
                     </div>
 
@@ -248,18 +633,18 @@
                             href="https://drive.google.com/drive/folders/1izieBYn1U40y0sMkK2H5WzoILA1blYNb"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-extrabold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+                            class="vaa-nav-link"
                         >
-                            個社分析Sheet一覧
+                            個社管理シート一覧
                         </a>
                         <a
                             id="openViewerAdminLink"
                             href="./viewer-admin.html"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-[11px] font-extrabold text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100"
+                            class="vaa-nav-link vaa-nav-link--report"
                         >
-                            Viewer一覧・管理
+                            分析レポート一覧・管理
                         </a>
                         <button
                             id="openEtlHelpBtn"
@@ -321,7 +706,7 @@
                     </div>
                     <div id="sheetsConnectionSettingsStatus" class="hidden mt-2 text-xs rounded-lg p-2.5"></div>
                     <p class="mt-2 text-[10px] text-slate-500">
-                        アクセスキーはこのブラウザ内だけに保存し、個社Sheetへは保存しません。
+                        アクセスキーはこのブラウザ内だけに保存し、個社管理シートへは保存しません。
                     </p>
                 </div>
             </section>
@@ -336,23 +721,23 @@
                         <div class="flex flex-wrap items-center gap-2">
                             <span id="workflowModeBadge" class="workflow-mode-badge">新規作成モード</span>
                             <span class="text-[10px] font-extrabold tracking-[0.12em] text-slate-400">
-                                CSV DATA UPDATE / ETL
+                                CREATE / UPDATE
                             </span>
                         </div>
 
                         <div id="sheetsCreateTitle" class="mt-2 text-base font-extrabold text-slate-950">
-                            新しい企業の分析を作成します
+                            新しい企業の分析データを作成します
                         </div>
 
                         <div id="existingSheetModeNote" class="mt-1 text-[11px] leading-relaxed text-slate-600">
-                            実行すると、新しい個社Google SheetとViewerを作成します。
+                            実行すると、新しい個社管理シートと分析レポートを作成します。
                         </div>
 
                         <div
                             id="etlSheetTargetBanner"
                             class="hidden mt-3 rounded-xl border border-[#148ecc]/20 bg-white/90 px-3 py-2.5 text-[11px] leading-relaxed text-slate-700"
                         >
-                            Sheet側の設定・マスタ・Viewer表示設定は維持したまま、CSV由来の分析データを更新します。
+                            個社管理シート側の設定・マスタ・分析レポート表示設定は維持したまま、CSV由来の分析データを更新します。
                         </div>
                     </div>
 
@@ -363,24 +748,24 @@
                         aria-controls="existingSheetTargetPanel"
                         aria-expanded="false"
                     >
-                        既存の分析を更新する場合
+                        既存企業のデータを更新する場合
                     </button>
                 </div>
 
                 <div class="mt-3 text-[10px] leading-relaxed text-slate-500">
-                    既存企業は、個社Sheetの「CSVデータ更新はこちら」から開くと更新先が自動指定されます。
+                    既存企業は、個社管理シートの「CSVデータ更新はこちら」から開くと更新先が自動指定されます。
                 </div>
             </div>
 
             <div id="workflowModeEtlPanel">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                    <div class="p-5 rounded-2xl bg-gradient-to-b from-blue-50/80 to-white border border-blue-100 shadow-sm relative">
-                        <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500 rounded-l-2xl"></div>
-                        <h2 class="font-extrabold mb-3 text-blue-900 text-base">
+                    <div class="vaa-file-card vaa-file-card--application p-5 rounded-2xl relative">
+                        
+                        <h2 class="vaa-file-title font-extrabold mb-3 text-base">
                             応募CSV
-                            <span class="ml-2 text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md">必須・複数可</span>
+                            <span class="vaa-file-badge-required ml-2 text-[10px] font-bold px-2 py-0.5 rounded-md">必須・複数可</span>
                         </h2>
-                        <input type="file" id="fileA" accept=".csv" multiple autocomplete="off" class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                        <input type="file" id="fileA" accept=".csv" multiple autocomplete="off" class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:text-white border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
                         <div class="mt-2 flex items-center justify-between gap-3 text-[10px]">
                             <span id="fileASelectionSummary" class="font-bold text-slate-500">未選択</span>
                             <button id="clearFileABtn" type="button" class="hidden shrink-0 rounded-md border border-blue-200 bg-white px-2 py-1 font-extrabold text-blue-700 hover:bg-blue-50">
@@ -389,23 +774,23 @@
                         </div>
                     </div>
 
-                    <div class="p-5 rounded-2xl bg-gradient-to-b from-emerald-50/80 to-white border border-emerald-100 shadow-sm relative">
-                        <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-400 rounded-l-2xl"></div>
-                        <h2 class="font-extrabold mb-3 text-emerald-900 text-base">
+                    <div class="vaa-file-card vaa-file-card--job p-5 rounded-2xl relative">
+                        
+                        <h2 class="vaa-file-title font-extrabold mb-3 text-base">
                             求人CSV
-                            <span class="ml-2 text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md">任意・複数可</span>
+                            <span class="vaa-file-badge-optional ml-2 text-[10px] font-bold px-2 py-0.5 rounded-md">任意・複数可</span>
                         </h2>
-                        <input type="file" id="fileB" accept=".csv" multiple autocomplete="off" class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
+                        <input type="file" id="fileB" accept=".csv" multiple autocomplete="off" class="block w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:text-white border border-gray-200 rounded-xl p-1 bg-white cursor-pointer">
                         <div class="mt-2 flex items-center justify-between gap-3 text-[10px]">
                             <span id="fileBSelectionSummary" class="font-bold text-slate-500">未選択</span>
-                            <button id="clearFileBBtn" type="button" class="hidden shrink-0 rounded-md border border-emerald-200 bg-white px-2 py-1 font-extrabold text-emerald-700 hover:bg-emerald-50">
+                            <button id="clearFileBBtn" type="button" class="hidden shrink-0 rounded-md border border-blue-200 bg-white px-2 py-1 font-extrabold text-blue-700 hover:bg-blue-50">
                                 すべてクリア
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <section class="mb-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <section class="vaa-section-panel mb-5 rounded-2xl border p-4">
                     <div
                         id="existingSheetTargetPanel"
                         class="hidden rounded-xl border border-[#148ecc]/20 bg-[#edf8fd] p-3"
@@ -413,10 +798,10 @@
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <div class="text-[11px] font-extrabold text-[#0d6795]">
-                                    既存の個社分析を更新する
+                                    既存企業のデータを更新する
                                 </div>
                                 <div class="mt-1 text-[10px] leading-relaxed text-slate-500">
-                                    通常は個社Sheetから開けば自動入力されます。別の既存Sheetを指定したい場合だけ、ここへURLを貼り付けてください。
+                                    通常は個社管理シートから開けば自動入力されます。別の既存シートを指定したい場合だけ、ここへURLを貼り付けてください。
                                 </div>
                             </div>
                             <button
@@ -430,7 +815,7 @@
 
                         <div class="mt-3">
                             <label for="existingSheetUrlInput" class="block text-[11px] font-bold text-slate-600 mb-1">
-                                更新先Google Sheet URL
+                                更新先の個社管理シートURL
                             </label>
                             <input
                                 id="existingSheetUrlInput"
@@ -443,8 +828,8 @@
                         </div>
                     </div>
 
-                    <div id="newReportIdentityBlock" class="rounded-xl border border-indigo-200 bg-white p-4">
-                        <div class="text-xs font-extrabold text-indigo-900">新規作成時の表示名</div>
+                    <div id="newReportIdentityBlock" class="vaa-identity-card rounded-xl border p-4">
+                        <div class="vaa-identity-title text-xs font-extrabold">新規作成時の表示名</div>
                         <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label for="newCompanyDisplayNameInput" class="block text-[11px] font-bold text-gray-600 mb-1">
@@ -466,7 +851,7 @@
                             <div>
                                 <div class="mb-1 flex items-center justify-between gap-2">
                                     <label for="newReportNameInput" class="text-[11px] font-bold text-gray-600">
-                                        Viewer名 <span class="font-normal text-gray-400">（任意）</span>
+                                        分析レポート名 <span class="font-normal text-gray-400">（任意）</span>
                                     </label>
                                     <button
                                         id="suggestNewReportNameBtn"
@@ -488,7 +873,7 @@
                         </div>
                     </div>
 
-                    <label class="mt-4 flex items-start gap-2 rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2.5 text-[11px] text-blue-800 cursor-pointer">
+                    <label class="vaa-option-card mt-4 flex items-start gap-2 rounded-xl px-3 py-2.5 text-[11px] cursor-pointer">
                         <input
                             id="etlAutoOpenViewerCheckbox"
                             type="checkbox"
@@ -496,16 +881,16 @@
                             checked
                         >
                         <span>
-                            <span class="font-extrabold">反映完了後にViewerを新しいタブで開く</span>
+                            <span class="font-extrabold">反映完了後に分析レポートを新しいタブで開く</span>
                             <span class="block mt-0.5 text-[10px] text-blue-700/80">
-                                デフォルトON。処理中は待機タブを表示し、完了するとViewerへ切り替わります。
+                                デフォルトON。処理中は待機タブを表示し、完了すると分析レポートへ切り替わります。
                             </span>
                         </span>
                     </label>
                 </section>
 
-                <button id="runBtn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-4 rounded-2xl font-extrabold hover:from-indigo-700 hover:to-blue-700 transition-all shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg md:text-xl">
-                    <span id="runBtnLabel" class="tracking-wide">分析データを作成してViewerを作る</span>
+                <button id="runBtn" class="vaa-primary-action w-full text-white py-4 rounded-2xl font-extrabold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg md:text-xl">
+                    <span id="runBtnLabel" class="tracking-wide">分析データを作成して分析レポートを作る</span>
                 </button>
 
                 <div id="message" class="mt-5 text-center text-sm font-semibold p-4 rounded-xl hidden"></div>
@@ -515,7 +900,7 @@
                     <div id="sheetsCreateStatus" class="hidden mt-3 text-xs rounded-xl bg-white border border-green-100 p-3 text-gray-700 whitespace-pre-wrap"></div>
 
                     <div id="sheetsCreateSuccess" class="hidden mt-4 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-                        <div id="sheetsCreateSuccessTitle" class="font-bold text-emerald-800 text-sm">Viewerへ反映しました</div>
+                        <div id="sheetsCreateSuccessTitle" class="font-bold text-emerald-800 text-sm">分析レポートへ反映しました</div>
                         <div id="sheetsCreateSuccessMeta" class="text-xs text-gray-600 mt-1"></div>
                         <div id="viewerShareTarget" class="hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
                             <span class="font-extrabold">共有先確認：</span>
@@ -523,10 +908,10 @@
                         </div>
                         <div class="mt-3 flex flex-wrap gap-2">
                             <a id="openCreatedSheetLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
-                                個社Google Sheetを開く
+                                個社管理シートを開く
                             </a>
                             <a id="openViewerReportLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">
-                                Viewerを開く
+                                分析レポートを開く
                             </a>
                             <button id="copyViewerShareBtn" type="button" class="hidden inline-flex items-center px-4 py-2 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-800 text-xs font-bold">
                                 企業共有用リンクをコピー
@@ -548,7 +933,7 @@
                             <div>
                                 <div class="text-[11px] font-extrabold text-slate-700">処理済みCSVが必要な場合</div>
                                 <div class="mt-0.5 text-[10px] text-slate-400">
-                                    Viewer反映とは別に、結合後のデータをCSV保存できます。
+                                    分析レポートへの反映とは別に、結合後のデータをCSV保存できます。
                                 </div>
                             </div>
                             <button id="downloadBtn" disabled class="shrink-0 border border-slate-200 bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-bold hover:bg-slate-100 text-xs disabled:opacity-50">
@@ -581,7 +966,7 @@
                     <div class="flex items-center gap-2">
                         <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#eeff16] text-[11px] font-black text-slate-800">?</span>
                         <h2 id="etlHelpTitle" class="text-base font-extrabold text-slate-950">
-                            有効応募分析 ETL ガイド
+                            有効応募分析｜データ作成・更新ガイド
                         </h2>
                     </div>
                     <p class="mt-1 text-[10px] leading-relaxed text-slate-500">
@@ -630,7 +1015,7 @@
                         </div>
                         <p class="mt-1 text-[11px] leading-relaxed text-slate-600">
                             応募CSVと求人CSVを組み合わせ、応募傾向を分析するための個社データを作成・更新するツールです。
-                            処理後は、社内管理用のGoogle Sheetと、分析・共有用のViewerを利用できます。
+                            処理後は、社内管理用の個社管理シートと、分析・共有用の分析レポートを利用できます。
                         </p>
                     </div>
 
@@ -638,44 +1023,44 @@
                         <div class="rounded-xl border border-slate-200 p-3">
                             <div class="text-[11px] font-extrabold text-slate-900">1. 新しい企業を分析するとき</div>
                             <p class="mt-1 text-[10px] leading-relaxed text-slate-500">
-                                ETLを直接開き、アクセスキーを確認してCSVを選択します。実行すると新しい個社SheetとViewerを作成します。
+                                データ作成・更新ページを直接開き、アクセスキーを確認してCSVを選択します。実行すると新しい個社管理シートと分析レポートを作成します。
                             </p>
                         </div>
 
                         <div class="rounded-xl border border-slate-200 p-3">
                             <div class="text-[11px] font-extrabold text-slate-900">2. 既存企業のデータを更新するとき</div>
                             <p class="mt-1 text-[10px] leading-relaxed text-slate-500">
-                                個社Sheetの「CSVデータ更新はこちら」から開くのが最短です。更新先が自動指定され、同じSheetへ最新CSVを反映します。
-                                <span class="font-extrabold text-slate-700">新しいSheetは作成しません。</span>
+                                個社管理シートの「CSVデータ更新はこちら」から開くのが最短です。更新先が自動指定され、同じ個社管理シートへ最新CSVを反映します。
+                                <span class="font-extrabold text-slate-700">新しい個社管理シートは作成しません。</span>
                             </p>
                         </div>
 
                         <div class="rounded-xl border border-slate-200 p-3">
-                            <div class="text-[11px] font-extrabold text-slate-900">3. SheetとViewerの役割</div>
+                            <div class="text-[11px] font-extrabold text-slate-900">3. 個社管理シートと分析レポートの役割</div>
                             <p class="mt-1 text-[10px] leading-relaxed text-slate-500">
-                                Google Sheetは社内で設定・マスタを管理する場所、Viewerは分析結果を見る・共有する場所です。
-                                企業へ共有する場合は、基本的にViewerの共有URLを使います。
+                                個社管理シートは社内で設定・マスタを管理する場所、分析レポートは分析結果を見る・共有する場所です。
+                                企業へ共有する場合は、基本的に分析レポートの共有URLを使います。
                             </p>
                         </div>
 
                         <div class="rounded-xl border border-slate-200 p-3">
                             <div class="text-[11px] font-extrabold text-slate-900">4. アクセスキーについて</div>
                             <p class="mt-1 text-[10px] leading-relaxed text-slate-500">
-                                ETLや管理機能を利用するための社内用キーです。一度確認できればブラウザ内に保存され、個社Sheetには保存されません。
+                                データ作成・更新や管理機能を利用するための社内用キーです。一度確認できればブラウザ内に保存され、個社管理シートには保存されません。
                             </p>
                         </div>
 
                         <div class="rounded-xl border border-slate-200 p-3">
-                            <div class="text-[11px] font-extrabold text-slate-900">5. Viewer URLを止める・再発行するのは？</div>
+                            <div class="text-[11px] font-extrabold text-slate-900">5. 分析レポートの共有URLを止める・再発行するのは？</div>
                             <p class="mt-1 text-[10px] leading-relaxed text-slate-500">
                                 誤送信や共有先の変更などで、今の共有URLを使えなくしたいときに停止します。
-                                新しい共有URLへ切り替えたい場合は再発行します。「Viewer一覧・管理」から操作できます。
+                                新しい共有URLへ切り替えたい場合は再発行します。「分析レポート一覧・管理」から操作できます。
                             </p>
                         </div>
                     </div>
 
                     <div class="mt-4 rounded-xl bg-[#fbffd7] px-3 py-2.5 text-[10px] leading-relaxed text-slate-600">
-                        普段は「個社Sheet」「ETL」「Viewer」の3つだけ意識すれば大丈夫です。内部の保存用データを直接操作する必要はありません。
+                        普段は「データ作成・更新」「個社管理シート」「分析レポート」の3つだけ意識すれば大丈夫です。内部の保存用データを直接操作する必要はありません。
                     </div>
                 </div>
 
@@ -730,7 +1115,7 @@
                     </div>
 
                     <div class="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-[10px] leading-relaxed text-slate-500">
-                        Viewerにも、氏名・電話番号・メールアドレス全体・詳細な居住住所は表示用データとして渡しません。
+                        分析レポートにも、氏名・電話番号・メールアドレス全体・詳細な居住住所は表示用データとして渡しません。
                     </div>
                 </div>
             </div>
@@ -1373,8 +1758,8 @@ function updateEtlProcessingStage(
         csv: "CSVを読み込んでいます",
         join: "応募データと求人データを結合しています",
         image: "TOP画像を確認しています",
-        publish: "Google Sheetへ保存しています",
-        viewer: "Viewerを準備しています"
+        publish: "個社管理シートへ保存しています",
+        viewer: "分析レポートを準備しています"
     };
 
     const title =
@@ -1520,7 +1905,7 @@ function stopEtlProcessingOverlay({
 
         if (title) {
             title.textContent =
-                "Viewerへの反映が完了しました";
+                "分析レポートへの反映が完了しました";
         }
 
         const detail =
@@ -1530,7 +1915,7 @@ function stopEtlProcessingOverlay({
 
         if (detail) {
             detail.textContent =
-                "処理が完了しました。Viewerを表示します。";
+                "処理が完了しました。分析レポートを表示します。";
         }
 
         const step =
@@ -2203,7 +2588,7 @@ async function parseCSV(
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.09.02-etl-v2.15-folder-navigation";
+const SHEETS_APP_VERSION = "2026.09.02-etl-v2.17-final-user-terminology";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -3188,16 +3573,16 @@ function updateSheetsOperationUi() {
             "新規作成モード";
 
         title.textContent =
-            "新しい企業の分析を作成します";
+            "新しい企業の分析データを作成します";
 
         runLabel.textContent =
-            "分析データを作成してViewerを作る";
+            "分析データを作成して分析レポートを作る";
 
         note.className =
             "mt-1 text-[11px] leading-relaxed text-slate-600";
 
         note.textContent =
-            "実行すると、新しい個社Google SheetとViewerを作成します。";
+            "実行すると、新しい個社管理シートと分析レポートを作成します。";
 
         targetBanner
             ?.classList
@@ -3208,8 +3593,8 @@ function updateSheetsOperationUi() {
         if (toggleTargetButton) {
             toggleTargetButton.textContent =
                 globalExistingTargetPanelExpanded
-                    ? "既存Sheet URLを閉じる"
-                    : "既存の分析を更新する場合";
+                    ? "既存シートURLを閉じる"
+                    : "既存企業のデータを更新する場合";
         }
 
         return;
@@ -3223,16 +3608,16 @@ function updateSheetsOperationUi() {
             "更新先を確認";
 
         title.textContent =
-            "更新先Google Sheetを確認してください";
+            "更新先の個社管理シートを確認してください";
 
         runLabel.textContent =
-            "更新先Google Sheetを確認してください";
+            "更新先の個社管理シートを確認してください";
 
         note.className =
             "mt-1 text-[11px] leading-relaxed text-red-600";
 
         note.textContent =
-            "Google SheetsのURLを正しく貼り付けてください。";
+            "GoogleスプレッドシートのURLを正しく貼り付けてください。";
 
         targetBanner
             ?.classList
@@ -3259,17 +3644,17 @@ function updateSheetsOperationUi() {
         "既存更新モード";
 
     title.textContent =
-        "この個社分析を更新します";
+        "この企業の分析データを更新します";
 
     runLabel.textContent =
-        "分析データを作成してViewerを更新";
+        "分析データを作成して分析レポートを更新";
 
     note.className =
         "mt-1 text-[11px] leading-relaxed text-slate-700";
 
     note.innerHTML =
-        "現在の個社Sheetへ最新CSVデータを反映します。" +
-        '<span class="font-extrabold text-slate-900"> 新しいSheetは作成しません。</span>';
+        "現在の個社管理シートに最新CSVの分析データを反映します。" +
+        '<span class="font-extrabold text-slate-900"> 新しい個社管理シートは作成しません。</span>';
 
     if (targetBanner) {
         targetBanner.classList.remove(
@@ -3278,7 +3663,7 @@ function updateSheetsOperationUi() {
 
         targetBanner.innerHTML =
             '<span class="font-extrabold text-[#0d6795]">更新時に維持：</span>' +
-            " Sheet側の設定・マスタ・Viewer表示設定";
+            " 個社管理シート側の設定・マスタ・分析レポート表示設定";
     }
 
     if (toggleTargetButton) {
@@ -3342,7 +3727,7 @@ function showCreatedSheetSuccess(result) {
     const isUpdate = normalizeString(result.operationMode).toUpperCase() === "UPDATE";
     if (title) {
         title.textContent = isUpdate
-            ? "既存データをViewerへ反映しました"
+            ? "既存データを分析レポートへ反映しました"
             : "個社SheetとViewerを作成しました";
     }
 
@@ -3423,7 +3808,7 @@ function mapSheetsApiError(data) {
         TARGET_INVALID:
             "更新先のGoogle Sheetsを確認できませんでした。出力フォルダ内の有効応募分析レポートを指定してください。",
         TARGET_OUTSIDE_OUTPUT_FOLDER:
-            "更新先が個社分析Sheetフォルダ内にありません。更新できるのは「個社分析Sheet一覧」内のSheetだけです。",
+            "更新先が個社管理シートフォルダ内にありません。更新できるのは「個社管理シート一覧」内のSheetだけです。",
         TARGET_WORKBOOK_INVALID:
             "更新先は有効応募分析レポートとして確認できませんでした。別のSheet URLを指定してください。",
         TARGET_STORAGE_LAYOUT_UNSUPPORTED:
@@ -4785,7 +5170,7 @@ function writeReservedViewerTab(
                                 <div class="wait-eyebrow">有効応募分析 Viewer</div>
                                 <div class="wait-title">${manageEscapeHtml(
                                     isWaiting
-                                        ? "Viewerを準備しています"
+                                        ? "分析レポートを準備しています"
                                         : title
                                 )}</div>
                             </div>
@@ -4838,9 +5223,9 @@ function reserveViewerTab(message) {
 
     writeReservedViewerTab(
         tab,
-        "有効応募分析 Viewer",
+        "有効応募分析｜分析レポート",
         message ||
-            "Viewerへの反映完了を待っています。",
+            "分析レポートへの反映完了を待っています。",
         "info"
     );
 
@@ -4868,8 +5253,8 @@ function openViewerInReservedTab(
     if (!viewerEnabled) {
         writeReservedViewerTab(
             tab,
-            "Viewerは現在停止中です",
-            "反映は完了しましたが、この企業のViewerは閲覧停止中です。管理画面から再開できます。",
+            "分析レポートは現在閲覧停止中です",
+            "反映は完了しましたが、この企業の分析レポートは閲覧停止中です。管理画面から再開できます。",
             "warning"
         );
         return false;
@@ -4878,8 +5263,8 @@ function openViewerInReservedTab(
     if (!url) {
         writeReservedViewerTab(
             tab,
-            "Viewer URLを取得できませんでした",
-            "反映処理は完了しています。管理Pagesの個社Viewer一覧からViewerを開いてください。",
+            "分析レポートURLを取得できませんでした",
+            "反映処理は完了しています。「分析レポート一覧・管理」から分析レポートを開いてください。",
             "warning"
         );
         return false;
@@ -4907,7 +5292,7 @@ function failReservedViewerTab(tab, message) {
 
     writeReservedViewerTab(
         tab,
-        "Viewerへの反映を完了できませんでした",
+        "分析レポートへの反映を完了できませんでした",
         message ||
             "管理Pagesへ戻り、エラー内容をご確認ください。",
         "error"
@@ -5011,7 +5396,7 @@ async function createGoogleSpreadsheet({
         reserveViewerTab(
             targetSpreadsheetId
                 ? "既存Viewerへ最新データを反映しています。完了すると自動で表示します。"
-                : "新しいViewerを準備しています。完了すると自動で表示します。"
+                : "新しい分析レポートを準備しています。完了すると自動で表示します。"
         );
 
     const runBtn =
@@ -5218,7 +5603,7 @@ async function createGoogleSpreadsheet({
 
         updateEtlProcessingStage(
             "viewer",
-            "保存が完了しました。Viewerを開く準備をしています。"
+            "保存が完了しました。分析レポートを開く準備をしています。"
         );
 
         globalPerformanceTrace.publish = {
@@ -9494,7 +9879,7 @@ const viewerTab =
     reserveViewerTab(
         targetSpreadsheetId
             ? "CSVを処理し、既存Viewerへ反映しています。"
-            : "CSVを処理し、新しいViewerを準備しています。"
+            : "CSVを処理し、新しい分析レポートを準備しています。"
     );
 
             msgEl.innerHTML = "<span class='flex items-center justify-center'><svg class='animate-spin w-5 h-5 mr-2' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'><circle class='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' stroke-width='4'></circle><path class='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path></svg> CSVを読み込み、分析データを作成しています...</span>";
@@ -9862,7 +10247,7 @@ msgEl.innerHTML = `
 
             msgEl.innerHTML = `
                 <div class="flex flex-col items-center">
-                    <span class="text-lg font-extrabold">Viewerへの反映が完了しました</span>
+                    <span class="text-lg font-extrabold">分析レポートへの反映が完了しました</span>
                     <span class="mt-1 text-sm text-slate-600">
                         ${globalFinalData.length.toLocaleString()}応募を処理しました。
                     </span>
@@ -9942,7 +10327,7 @@ msgEl.innerHTML = `
 <div id="etlProcessingOverlay" class="hidden fixed inset-0 z-[9999] bg-slate-950/30 backdrop-blur-[1px] items-center justify-center p-4" aria-live="polite" aria-busy="true">
         <div class="w-full max-w-xl rounded-3xl border border-white/70 bg-white p-6 shadow-2xl">
             <div class="flex items-start gap-4">
-                <div class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                <div class="vaa-processing-icon mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
                     <svg id="etlProcessingSpinner" class="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <circle class="opacity-20" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
                         <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
@@ -9956,7 +10341,7 @@ msgEl.innerHTML = `
 
             <div class="mt-5">
                 <div class="relative h-2.5 overflow-hidden rounded-full bg-slate-100">
-                    <div id="etlProcessingKnownBar" class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all duration-500 ease-out" style="width:10%"></div>
+                    <div id="etlProcessingKnownBar" class="vaa-processing-bar h-full rounded-full transition-all duration-500 ease-out" style="width:10%"></div>
                     <div id="etlProcessingFlowBar" class="etl-processing-flow absolute inset-y-0 hidden w-24 rounded-full bg-white/55"></div>
                 </div>
                 <div class="mt-2 flex items-center justify-between gap-3 text-[10px] font-bold text-slate-400">
@@ -9966,7 +10351,7 @@ msgEl.innerHTML = `
             </div>
 
             <div class="mt-5 grid gap-2 text-xs">
-                <div id="etlStageCsv" class="etl-stage-row flex items-center gap-3 rounded-xl bg-indigo-50 px-3 py-2.5 text-indigo-800">
+                <div id="etlStageCsv" class="vaa-processing-stage-active etl-stage-row flex items-center gap-3 rounded-xl px-3 py-2.5">
                     <span class="etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-indigo-300 bg-white text-[10px] font-extrabold">1</span>
                     <span class="font-bold">CSVを読み込む</span>
                 </div>

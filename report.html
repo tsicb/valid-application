@@ -550,7 +550,7 @@
 
         <div class="notice">
             このページは閲覧専用です。保存済みデータをブラウザ内で集計しています。
-            期間はViewer上で自由に絞り込めます。
+            期間は分析レポート上で自由に絞り込めます。
         </div>
 
         <div class="period-panel">
@@ -671,7 +671,7 @@
             <div>
                 <h2>カスタム分析</h2>
                 <div class="section-note">
-                    Viewer表示設定でONになっている分析だけを軸として選択できます。Viewer上の変更はSheet設定へ保存されません。
+                    分析レポート表示設定でONになっている分析だけを軸として選択できます。分析レポート上の変更は個社管理シートの設定には保存されません。
                 </div>
             </div>
         </div>
@@ -722,7 +722,7 @@
     <div id="viewerPerformanceBody" style="margin-top:8px;"></div>
 </details>
 
-<div class="footer">有効応募分析 Viewer v5.1 / Fixed SJIS / Enterprise Signature</div>
+<div class="footer">有効応募分析｜分析レポート</div>
     </main>
 
     <script src="./analysis-core.js"></script>
@@ -799,7 +799,7 @@
                     "function"
             ) {
                 throw new Error(
-                    "このブラウザは圧縮Viewer応答の展開に対応していません。ページを再読み込みしてください。"
+                    "このブラウザでは分析レポート用の圧縮データを展開できません。ページを再読み込みしてください。"
                 );
             }
 
@@ -1553,7 +1553,7 @@ function initializeCustomAnalysis(data, viewerResult, core) {
 
         if (message) {
             message.textContent =
-                "カスタム分析には、Viewer表示設定でONになっている分析軸が2種類以上必要です。";
+                "カスタム分析には、分析レポート表示設定でONになっている分析軸が2種類以上必要です。";
             message.classList.remove(
                 "hidden"
             );
