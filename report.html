@@ -715,7 +715,10 @@
 </div>
 
 <details id="viewerPerformanceDetails" class="viewer-perf hidden">
-    <summary>読込時間の内訳（高速化確認用）</summary>
+    <summary>
+        読込時間の内訳（高速化確認用）
+        <span style="margin-left:6px;border-radius:5px;background:#ede9fe;padding:2px 5px;font-size:9px;font-weight:800;color:#6d28d9;">DEBUG</span>
+    </summary>
     <div id="viewerPerformanceBody" style="margin-top:8px;"></div>
 </details>
 
@@ -734,6 +737,29 @@
                 window.location.hash.replace(/^#/, "")
             );
         }
+
+        function isViewerDebugMode() {
+            try {
+                const queryDebug =
+                    new URLSearchParams(
+                        window.location.search
+                    ).get("debug");
+
+                const hashDebug =
+                    getViewerHashParams()
+                        .get("debug");
+
+                return (
+                    queryDebug === "1" ||
+                    hashDebug === "1"
+                );
+            } catch (_) {
+                return false;
+            }
+        }
+
+        const VIEWER_DEBUG_MODE =
+            isViewerDebugMode();
 
         function getViewerToken() {
             return (getViewerHashParams().get("r") || "").trim();
@@ -2215,9 +2241,15 @@ function renderViewerPerformance(
         .filter(Boolean)
         .join("");
 
-    details.classList.remove(
-        "hidden"
-    );
+    if (VIEWER_DEBUG_MODE) {
+        details.classList.remove(
+            "hidden"
+        );
+    } else {
+        details.classList.add(
+            "hidden"
+        );
+    }
 }
 
 
@@ -2359,6 +2391,18 @@ function stopViewerLoadingTimer() {
         }
 
         async function loadReport() {
+            const performanceDetails =
+                document.getElementById(
+                    "viewerPerformanceDetails"
+                );
+
+            if (performanceDetails) {
+                performanceDetails.classList.toggle(
+                    "hidden",
+                    !VIEWER_DEBUG_MODE
+                );
+            }
+
             const loadStartedAt =
                 performance.now();
 

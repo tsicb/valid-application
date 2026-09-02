@@ -315,6 +315,7 @@
                     <details id="etlPerformanceDetails" class="hidden mt-4 rounded-xl border border-violet-200 bg-violet-50/40 p-3">
                         <summary class="cursor-pointer text-[11px] font-extrabold text-violet-800">
                             処理時間の内訳（高速化確認用）
+                            <span class="ml-2 rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-extrabold text-violet-700">DEBUG</span>
                         </summary>
                         <div id="etlPerformanceBody" class="mt-3 text-[11px] leading-relaxed text-slate-700"></div>
                     </details>
@@ -418,6 +419,68 @@ const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
         let globalTargetFromSheetPortal = false;
         let globalAccessKeyVerified = false;
         let globalPerformanceTrace = {};
+
+function getEtlDebugMode() {
+    try {
+        return new URLSearchParams(
+            window.location.search
+        ).get("debug") === "1";
+    } catch (_) {
+        return false;
+    }
+}
+
+const ETL_DEBUG_MODE =
+    getEtlDebugMode();
+
+function appendDebugQueryToUrl(rawUrl) {
+    const url =
+        normalizeString(rawUrl);
+
+    if (!ETL_DEBUG_MODE || !url) {
+        return url;
+    }
+
+    try {
+        const parsed =
+            new URL(
+                url,
+                window.location.href
+            );
+
+        parsed.searchParams.set(
+            "debug",
+            "1"
+        );
+
+        return parsed.toString();
+
+    } catch (_) {
+        const hashIndex =
+            url.indexOf("#");
+
+        const beforeHash =
+            hashIndex >= 0
+                ? url.slice(0, hashIndex)
+                : url;
+
+        const hash =
+            hashIndex >= 0
+                ? url.slice(hashIndex)
+                : "";
+
+        return (
+            beforeHash +
+            (
+                beforeHash.includes("?")
+                    ? "&"
+                    : "?"
+            ) +
+            "debug=1" +
+            hash
+        );
+    }
+}
 
 let etlProcessingStartedAt = 0;
 let etlProcessingTimerId = null;
@@ -529,14 +592,17 @@ function invalidateEtlDerivedStateForCsvChange() {
             "hidden"
         );
 
-    document
-        .getElementById(
+    const performanceDetails =
+        document.getElementById(
             "etlPerformanceDetails"
-        )
-        ?.classList
-        .add(
-            "hidden"
         );
+
+    if (performanceDetails) {
+        performanceDetails.classList.toggle(
+            "hidden",
+            !ETL_DEBUG_MODE
+        );
+    }
 
     hideSheetsCreateSuccess();
 }
@@ -1573,7 +1639,7 @@ async function parseCSV(
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.09.01-etl-v2.13-loading-ux-fix";
+const SHEETS_APP_VERSION = "2026.09.02-etl-v2.14-debug-gate";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -3472,9 +3538,15 @@ function renderEtlPerformance(apiData = null) {
     body.innerHTML =
         rows;
 
-    details.classList.remove(
-        "hidden"
-    );
+    if (ETL_DEBUG_MODE) {
+        details.classList.remove(
+            "hidden"
+        );
+    } else {
+        details.classList.add(
+            "hidden"
+        );
+    }
 }
 
 function sheetsStageLabel(data) {
@@ -4140,7 +4212,9 @@ function openViewerInReservedTab(
     }
 
     const url =
-        normalizeString(viewerUrl);
+        appendDebugQueryToUrl(
+            viewerUrl
+        );
 
     if (!viewerEnabled) {
         writeReservedViewerTab(
@@ -8487,6 +8561,18 @@ window.addEventListener(
 
 // 通常ロード時も、ブラウザが復元したfile input値に依存しない。
 resetCsvSessionState();
+
+const etlPerformanceDetails =
+    document.getElementById(
+        "etlPerformanceDetails"
+    );
+
+if (etlPerformanceDetails) {
+    etlPerformanceDetails.classList.toggle(
+        "hidden",
+        !ETL_DEBUG_MODE
+    );
+}
 
         // ==========================================
         // 1. ETL処理ロジック
