@@ -1191,6 +1191,8 @@
         const SHEETS_LAST_RESULT_STORAGE_KEY = "validApplicationAnalysis.thinV1.lastSheetResult";
         const SHEETS_UPDATE_TARGET_STORAGE_KEY = "validApplicationAnalysis.thinV1.updateTargetUrl";
         const VIEWER_AUTO_OPEN_STORAGE_KEY = "validApplicationAnalysis.viewerAutoOpen";
+        const VIEWER_FLOW_HANDOFF_STORAGE_KEY = "validApplicationAnalysis.viewerFlowHandoff.v1";
+        const RECENT_REPORTS_STORAGE_KEY = "validApplicationAnalysis.recentReports.v1";
         const SHEETS_POST_TIMEOUT_MS = 330000; // 5分30秒。1回のAPI処理待機上限。
 const SHEETS_MAX_AUTO_RESUME_MS = 900000; // 自動再開は最大15分。
 const SHEETS_MAX_AUTO_RESUME_ROUNDS = 12;
@@ -3728,7 +3730,7 @@ function showCreatedSheetSuccess(result) {
     if (title) {
         title.textContent = isUpdate
             ? "既存データを分析レポートへ反映しました"
-            : "個社SheetとViewerを作成しました";
+            : "個社管理シートと分析レポートを作成しました";
     }
 
     link.href = result.spreadsheetUrl;
@@ -4865,6 +4867,138 @@ function initializeViewerAutoOpenControls() {
     });
 }
 
+
+function readRecentReportHistory() {
+    try {
+        const parsed =
+            JSON.parse(
+                localStorage.getItem(
+                    RECENT_REPORTS_STORAGE_KEY
+                ) || "[]"
+            );
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function rememberRecentReport({
+    spreadsheetId = "",
+    viewerUrl = "",
+    reportName = ""
+} = {}) {
+    const id =
+        normalizeString(
+            spreadsheetId
+        );
+
+    const url =
+        normalizeString(
+            viewerUrl
+        );
+
+    const name =
+        normalizeString(
+            reportName
+        );
+
+    if (!id && !url) {
+        return;
+    }
+
+    try {
+        const current =
+            readRecentReportHistory();
+
+        const next = current
+            .filter(item => {
+                const itemId =
+                    normalizeString(
+                        item?.spreadsheetId
+                    );
+
+                const itemUrl =
+                    normalizeString(
+                        item?.viewerUrl
+                    );
+
+                return !(
+                    (id && itemId === id) ||
+                    (url && itemUrl === url)
+                );
+            });
+
+        next.unshift({
+            spreadsheetId: id,
+            viewerUrl: url,
+            reportName: name,
+            lastUsedAt:
+                new Date()
+                    .toISOString()
+        });
+
+        localStorage.setItem(
+            RECENT_REPORTS_STORAGE_KEY,
+            JSON.stringify(
+                next.slice(0, 30)
+            )
+        );
+    } catch (_) {}
+}
+
+function setReservedViewerFlowHandoff(
+    tab,
+    patch = {}
+) {
+    if (!tab || tab.closed) {
+        return;
+    }
+
+    try {
+        let current = {};
+
+        try {
+            current =
+                JSON.parse(
+                    tab.sessionStorage.getItem(
+                        VIEWER_FLOW_HANDOFF_STORAGE_KEY
+                    ) || "{}"
+                ) || {};
+        } catch (_) {
+            current = {};
+        }
+
+        const merged = {
+            source: "etl",
+            startedAt:
+                Number(
+                    current.startedAt ||
+                    patch.startedAt ||
+                    Date.now()
+                ),
+            ...current,
+            ...patch
+        };
+
+        tab.sessionStorage.setItem(
+            VIEWER_FLOW_HANDOFF_STORAGE_KEY,
+            JSON.stringify(
+                merged
+            )
+        );
+
+        tab.__validAnalysisFlowStartedAt =
+            Number(
+                merged.startedAt
+            ) ||
+            Date.now();
+    } catch (_) {}
+}
+
+
 function clearReservedViewerTabTimer(
     tab
 ) {
@@ -4897,6 +5031,9 @@ function startReservedViewerTabTimer(
     );
 
     const startedAt =
+        Number(
+            tab.__validAnalysisFlowStartedAt
+        ) ||
         Date.now();
 
     const timerId =
@@ -4970,10 +5107,11 @@ function writeReservedViewerTab(
 
     const palettes = {
         info: {
-            page: "#eff6ff",
-            accent: "#2563eb",
-            accentSoft: "#dbeafe",
-            text: "#0f172a"
+            page: "#f7fbfd",
+            accent: "#148ecc",
+            accentSoft: "#dff3fc",
+            accentMarker: "#eeff16",
+            text: "#173043"
         },
         success: {
             page: "#ecfdf5",
@@ -5005,6 +5143,22 @@ function writeReservedViewerTab(
     const progressMarkup =
         isWaiting
             ? `
+                <div class="wait-steps" aria-label="処理状況">
+                    <div class="wait-step active">
+                        <span class="wait-step-mark">●</span>
+                        <div>
+                            <strong>データ作成・更新</strong>
+                            <small>元のタブでCSVデータを処理・保存しています</small>
+                        </div>
+                    </div>
+                    <div class="wait-step">
+                        <span class="wait-step-mark">○</span>
+                        <div>
+                            <strong>分析レポート読込</strong>
+                            <small>データ保存後、このタブで自動的に開始します</small>
+                        </div>
+                    </div>
+                </div>
                 <div class="wait-progress" aria-hidden="true">
                     <div class="wait-progress-flow"></div>
                 </div>
@@ -5050,11 +5204,22 @@ function writeReservedViewerTab(
                         margin: 12vh auto 0;
                     }
                     .wait-card {
+                        position: relative;
+                        overflow: hidden;
                         background: #fff;
-                        border: 1px solid #e2e8f0;
+                        border: 1px solid #dbe7ee;
                         border-radius: 20px;
                         padding: 30px;
                         box-shadow: 0 18px 45px rgba(15,23,42,.09);
+                    }
+                    .wait-card::before {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 4px;
+                        background: linear-gradient(90deg, #148ecc 0 78%, #eeff16 78% 100%);
                     }
                     .wait-head {
                         display: flex;
@@ -5095,6 +5260,50 @@ function writeReservedViewerTab(
                         color: #475569;
                         font-size: 13px;
                         line-height: 1.75;
+                    }
+                    .wait-steps {
+                        display: grid;
+                        gap: 8px;
+                        margin-top: 22px;
+                    }
+                    .wait-step {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 10px;
+                        padding: 10px 12px;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 12px;
+                        background: #f8fafc;
+                        color: #64748b;
+                    }
+                    .wait-step.active {
+                        border-color: rgba(20,142,204,.28);
+                        background: #edf8fd;
+                        color: #0d6795;
+                    }
+                    .wait-step-mark {
+                        width: 18px;
+                        flex: 0 0 18px;
+                        color: #94a3b8;
+                        font-size: 12px;
+                        line-height: 1.5;
+                        text-align: center;
+                    }
+                    .wait-step.active .wait-step-mark {
+                        color: #148ecc;
+                        text-shadow: 0 3px 0 #eeff16;
+                    }
+                    .wait-step strong {
+                        display: block;
+                        font-size: 12px;
+                        font-weight: 850;
+                    }
+                    .wait-step small {
+                        display: block;
+                        margin-top: 2px;
+                        font-size: 10px;
+                        line-height: 1.55;
+                        color: #64748b;
                     }
                     .wait-progress {
                         position: relative;
@@ -5167,7 +5376,7 @@ function writeReservedViewerTab(
                         <div class="wait-head">
                             ${spinnerMarkup}
                             <div>
-                                <div class="wait-eyebrow">有効応募分析 Viewer</div>
+                                <div class="wait-eyebrow">有効応募分析｜分析レポート</div>
                                 <div class="wait-title">${manageEscapeHtml(
                                     isWaiting
                                         ? "分析レポートを準備しています"
@@ -5182,7 +5391,7 @@ function writeReservedViewerTab(
 
                         ${
                             isWaiting
-                                ? `<div class="wait-note">このタブは処理完了後、自動的に分析Viewerへ切り替わります。</div>`
+                                ? `<div class="wait-note">元の「データ作成・更新」タブで詳しい進捗を確認できます。このタブは保存完了後、自動で分析レポートの読込へ進みます。</div>`
                                 : ""
                         }
                     </section>
@@ -5220,6 +5429,14 @@ function reserveViewerTab(message) {
     }
 
     if (!tab) return null;
+
+    setReservedViewerFlowHandoff(
+        tab,
+        {
+            startedAt: Date.now(),
+            phase: "dataUpdate"
+        }
+    );
 
     writeReservedViewerTab(
         tab,
@@ -5272,6 +5489,15 @@ function openViewerInReservedTab(
 
     clearReservedViewerTabTimer(
         tab
+    );
+
+    setReservedViewerFlowHandoff(
+        tab,
+        {
+            phase: "reportLoad",
+            dataUpdateCompletedAt:
+                Date.now()
+        }
     );
 
     try {
@@ -5395,8 +5621,8 @@ async function createGoogleSpreadsheet({
         suppliedViewerTab ||
         reserveViewerTab(
             targetSpreadsheetId
-                ? "既存Viewerへ最新データを反映しています。完了すると自動で表示します。"
-                : "新しい分析レポートを準備しています。完了すると自動で表示します。"
+                ? "既存企業の分析データを更新しています。保存完了後、このタブで分析レポートを読み込みます。"
+                : "新しい企業の分析データを作成しています。保存完了後、このタブで分析レポートを読み込みます。"
         );
 
     const runBtn =
@@ -5596,8 +5822,8 @@ async function createGoogleSpreadsheet({
                 data.operationMode
             ).toUpperCase() ===
                 "UPDATE"
-                ? "既存Viewerへのデータ反映が完了しました。"
-                : "個社SheetとViewerの作成が完了しました。",
+                ? "既存企業の分析データ更新が完了しました。"
+                : "個社管理シートと分析レポートの作成が完了しました。",
             "success"
         );
 
@@ -5622,6 +5848,15 @@ async function createGoogleSpreadsheet({
         showCreatedSheetSuccess(
             data
         );
+
+        rememberRecentReport({
+            spreadsheetId:
+                data.spreadsheetId || "",
+            viewerUrl:
+                data.viewerUrl || "",
+            reportName:
+                data.fileName || ""
+        });
 
         renderEtlPerformance(
             data

@@ -242,8 +242,8 @@
             height: 34px;
             flex: 0 0 auto;
             border-radius: 999px;
-            border: 3px solid #dbeafe;
-            border-top-color: #2563eb;
+            border: 3px solid #dff3fc;
+            border-top-color: #148ecc;
             animation: viewerSpin .9s linear infinite;
         }
         .viewer-loading-title {
@@ -255,6 +255,56 @@
             margin-top: 2px;
             color: #64748b;
             font-size: 12px;
+        }
+        .viewer-loading-steps {
+            display: grid;
+            gap: 8px;
+            margin-top: 18px;
+        }
+        .viewer-loading-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 11px;
+            border-radius: 11px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #64748b;
+        }
+        .viewer-loading-step.done {
+            border-color: rgba(20,142,204,.16);
+            background: #f8fcfe;
+        }
+        .viewer-loading-step.active {
+            border-color: rgba(20,142,204,.28);
+            background: #edf8fd;
+            color: #0d6795;
+        }
+        .viewer-loading-step-mark {
+            width: 18px;
+            flex: 0 0 18px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .viewer-loading-step.done .viewer-loading-step-mark {
+            color: #0d6795;
+        }
+        .viewer-loading-step.active .viewer-loading-step-mark {
+            color: #148ecc;
+            text-shadow: 0 3px 0 #eeff16;
+        }
+        .viewer-loading-step strong {
+            display: block;
+            font-size: 11px;
+            font-weight: 850;
+        }
+        .viewer-loading-step small {
+            display: block;
+            margin-top: 2px;
+            color: #64748b;
+            font-size: 10px;
+            line-height: 1.5;
         }
         .viewer-loading-track {
             position: relative;
@@ -269,7 +319,7 @@
             inset-block: 0;
             width: 34%;
             border-radius: 999px;
-            background: linear-gradient(90deg, #93c5fd, #2563eb, #93c5fd);
+            background: linear-gradient(90deg, #dff3fc, #148ecc, #eeff16);
             animation: viewerLoadingFlow 1.3s ease-in-out infinite;
         }
         .viewer-loading-meta {
@@ -515,6 +565,22 @@
             <div>
                 <div id="viewerLoadingTitle" class="viewer-loading-title">分析レポートを準備しています</div>
                 <div id="viewerLoadingNote" class="viewer-loading-note">保存済みデータを取得しています。</div>
+            </div>
+        </div>
+        <div id="viewerLoadingFlowSteps" class="viewer-loading-steps hidden" aria-label="処理状況">
+            <div class="viewer-loading-step done">
+                <span class="viewer-loading-step-mark">✓</span>
+                <div>
+                    <strong>データ作成・更新</strong>
+                    <small>分析データの保存が完了しました</small>
+                </div>
+            </div>
+            <div class="viewer-loading-step active">
+                <span class="viewer-loading-step-mark">●</span>
+                <div>
+                    <strong>分析レポート読込</strong>
+                    <small id="viewerLoadingFlowStepNote">最新の分析データを読み込んでいます</small>
+                </div>
             </div>
         </div>
         <div class="viewer-loading-track" aria-hidden="true">
@@ -2062,6 +2128,12 @@ function renderReport(data) {
         .renderMs =
         performance.now() -
         renderStartedAt;
+
+    rememberReportVisitForInternalUser(
+        data?.metadata?.reportTitle || ""
+    );
+
+    clearViewerFlowHandoff();
 }
 
 function viewerPerfSeconds(value) {
@@ -2253,6 +2325,123 @@ function renderViewerPerformance(
 }
 
 
+
+const VIEWER_FLOW_HANDOFF_STORAGE_KEY =
+    "validApplicationAnalysis.viewerFlowHandoff.v1";
+const RECENT_REPORTS_STORAGE_KEY =
+    "validApplicationAnalysis.recentReports.v1";
+const INTERNAL_ACCESS_KEY_STORAGE_KEY =
+    "validApplicationAnalysis.sheetsAccessKey";
+
+function readViewerFlowHandoff() {
+    try {
+        const raw =
+            sessionStorage.getItem(
+                VIEWER_FLOW_HANDOFF_STORAGE_KEY
+            );
+
+        if (!raw) return null;
+
+        const parsed =
+            JSON.parse(raw);
+
+        const startedAt =
+            Number(
+                parsed?.startedAt || 0
+            );
+
+        const age =
+            Date.now() -
+            startedAt;
+
+        if (
+            parsed?.source !== "etl" ||
+            !Number.isFinite(startedAt) ||
+            startedAt <= 0 ||
+            age < -5000 ||
+            age > 15 * 60 * 1000
+        ) {
+            sessionStorage.removeItem(
+                VIEWER_FLOW_HANDOFF_STORAGE_KEY
+            );
+            return null;
+        }
+
+        return parsed;
+    } catch (_) {
+        return null;
+    }
+}
+
+function clearViewerFlowHandoff() {
+    try {
+        sessionStorage.removeItem(
+            VIEWER_FLOW_HANDOFF_STORAGE_KEY
+        );
+    } catch (_) {}
+}
+
+function rememberReportVisitForInternalUser(
+    reportName = ""
+) {
+    try {
+        if (
+            !String(
+                localStorage.getItem(
+                    INTERNAL_ACCESS_KEY_STORAGE_KEY
+                ) || ""
+            ).trim()
+        ) {
+            return;
+        }
+
+        const viewerUrl =
+            window.location.href;
+
+        const parsed =
+            JSON.parse(
+                localStorage.getItem(
+                    RECENT_REPORTS_STORAGE_KEY
+                ) || "[]"
+            );
+
+        const current =
+            Array.isArray(parsed)
+                ? parsed
+                : [];
+
+        const next =
+            current.filter(
+                item =>
+                    String(
+                        item?.viewerUrl || ""
+                    ) !== viewerUrl
+            );
+
+        next.unshift({
+            spreadsheetId: "",
+            viewerUrl,
+            reportName:
+                String(
+                    reportName || ""
+                ).trim(),
+            lastUsedAt:
+                new Date()
+                    .toISOString()
+        });
+
+        localStorage.setItem(
+            RECENT_REPORTS_STORAGE_KEY,
+            JSON.stringify(
+                next.slice(0, 30)
+            )
+        );
+    } catch (_) {}
+}
+
+let viewerLoadingFlowHandoff =
+    null;
+
 let viewerLoadingStartedAt = 0;
 let viewerLoadingTimerId = null;
 
@@ -2306,6 +2495,21 @@ function setViewerLoadingState(
             stageMap[stage] ||
             stageMap.fetch;
     }
+
+    const flowStepNote =
+        document.getElementById(
+            "viewerLoadingFlowStepNote"
+        );
+
+    if (
+        flowStepNote &&
+        viewerLoadingFlowHandoff
+    ) {
+        flowStepNote.textContent =
+            stage === "aggregate"
+                ? "取得したデータから分析結果を組み立てています"
+                : "最新の分析データを読み込んでいます";
+    }
 }
 
 function startViewerLoading(
@@ -2320,8 +2524,25 @@ function startViewerLoading(
         "hidden"
     );
 
+    viewerLoadingFlowHandoff =
+        readViewerFlowHandoff();
+
+    const flowSteps =
+        document.getElementById(
+            "viewerLoadingFlowSteps"
+        );
+
+    flowSteps?.classList.toggle(
+        "hidden",
+        !viewerLoadingFlowHandoff
+    );
+
     viewerLoadingStartedAt =
-        performance.now();
+        Number(
+            viewerLoadingFlowHandoff
+                ?.startedAt
+        ) ||
+        Date.now();
 
     if (viewerLoadingTimerId) {
         clearInterval(
@@ -2341,7 +2562,7 @@ function startViewerLoading(
                     0,
                     Math.floor(
                         (
-                            performance.now() -
+                            Date.now() -
                             viewerLoadingStartedAt
                         ) /
                         1000
@@ -2363,9 +2584,17 @@ function startViewerLoading(
 
     setViewerLoadingState(
         "fetch",
-        reportName
-            ? `共有先：${reportName} ／ 保存済みデータを取得しています。`
-            : "保存済みデータを取得しています。"
+        viewerLoadingFlowHandoff
+            ? (
+                reportName
+                    ? `共有先：${reportName} ／ 最新の分析データを読み込んでいます。`
+                    : "最新の分析データを読み込んでいます。"
+            )
+            : (
+                reportName
+                    ? `共有先：${reportName} ／ 保存済みデータを取得しています。`
+                    : "保存済みデータを取得しています。"
+            )
     );
 }
 
@@ -2382,6 +2611,7 @@ function stopViewerLoadingTimer() {
 
         function showError(message) {
             stopViewerLoadingTimer();
+            clearViewerFlowHandoff();
             document.getElementById("loadingView").classList.add("hidden");
             document.getElementById("reportView").classList.add("hidden");
 
