@@ -2590,7 +2590,7 @@ async function parseCSV(
 // Pages側のJOIN結果を求人参照IDへ変換するため、
 // API GAS側で元CSVのJOINロジックを再現する必要はない。
 const SHEETS_SCHEMA_VERSION = "3.0";
-const SHEETS_APP_VERSION = "2026.09.02-etl-v2.17-final-user-terminology";
+const SHEETS_APP_VERSION = "2026.09.03-etl-v2.20-fast-handoff";
 
 const APPLICATION_DATA_HEADERS = [
     "レコードID",
@@ -5525,6 +5525,674 @@ function failReservedViewerTab(tab, message) {
     );
 }
 
+
+const FAST_VIEWER_HANDOFF_DB_NAME =
+    "validApplicationAnalysis.fastHandoff.v1";
+const FAST_VIEWER_HANDOFF_DB_VERSION =
+    1;
+const FAST_VIEWER_HANDOFF_PAYLOAD_STORE =
+    "payloads";
+const FAST_VIEWER_HANDOFF_STATE_STORE =
+    "states";
+
+function openFastViewerHandoffDb() {
+    return new Promise(
+        (resolve, reject) => {
+            if (!window.indexedDB) {
+                reject(
+                    new Error(
+                        "IndexedDB is unavailable"
+                    )
+                );
+                return;
+            }
+
+            const request =
+                indexedDB.open(
+                    FAST_VIEWER_HANDOFF_DB_NAME,
+                    FAST_VIEWER_HANDOFF_DB_VERSION
+                );
+
+            request.onupgradeneeded =
+                () => {
+                    const db =
+                        request.result;
+
+                    if (
+                        !db.objectStoreNames
+                            .contains(
+                                FAST_VIEWER_HANDOFF_PAYLOAD_STORE
+                            )
+                    ) {
+                        db.createObjectStore(
+                            FAST_VIEWER_HANDOFF_PAYLOAD_STORE,
+                            {
+                                keyPath:
+                                    "handoffId"
+                            }
+                        );
+                    }
+
+                    if (
+                        !db.objectStoreNames
+                            .contains(
+                                FAST_VIEWER_HANDOFF_STATE_STORE
+                            )
+                    ) {
+                        db.createObjectStore(
+                            FAST_VIEWER_HANDOFF_STATE_STORE,
+                            {
+                                keyPath:
+                                    "handoffId"
+                            }
+                        );
+                    }
+                };
+
+            request.onsuccess =
+                () =>
+                    resolve(
+                        request.result
+                    );
+
+            request.onerror =
+                () =>
+                    reject(
+                        request.error ||
+                        new Error(
+                            "IndexedDB open failed"
+                        )
+                    );
+        }
+    );
+}
+
+async function fastViewerHandoffPut(
+    storeName,
+    value
+) {
+    const db =
+        await openFastViewerHandoffDb();
+
+    try {
+        await new Promise(
+            (resolve, reject) => {
+                const tx =
+                    db.transaction(
+                        storeName,
+                        "readwrite"
+                    );
+
+                tx.objectStore(
+                    storeName
+                ).put(value);
+
+                tx.oncomplete =
+                    () => resolve();
+
+                tx.onerror =
+                    () =>
+                        reject(
+                            tx.error ||
+                            new Error(
+                                "IndexedDB write failed"
+                            )
+                        );
+
+                tx.onabort =
+                    () =>
+                        reject(
+                            tx.error ||
+                            new Error(
+                                "IndexedDB write aborted"
+                            )
+                        );
+            }
+        );
+    } finally {
+        db.close();
+    }
+}
+
+async function fastViewerHandoffGet(
+    storeName,
+    handoffId
+) {
+    const db =
+        await openFastViewerHandoffDb();
+
+    try {
+        return await new Promise(
+            (resolve, reject) => {
+                const tx =
+                    db.transaction(
+                        storeName,
+                        "readonly"
+                    );
+
+                const request =
+                    tx.objectStore(
+                        storeName
+                    ).get(handoffId);
+
+                request.onsuccess =
+                    () =>
+                        resolve(
+                            request.result ||
+                            null
+                        );
+
+                request.onerror =
+                    () =>
+                        reject(
+                            request.error ||
+                            new Error(
+                                "IndexedDB read failed"
+                            )
+                        );
+            }
+        );
+    } finally {
+        db.close();
+    }
+}
+
+async function patchFastViewerHandoffState(
+    handoffId,
+    patch
+) {
+    try {
+        const current =
+            (
+                await fastViewerHandoffGet(
+                    FAST_VIEWER_HANDOFF_STATE_STORE,
+                    handoffId
+                )
+            ) || {
+                handoffId
+            };
+
+        await fastViewerHandoffPut(
+            FAST_VIEWER_HANDOFF_STATE_STORE,
+            {
+                ...current,
+                ...patch,
+                handoffId,
+                updatedAt:
+                    Date.now()
+            }
+        );
+
+        return true;
+    } catch (error) {
+        console.warn(
+            "[Fast Viewer Handoff] state patch failed",
+            error
+        );
+        return false;
+    }
+}
+
+async function cleanupOldFastViewerHandoffs(
+    maxAgeMs =
+        2 * 60 * 60 * 1000
+) {
+    let db;
+
+    try {
+        db =
+            await openFastViewerHandoffDb();
+
+        const staleIds =
+            await new Promise(
+                (resolve, reject) => {
+                    const ids = [];
+                    const tx =
+                        db.transaction(
+                            FAST_VIEWER_HANDOFF_STATE_STORE,
+                            "readonly"
+                        );
+
+                    const request =
+                        tx.objectStore(
+                            FAST_VIEWER_HANDOFF_STATE_STORE
+                        ).openCursor();
+
+                    request.onsuccess =
+                        () => {
+                            const cursor =
+                                request.result;
+
+                            if (!cursor) {
+                                resolve(ids);
+                                return;
+                            }
+
+                            const value =
+                                cursor.value || {};
+
+                            const referenceTime =
+                                Number(
+                                    value.updatedAt ||
+                                    value.createdAt ||
+                                    0
+                                );
+
+                            if (
+                                !referenceTime ||
+                                Date.now() -
+                                    referenceTime >
+                                    maxAgeMs
+                            ) {
+                                ids.push(
+                                    value.handoffId
+                                );
+                            }
+
+                            cursor.continue();
+                        };
+
+                    request.onerror =
+                        () =>
+                            reject(
+                                request.error
+                            );
+                }
+            );
+
+        if (!staleIds.length) {
+            return;
+        }
+
+        await new Promise(
+            (resolve, reject) => {
+                const tx =
+                    db.transaction(
+                        [
+                            FAST_VIEWER_HANDOFF_PAYLOAD_STORE,
+                            FAST_VIEWER_HANDOFF_STATE_STORE
+                        ],
+                        "readwrite"
+                    );
+
+                staleIds.forEach(
+                    id => {
+                        tx.objectStore(
+                            FAST_VIEWER_HANDOFF_PAYLOAD_STORE
+                        ).delete(id);
+
+                        tx.objectStore(
+                            FAST_VIEWER_HANDOFF_STATE_STORE
+                        ).delete(id);
+                    }
+                );
+
+                tx.oncomplete =
+                    () => resolve();
+
+                tx.onerror =
+                    () =>
+                        reject(
+                            tx.error
+                        );
+            }
+        );
+    } catch (_) {
+    } finally {
+        try {
+            db?.close();
+        } catch (_) {}
+    }
+}
+
+function buildFastViewerSettings() {
+    return {
+        "集計開始日": "",
+        "集計終了日": "",
+        "ターゲット年齢下限": "",
+        "ターゲット年齢上限": "",
+        "年齢区分": "年代",
+        "月内応募日幅": 7,
+        "応募時間帯幅": 6,
+        "求人原稿文字数幅": 300,
+        "Indeed求人タグ数幅": 5,
+        "時給下限幅": 50,
+        "日給下限幅": 1000,
+        "月給下限幅": 50000,
+        "年収下限幅": 500000,
+        "Indeedタグ表示件数": 50,
+        "TOP画像表示件数": 50
+    };
+}
+
+function buildFastEnterpriseMasterDataset(
+    applicationDataset,
+    displayName = ""
+) {
+    const headers =
+        [
+            "企業ID",
+            "表示名"
+        ];
+
+    const appHeaders =
+        Array.isArray(
+            applicationDataset?.headers
+        )
+            ? applicationDataset.headers
+            : [];
+
+    const rows =
+        Array.isArray(
+            applicationDataset?.rows
+        )
+            ? applicationDataset.rows
+            : [];
+
+    const enterpriseIndex =
+        appHeaders.indexOf(
+            "企業ID"
+        );
+
+    const ids =
+        new Set();
+
+    if (enterpriseIndex >= 0) {
+        rows.forEach(
+            row => {
+                const id =
+                    normalizeString(
+                        row?.[
+                            enterpriseIndex
+                        ]
+                    );
+
+                if (id) {
+                    ids.add(id);
+                }
+            }
+        );
+    }
+
+    return {
+        headers,
+        rows:
+            Array.from(ids)
+                .sort(
+                    (a, b) =>
+                        a.localeCompare(
+                            b,
+                            "ja"
+                        )
+                )
+                .map(
+                    id => [
+                        id,
+                        normalizeString(
+                            displayName
+                        )
+                    ]
+                )
+    };
+}
+
+function buildFastViewerPreviewData({
+    targetSpreadsheetId = ""
+} = {}) {
+    const normalizedModel =
+        buildNormalizedSheetsModel();
+
+    const companyDisplayName =
+        targetSpreadsheetId
+            ? ""
+            : normalizeCompanyDisplayNameForUi(
+                document.getElementById(
+                    "newCompanyDisplayNameInput"
+                )?.value
+            );
+
+    const reportName =
+        targetSpreadsheetId
+            ? "有効応募分析（更新中）"
+            : (
+                normalizeString(
+                    document.getElementById(
+                        "newReportNameInput"
+                    )?.value
+                ) ||
+                companyDisplayName ||
+                "有効応募分析（保存中）"
+            );
+
+    return {
+        ok: true,
+        action:
+            "VIEWER_DATA_LOCAL_HANDOFF",
+        viewerSchemaVersion:
+            "1.1",
+        metadata: {
+            reportTitle:
+                reportName,
+            workbookType:
+                "VALID_APPLICATION_ANALYSIS",
+            schemaVersion:
+                SHEETS_SCHEMA_VERSION,
+            lastDataUpdateAt:
+                new Date()
+                    .toISOString(),
+            lastDataUpdateMode:
+                targetSpreadsheetId
+                    ? "UPDATE"
+                    : "CREATE",
+            viewerEnabled:
+                false,
+            storageLayout:
+                "LOCAL_HANDOFF"
+        },
+        settings:
+            buildFastViewerSettings(),
+        customAnalysis: {
+            rowAxis:
+                "対応状況",
+            colAxis:
+                "応募媒体",
+            ageFilterMode:
+                "全年齢",
+            ageMin: "",
+            ageMax: ""
+        },
+        displaySettings: [],
+        datasets: {
+            applicationData:
+                normalizedModel
+                    .applicationData,
+            jobAnalysisMaster:
+                normalizedModel
+                    .jobAnalysisMaster,
+            codeMaster:
+                buildCodeMasterDataset(),
+            indeedTagMaster:
+                buildIndeedTagMasterDataset(),
+            keywordMaster: {
+                headers:
+                    ["仕事名KW"],
+                rows: []
+            },
+            enterpriseMaster:
+                buildFastEnterpriseMasterDataset(
+                    normalizedModel
+                        .applicationData,
+                    companyDisplayName
+                ),
+            imageMaster:
+                buildImageMasterInitialDataset()
+        },
+        performance: {
+            source:
+                "LOCAL_FAST_HANDOFF"
+        },
+        elapsedMs: 0,
+        clientPerformance: {}
+    };
+}
+
+async function beginFastViewerHandoff({
+    viewerTab,
+    handoffId,
+    targetSpreadsheetId = ""
+} = {}) {
+    if (
+        !viewerTab ||
+        viewerTab.closed ||
+        !handoffId
+    ) {
+        return false;
+    }
+
+    try {
+        cleanupOldFastViewerHandoffs();
+
+        const previewData =
+            buildFastViewerPreviewData({
+                targetSpreadsheetId
+            });
+
+        const now =
+            Date.now();
+
+        await fastViewerHandoffPut(
+            FAST_VIEWER_HANDOFF_PAYLOAD_STORE,
+            {
+                handoffId,
+                createdAt: now,
+                previewData
+            }
+        );
+
+        await fastViewerHandoffPut(
+            FAST_VIEWER_HANDOFF_STATE_STORE,
+            {
+                handoffId,
+                status:
+                    "saving",
+                operationMode:
+                    targetSpreadsheetId
+                        ? "UPDATE"
+                        : "CREATE",
+                targetSpreadsheetId:
+                    targetSpreadsheetId ||
+                    "",
+                createdAt: now,
+                updatedAt: now,
+                finalViewerUrl: "",
+                finalSpreadsheetId: "",
+                finalSpreadsheetUrl: "",
+                finalFileName: "",
+                errorMessage: ""
+            }
+        );
+
+        setReservedViewerFlowHandoff(
+            viewerTab,
+            {
+                phase:
+                    "fastPreview",
+                handoffId
+            }
+        );
+
+        clearReservedViewerTabTimer(
+            viewerTab
+        );
+
+        const previewUrl =
+            new URL(
+                "report.html",
+                window.location.href
+            );
+
+        previewUrl.hash =
+            "handoff=" +
+            encodeURIComponent(
+                handoffId
+            );
+
+        try {
+            viewerTab.location.replace(
+                previewUrl.href
+            );
+        } catch (_) {
+            viewerTab.location.href =
+                previewUrl.href;
+        }
+
+        return true;
+    } catch (error) {
+        console.warn(
+            "[Fast Viewer Handoff] preview start failed; fallback to persisted flow",
+            error
+        );
+
+        return false;
+    }
+}
+
+async function markFastViewerHandoffReady(
+    handoffId,
+    data
+) {
+    return patchFastViewerHandoffState(
+        handoffId,
+        {
+            status:
+                "ready",
+            finalViewerUrl:
+                normalizeString(
+                    data?.viewerUrl
+                ),
+            finalSpreadsheetId:
+                normalizeString(
+                    data?.spreadsheetId
+                ),
+            finalSpreadsheetUrl:
+                normalizeString(
+                    data?.spreadsheetUrl
+                ),
+            finalFileName:
+                normalizeString(
+                    data?.fileName
+                ),
+            viewerEnabled:
+                data?.viewerEnabled !==
+                false,
+            readyAt:
+                Date.now()
+        }
+    );
+}
+
+async function markFastViewerHandoffError(
+    handoffId,
+    error
+) {
+    return patchFastViewerHandoffState(
+        handoffId,
+        {
+            status:
+                "error",
+            errorMessage:
+                normalizeString(
+                    error?.message ||
+                    error
+                ) ||
+                "保存処理に失敗しました。",
+            failedAt:
+                Date.now()
+        }
+    );
+}
+
+
 async function createGoogleSpreadsheet({
     viewerTab: suppliedViewerTab = null
 } = {}) {
@@ -5534,6 +6202,7 @@ async function createGoogleSpreadsheet({
     let imageLookupMs = 0;
     let payloadBuildMs = 0;
     let payloadBytes = 0;
+    let fastViewerHandoffActive = false;
     if (
         globalSheetsCreateInFlight ||
         globalFinalData.length === 0
@@ -5644,6 +6313,30 @@ async function createGoogleSpreadsheet({
 
     hideSheetsCreateSuccess();
 
+    if (
+        !globalPendingSheetsRequestId
+    ) {
+        globalPendingSheetsRequestId =
+            makeRequestId();
+    }
+
+    fastViewerHandoffActive =
+        await beginFastViewerHandoff({
+            viewerTab,
+            handoffId:
+                globalPendingSheetsRequestId,
+            targetSpreadsheetId
+        });
+
+    if (
+        fastViewerHandoffActive
+    ) {
+        updateEtlProcessingStage(
+            "viewer",
+            "分析レポートをブラウザ内データから先に表示しました。保存処理は続いています。"
+        );
+    }
+
     try {
         const planSummary =
             getImageLookupPlanSummary();
@@ -5693,16 +6386,11 @@ async function createGoogleSpreadsheet({
                 imageLookupStartedAt;
         }
 
-        if (
-            !globalPendingSheetsRequestId
-        ) {
-            globalPendingSheetsRequestId =
-                makeRequestId();
-        }
-
         if (runLabel) {
             runLabel.textContent =
-                "Viewerへ反映しています...";
+                fastViewerHandoffActive
+                    ? "保存処理を続けています..."
+                    : "分析レポートへ反映しています...";
         }
 
         updateEtlProcessingStage(
@@ -5862,11 +6550,20 @@ async function createGoogleSpreadsheet({
             data
         );
 
-        openViewerInReservedTab(
-            viewerTab,
-            data.viewerUrl,
-            data.viewerEnabled !== false
-        );
+        if (
+            fastViewerHandoffActive
+        ) {
+            await markFastViewerHandoffReady(
+                globalPendingSheetsRequestId,
+                data
+            );
+        } else {
+            openViewerInReservedTab(
+                viewerTab,
+                data.viewerUrl,
+                data.viewerEnabled !== false
+            );
+        }
 
         globalPendingSheetsRequestId =
             "";
@@ -5895,11 +6592,20 @@ async function createGoogleSpreadsheet({
             "error"
         );
 
-        failReservedViewerTab(
-            viewerTab,
-            error?.message ||
-                String(error)
-        );
+        if (
+            fastViewerHandoffActive
+        ) {
+            await markFastViewerHandoffError(
+                globalPendingSheetsRequestId,
+                error
+            );
+        } else {
+            failReservedViewerTab(
+                viewerTab,
+                error?.message ||
+                    String(error)
+            );
+        }
 
         if (
             code ===

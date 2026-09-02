@@ -556,6 +556,48 @@
             .grid-kpi { grid-template-columns: 1fr; }
             .reload { width: 100%; }
         }
+    
+        .fast-handoff-banner {
+            margin: 14px 0 0;
+            padding: 11px 13px;
+            border: 1px solid rgba(20,142,204,.24);
+            border-radius: 13px;
+            background:
+                linear-gradient(
+                    135deg,
+                    #edf8fd,
+                    rgba(251,255,215,.72)
+                );
+            color: #0d6795;
+            font-size: 11px;
+            line-height: 1.65;
+        }
+        .fast-handoff-banner strong {
+            display: block;
+            color: #173043;
+            font-size: 11px;
+        }
+        .fast-handoff-banner.ready {
+            border-color: #a7f3d0;
+            background: #ecfdf5;
+            color: #047857;
+        }
+        .fast-handoff-banner.error {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+        .fast-handoff-banner .fast-handoff-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-right: 7px;
+            border-radius: 999px;
+            background: #eeff16;
+            box-shadow: 0 0 0 1px rgba(20,142,204,.22);
+            vertical-align: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -604,17 +646,26 @@
             <button id="reloadBtn" type="button" class="reload">データを再読み込み</button>
         </div>
 
+        <div id="fastHandoffBanner" class="fast-handoff-banner hidden">
+            <strong id="fastHandoffTitle">
+                <span class="fast-handoff-dot"></span>ブラウザで先に分析レポートを表示しています
+            </strong>
+            <span id="fastHandoffNote">
+                個社管理シートへの保存と共有URLの準備はバックグラウンドで続いています。
+            </span>
+        </div>
+
         <div class="share-guard">
             <div>
                 <div class="share-guard-label">共有先確認</div>
                 <div id="shareTargetName" class="share-guard-name">確認中...</div>
             </div>
-            <div class="share-ok">企業共有用</div>
+            <div id="shareReadyBadge" class="share-ok">企業共有用</div>
         </div>
 
         <div id="shareNameWarning" class="share-warning hidden"></div>
 
-        <div class="notice">
+        <div id="viewerDataSourceNotice" class="notice">
             このページは閲覧専用です。保存済みデータをブラウザ内で集計しています。
             期間は分析レポート上で自由に絞り込めます。
         </div>
@@ -2129,11 +2180,15 @@ function renderReport(data) {
         performance.now() -
         renderStartedAt;
 
-    rememberReportVisitForInternalUser(
-        data?.metadata?.reportTitle || ""
-    );
+    if (
+        !currentFastHandoffId
+    ) {
+        rememberReportVisitForInternalUser(
+            data?.metadata?.reportTitle || ""
+        );
 
-    clearViewerFlowHandoff();
+        clearViewerFlowHandoff();
+    }
 }
 
 function viewerPerfSeconds(value) {
@@ -2439,6 +2494,955 @@ function rememberReportVisitForInternalUser(
     } catch (_) {}
 }
 
+
+const FAST_VIEWER_HANDOFF_DB_NAME =
+    "validApplicationAnalysis.fastHandoff.v1";
+const FAST_VIEWER_HANDOFF_DB_VERSION =
+    1;
+const FAST_VIEWER_HANDOFF_PAYLOAD_STORE =
+    "payloads";
+const FAST_VIEWER_HANDOFF_STATE_STORE =
+    "states";
+const MANAGE_SCHEMA_VERSION =
+    "3.0";
+const MANAGE_PAGES_VERSION =
+    "2026.09.03-etl-v2.20-fast-handoff";
+
+let currentFastHandoffId = "";
+let currentFastHandoffState = null;
+let fastHandoffPollTimerId = null;
+let fastHandoffAppliedConfigSheetId = "";
+
+function getFastHandoffId() {
+    const params =
+        new URLSearchParams(
+            window.location.hash
+                .replace(/^#/, "")
+        );
+
+    return String(
+        params.get(
+            "handoff"
+        ) || ""
+    ).trim();
+}
+
+function openFastViewerHandoffDb() {
+    return new Promise(
+        (resolve, reject) => {
+            if (!window.indexedDB) {
+                reject(
+                    new Error(
+                        "IndexedDB is unavailable"
+                    )
+                );
+                return;
+            }
+
+            const request =
+                indexedDB.open(
+                    FAST_VIEWER_HANDOFF_DB_NAME,
+                    FAST_VIEWER_HANDOFF_DB_VERSION
+                );
+
+            request.onupgradeneeded =
+                () => {
+                    const db =
+                        request.result;
+
+                    if (
+                        !db.objectStoreNames
+                            .contains(
+                                FAST_VIEWER_HANDOFF_PAYLOAD_STORE
+                            )
+                    ) {
+                        db.createObjectStore(
+                            FAST_VIEWER_HANDOFF_PAYLOAD_STORE,
+                            {
+                                keyPath:
+                                    "handoffId"
+                            }
+                        );
+                    }
+
+                    if (
+                        !db.objectStoreNames
+                            .contains(
+                                FAST_VIEWER_HANDOFF_STATE_STORE
+                            )
+                    ) {
+                        db.createObjectStore(
+                            FAST_VIEWER_HANDOFF_STATE_STORE,
+                            {
+                                keyPath:
+                                    "handoffId"
+                            }
+                        );
+                    }
+                };
+
+            request.onsuccess =
+                () =>
+                    resolve(
+                        request.result
+                    );
+
+            request.onerror =
+                () =>
+                    reject(
+                        request.error ||
+                        new Error(
+                            "IndexedDB open failed"
+                        )
+                    );
+        }
+    );
+}
+
+async function fastViewerHandoffGet(
+    storeName,
+    handoffId
+) {
+    const db =
+        await openFastViewerHandoffDb();
+
+    try {
+        return await new Promise(
+            (resolve, reject) => {
+                const tx =
+                    db.transaction(
+                        storeName,
+                        "readonly"
+                    );
+
+                const request =
+                    tx.objectStore(
+                        storeName
+                    ).get(handoffId);
+
+                request.onsuccess =
+                    () =>
+                        resolve(
+                            request.result ||
+                            null
+                        );
+
+                request.onerror =
+                    () =>
+                        reject(
+                            request.error ||
+                            new Error(
+                                "IndexedDB read failed"
+                            )
+                        );
+            }
+        );
+    } finally {
+        db.close();
+    }
+}
+
+async function deleteFastViewerHandoff(
+    handoffId
+) {
+    let db;
+
+    try {
+        db =
+            await openFastViewerHandoffDb();
+
+        await new Promise(
+            (resolve, reject) => {
+                const tx =
+                    db.transaction(
+                        [
+                            FAST_VIEWER_HANDOFF_PAYLOAD_STORE,
+                            FAST_VIEWER_HANDOFF_STATE_STORE
+                        ],
+                        "readwrite"
+                    );
+
+                tx.objectStore(
+                    FAST_VIEWER_HANDOFF_PAYLOAD_STORE
+                ).delete(handoffId);
+
+                tx.objectStore(
+                    FAST_VIEWER_HANDOFF_STATE_STORE
+                ).delete(handoffId);
+
+                tx.oncomplete =
+                    () => resolve();
+
+                tx.onerror =
+                    () =>
+                        reject(
+                            tx.error
+                        );
+            }
+        );
+    } catch (_) {
+    } finally {
+        try {
+            db?.close();
+        } catch (_) {}
+    }
+}
+
+function setFastHandoffBanner(
+    state,
+    title,
+    note
+) {
+    const banner =
+        document.getElementById(
+            "fastHandoffBanner"
+        );
+
+    const titleEl =
+        document.getElementById(
+            "fastHandoffTitle"
+        );
+
+    const noteEl =
+        document.getElementById(
+            "fastHandoffNote"
+        );
+
+    const shareBadge =
+        document.getElementById(
+            "shareReadyBadge"
+        );
+
+    const sourceNotice =
+        document.getElementById(
+            "viewerDataSourceNotice"
+        );
+
+    if (!banner) return;
+
+    banner.classList.remove(
+        "hidden",
+        "ready",
+        "error"
+    );
+
+    if (state === "ready") {
+        banner.classList.add(
+            "ready"
+        );
+    }
+
+    if (state === "error") {
+        banner.classList.add(
+            "error"
+        );
+    }
+
+    if (titleEl) {
+        titleEl.innerHTML =
+            state === "saving"
+                ? (
+                    '<span class="fast-handoff-dot"></span>' +
+                    escapeHtml(title)
+                )
+                : escapeHtml(title);
+    }
+
+    if (noteEl) {
+        noteEl.textContent =
+            note || "";
+    }
+
+    if (shareBadge) {
+        shareBadge.textContent =
+            state === "ready"
+                ? "企業共有用"
+                : state === "error"
+                    ? "保存失敗・共有不可"
+                    : "保存中・共有不可";
+    }
+
+    if (sourceNotice) {
+        sourceNotice.textContent =
+            state === "ready"
+                ? "このページは閲覧専用です。保存済みデータと個社設定を反映しています。期間は分析レポート上で自由に絞り込めます。"
+                : state === "error"
+                    ? "このページは現在、このブラウザ内の一時データを表示しています。保存に失敗しているため、このURLは企業共有には使用できません。"
+                    : "このページは現在、ブラウザ内の最新データを先に集計しています。個社管理シートへの保存と設定の同期はバックグラウンドで続いています。";
+    }
+}
+
+function managedSettingsToObject(
+    rows
+) {
+    const result = {};
+
+    (
+        Array.isArray(rows)
+            ? rows
+            : []
+    ).forEach(
+        row => {
+            const key =
+                String(
+                    row?.key || ""
+                ).trim();
+
+            if (!key) return;
+
+            result[key] =
+                row?.value ?? "";
+        }
+    );
+
+    return result;
+}
+
+function managedKeywordDataset(
+    values
+) {
+    return {
+        headers:
+            ["仕事名KW"],
+        rows:
+            (
+                Array.isArray(values)
+                    ? values
+                    : []
+            ).map(
+                value => [value]
+            )
+    };
+}
+
+function managedEnterpriseDataset(
+    values
+) {
+    return {
+        headers:
+            [
+                "企業ID",
+                "表示名"
+            ],
+        rows:
+            (
+                Array.isArray(values)
+                    ? values
+                    : []
+            ).map(
+                row => [
+                    row?.enterpriseId ?? "",
+                    row?.displayName ?? ""
+                ]
+            )
+    };
+}
+
+function managedImageDataset(
+    values
+) {
+    const headers = [
+        "画像ファイル名",
+        "画像URL",
+        "取得状態",
+        "参照求人管理番号",
+        "取得方法",
+        "取得日時",
+        "メモ"
+    ];
+
+    return {
+        headers,
+        rows:
+            (
+                Array.isArray(values)
+                    ? values
+                    : []
+            ).map(
+                row => [
+                    row?.fileName ?? "",
+                    row?.imageUrl ?? "",
+                    row?.status ?? "",
+                    row?.referenceJobNumber ?? "",
+                    row?.method ?? "",
+                    row?.acquiredAt ?? "",
+                    row?.memo ?? ""
+                ]
+            )
+    };
+}
+
+async function fetchManagedConfigForFastHandoff(
+    spreadsheetId
+) {
+    const id =
+        String(
+            spreadsheetId || ""
+        ).trim();
+
+    const accessKey =
+        String(
+            localStorage.getItem(
+                INTERNAL_ACCESS_KEY_STORAGE_KEY
+            ) || ""
+        ).trim();
+
+    if (
+        !id ||
+        !accessKey
+    ) {
+        return null;
+    }
+
+    const response =
+        await fetch(
+            VIEWER_API_URL,
+            {
+                method:
+                    "POST",
+                mode:
+                    "cors",
+                credentials:
+                    "omit",
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=UTF-8"
+                },
+                body:
+                    JSON.stringify({
+                        action:
+                            "manageLoad",
+                        schemaVersion:
+                            MANAGE_SCHEMA_VERSION,
+                        pagesVersion:
+                            MANAGE_PAGES_VERSION,
+                        accessKey,
+                        targetSpreadsheetId:
+                            id,
+                        viewerBaseUrl:
+                            new URL(
+                                "report.html",
+                                window.location.href
+                            ).href
+                                .split("#")[0]
+                                .split("?")[0],
+                        manageBaseUrl:
+                            new URL(
+                                "index.html",
+                                window.location.href
+                            ).href
+                                .split("#")[0]
+                                .split("?")[0],
+                        maintenanceBaseUrl:
+                            new URL(
+                                "maintenance.html",
+                                window.location.href
+                            ).href
+                                .split("#")[0]
+                                .split("?")[0],
+                        viewerAdminBaseUrl:
+                            new URL(
+                                "viewer-admin.html",
+                                window.location.href
+                            ).href
+                                .split("#")[0]
+                                .split("?")[0]
+                    })
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (!data?.ok) {
+        throw new Error(
+            data?.message ||
+            "個社設定を取得できませんでした。"
+        );
+    }
+
+    return data;
+}
+
+function mergeManagedConfigIntoFastViewer(
+    managed
+) {
+    if (
+        !managed ||
+        !currentViewerData
+    ) {
+        return;
+    }
+
+    const metadata =
+        managed.metadata || {};
+
+    currentViewerData = {
+        ...currentViewerData,
+        metadata: {
+            ...currentViewerData.metadata,
+            reportTitle:
+                metadata.fileName ||
+                metadata.enterpriseLabel ||
+                currentViewerData
+                    .metadata
+                    ?.reportTitle,
+            spreadsheetId:
+                metadata.spreadsheetId ||
+                currentViewerData
+                    .metadata
+                    ?.spreadsheetId ||
+                "",
+            spreadsheetUrl:
+                metadata.spreadsheetUrl ||
+                currentViewerData
+                    .metadata
+                    ?.spreadsheetUrl ||
+                "",
+            lastSettingsSaveAt:
+                metadata.lastSettingsSaveAt ||
+                currentViewerData
+                    .metadata
+                    ?.lastSettingsSaveAt ||
+                ""
+        },
+        settings: {
+            ...currentViewerData.settings,
+            ...managedSettingsToObject(
+                managed.settings
+            )
+        },
+        customAnalysis:
+            managed.customAnalysis ||
+            currentViewerData.customAnalysis,
+        displaySettings:
+            Array.isArray(
+                managed.displaySettings
+            )
+                ? managed.displaySettings
+                : currentViewerData
+                    .displaySettings,
+        datasets: {
+            ...currentViewerData.datasets,
+            keywordMaster:
+                managedKeywordDataset(
+                    managed.keywordMaster
+                ),
+            enterpriseMaster:
+                managedEnterpriseDataset(
+                    managed.enterpriseMaster
+                ),
+            imageMaster:
+                managedImageDataset(
+                    managed.imageMaster
+                )
+        }
+    };
+
+    renderReport(
+        currentViewerData
+    );
+}
+
+async function applyManagedConfigForFastHandoff(
+    spreadsheetId,
+    {
+        force = false
+    } = {}
+) {
+    const id =
+        String(
+            spreadsheetId || ""
+        ).trim();
+
+    if (
+        !id ||
+        (
+            !force &&
+            fastHandoffAppliedConfigSheetId ===
+                id
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const managed =
+            await fetchManagedConfigForFastHandoff(
+                id
+            );
+
+        if (!managed) return;
+
+        fastHandoffAppliedConfigSheetId =
+            id;
+
+        mergeManagedConfigIntoFastViewer(
+            managed
+        );
+    } catch (error) {
+        console.warn(
+            "[Fast Viewer Handoff] lazy config load failed",
+            error
+        );
+    }
+}
+
+function officialViewerTokenFromUrl(
+    url
+) {
+    try {
+        const parsed =
+            new URL(
+                url,
+                window.location.href
+            );
+
+        const params =
+            new URLSearchParams(
+                parsed.hash
+                    .replace(/^#/, "")
+            );
+
+        return String(
+            params.get("r") || ""
+        ).trim();
+    } catch (_) {
+        return "";
+    }
+}
+
+async function finalizeFastHandoffReady(
+    state
+) {
+    if (
+        !state ||
+        state.status !== "ready"
+    ) {
+        return;
+    }
+
+    currentFastHandoffState =
+        state;
+
+    const finalViewerUrl =
+        String(
+            state.finalViewerUrl || ""
+        ).trim();
+
+    const finalSpreadsheetId =
+        String(
+            state.finalSpreadsheetId ||
+            state.targetSpreadsheetId ||
+            ""
+        ).trim();
+
+    if (
+        currentViewerData
+    ) {
+        currentViewerData.metadata =
+            {
+                ...currentViewerData
+                    .metadata,
+                reportTitle:
+                    state.finalFileName ||
+                    currentViewerData
+                        .metadata
+                        ?.reportTitle,
+                spreadsheetId:
+                    finalSpreadsheetId,
+                spreadsheetUrl:
+                    state.finalSpreadsheetUrl ||
+                    currentViewerData
+                        .metadata
+                        ?.spreadsheetUrl ||
+                    "",
+                viewerEnabled:
+                    state.viewerEnabled !==
+                    false,
+                storageLayout:
+                    "DATASTORE_V1"
+            };
+
+        renderReport(
+            currentViewerData
+        );
+    }
+
+    setFastHandoffBanner(
+        "ready",
+        "保存と共有URLの準備が完了しました",
+        "分析レポートはそのまま利用できます。個社設定・画像URLを最終同期しています。"
+    );
+
+    if (finalViewerUrl) {
+        try {
+            history.replaceState(
+                null,
+                "",
+                finalViewerUrl
+            );
+        } catch (_) {}
+    }
+
+    if (finalSpreadsheetId) {
+        await applyManagedConfigForFastHandoff(
+            finalSpreadsheetId,
+            {
+                force: true
+            }
+        );
+    }
+
+    setFastHandoffBanner(
+        "ready",
+        "保存完了",
+        "このURLは企業共有に利用できます。"
+    );
+
+    clearViewerFlowHandoff();
+
+    if (
+        fastHandoffPollTimerId
+    ) {
+        clearInterval(
+            fastHandoffPollTimerId
+        );
+
+        fastHandoffPollTimerId =
+            null;
+    }
+
+    const id =
+        currentFastHandoffId;
+
+    currentFastHandoffId =
+        "";
+
+    setTimeout(
+        () => {
+            document
+                .getElementById(
+                    "fastHandoffBanner"
+                )
+                ?.classList
+                .add("hidden");
+        },
+        2600
+    );
+
+    if (id) {
+        deleteFastViewerHandoff(
+            id
+        );
+    }
+}
+
+function handleFastHandoffErrorState(
+    state
+) {
+    setFastHandoffBanner(
+        "error",
+        "分析結果は表示できていますが、保存に失敗しました",
+        (
+            state?.errorMessage ||
+            "個社管理シートへの保存処理を確認してください。"
+        ) +
+        " このURLは企業共有には使用しないでください。"
+    );
+
+    if (
+        fastHandoffPollTimerId
+    ) {
+        clearInterval(
+            fastHandoffPollTimerId
+        );
+
+        fastHandoffPollTimerId =
+            null;
+    }
+}
+
+async function pollFastHandoffState() {
+    if (!currentFastHandoffId) {
+        return;
+    }
+
+    try {
+        const state =
+            await fastViewerHandoffGet(
+                FAST_VIEWER_HANDOFF_STATE_STORE,
+                currentFastHandoffId
+            );
+
+        if (!state) {
+            return;
+        }
+
+        currentFastHandoffState =
+            state;
+
+        if (
+            state.status === "ready"
+        ) {
+            await finalizeFastHandoffReady(
+                state
+            );
+            return;
+        }
+
+        if (
+            state.status === "error"
+        ) {
+            handleFastHandoffErrorState(
+                state
+            );
+        }
+    } catch (_) {}
+}
+
+function startFastHandoffStatePolling() {
+    if (
+        fastHandoffPollTimerId
+    ) {
+        clearInterval(
+            fastHandoffPollTimerId
+        );
+    }
+
+    fastHandoffPollTimerId =
+        setInterval(
+            pollFastHandoffState,
+            650
+        );
+}
+
+function configureFastHandoffLoadingView() {
+    const flow =
+        document.getElementById(
+            "viewerLoadingFlowSteps"
+        );
+
+    if (!flow) return;
+
+    flow.classList.remove(
+        "hidden"
+    );
+
+    const steps =
+        flow.querySelectorAll(
+            ".viewer-loading-step"
+        );
+
+    if (
+        steps.length >= 2
+    ) {
+        steps[0].className =
+            "viewer-loading-step done";
+
+        steps[0].innerHTML =
+            '<span class="viewer-loading-step-mark">✓</span>' +
+            '<div><strong>CSV JOIN</strong><small>ブラウザ内の分析データ準備が完了しました</small></div>';
+
+        steps[1].className =
+            "viewer-loading-step active";
+
+        steps[1].innerHTML =
+            '<span class="viewer-loading-step-mark">●</span>' +
+            '<div><strong>分析レポート表示</strong><small>保存完了を待たずにブラウザ内データを読み込んでいます</small></div>';
+    }
+}
+
+async function loadFastHandoffReport(
+    handoffId
+) {
+    currentFastHandoffId =
+        handoffId;
+
+    configureFastHandoffLoadingView();
+    startFastHandoffStatePolling();
+
+    const state =
+        await fastViewerHandoffGet(
+            FAST_VIEWER_HANDOFF_STATE_STORE,
+            handoffId
+        );
+
+    if (
+        state?.status === "ready" &&
+        state?.finalViewerUrl
+    ) {
+        window.location.replace(
+            state.finalViewerUrl
+        );
+        return;
+    }
+
+    const payloadRecord =
+        await fastViewerHandoffGet(
+            FAST_VIEWER_HANDOFF_PAYLOAD_STORE,
+            handoffId
+        );
+
+    if (
+        !payloadRecord?.previewData
+    ) {
+        setViewerLoadingState(
+            "fetch",
+            "ブラウザ直結データを取得できないため、保存完了を待っています。"
+        );
+        return;
+    }
+
+    setViewerLoadingState(
+        "aggregate",
+        "JOIN済みデータをブラウザ内で集計しています。"
+    );
+
+    await new Promise(
+        resolve =>
+            requestAnimationFrame(
+                () => resolve()
+            )
+    );
+
+    const data =
+        payloadRecord.previewData;
+
+    data.clientPerformance =
+        data.clientPerformance ||
+        {};
+
+    initializeViewerPeriod(
+        data
+    );
+
+    renderReport(
+        data
+    );
+
+    setFastHandoffBanner(
+        "saving",
+        "ブラウザで先に分析レポートを表示しています",
+        "個社管理シートへの保存と共有URLの準備はバックグラウンドで続いています。仕事名KWなどの個社設定も並行して反映します。"
+    );
+
+    const targetSpreadsheetId =
+        String(
+            state?.targetSpreadsheetId ||
+            ""
+        ).trim();
+
+    if (targetSpreadsheetId) {
+        applyManagedConfigForFastHandoff(
+            targetSpreadsheetId
+        );
+    }
+
+    pollFastHandoffState();
+}
+
+
 let viewerLoadingFlowHandoff =
     null;
 
@@ -2611,7 +3615,12 @@ function stopViewerLoadingTimer() {
 
         function showError(message) {
             stopViewerLoadingTimer();
-            clearViewerFlowHandoff();
+
+            if (
+                !currentFastHandoffId
+            ) {
+                clearViewerFlowHandoff();
+            }
             document.getElementById("loadingView").classList.add("hidden");
             document.getElementById("reportView").classList.add("hidden");
 
@@ -2636,12 +3645,36 @@ function stopViewerLoadingTimer() {
             const loadStartedAt =
                 performance.now();
 
-            const token = getViewerToken();
-            const urlName = getViewerUrlName();
+            const handoffId =
+                getFastHandoffId();
+
+            const token =
+                getViewerToken();
+
+            const urlName =
+                getViewerUrlName();
 
             startViewerLoading(
                 urlName
             );
+
+            document.getElementById("errorView").classList.add("hidden");
+            document.getElementById("reportView").classList.add("hidden");
+            document.getElementById("loadingView").classList.remove("hidden");
+
+            if (handoffId) {
+                try {
+                    await loadFastHandoffReport(
+                        handoffId
+                    );
+                } catch (error) {
+                    showError(
+                        error?.message ||
+                        String(error)
+                    );
+                }
+                return;
+            }
 
             if (!token) {
                 showError(
@@ -2649,10 +3682,6 @@ function stopViewerLoadingTimer() {
                 );
                 return;
             }
-
-            document.getElementById("errorView").classList.add("hidden");
-            document.getElementById("reportView").classList.add("hidden");
-            document.getElementById("loadingView").classList.remove("hidden");
 
             try {
                 const data = await fetchViewerData(token);
