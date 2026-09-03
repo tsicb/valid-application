@@ -598,6 +598,76 @@
             vertical-align: 0;
         }
 
+    
+        /* Viewer UI v25: desktop analysis shell */
+        :root {
+            --viewer-sidebar-width: 252px;
+            --viewer-sidebar-collapsed-width: 54px;
+            --viewer-content-gutter: 18px;
+            --viewer-brand-blue: #148ecc;
+            --viewer-brand-blue-dark: #0d6795;
+            --viewer-brand-blue-soft: #edf8fd;
+            --viewer-accent-yellow: #eeff16;
+            --viewer-row-label-width: 210px;
+        }
+        .report-app { min-height:100vh; width:100%; }
+        .report-sidebar {
+            position:fixed; z-index:40; inset:0 auto 0 0;
+            width:var(--viewer-sidebar-width);
+            border-right:1px solid #dbe7ee;
+            background:linear-gradient(180deg,rgba(237,248,253,.98),rgba(255,255,255,.98) 28%);
+            box-shadow:12px 0 34px -32px rgba(13,103,149,.58);
+            transition:width .18s ease;
+        }
+        .report-sidebar::before { content:""; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--viewer-brand-blue) 0 78%,var(--viewer-accent-yellow) 78%); }
+        .sidebar-header { height:64px; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 10px 10px 15px; border-bottom:1px solid #e7eef2; }
+        .sidebar-brand { min-width:0; }
+        .sidebar-brand-main { color:var(--viewer-brand-blue-dark); font-size:12px; font-weight:900; }
+        .sidebar-brand-sub { margin-top:2px; color:#94a3b8; font-size:9px; font-weight:750; }
+        .sidebar-toggle { flex:0 0 32px; width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(20,142,204,.20); border-radius:9px; background:#fff; color:var(--viewer-brand-blue-dark); cursor:pointer; font-size:19px; font-weight:800; line-height:1; }
+        .sidebar-toggle:hover { border-color:rgba(20,142,204,.42); background:var(--viewer-brand-blue-soft); }
+        .sidebar-content { height:calc(100vh - 64px); overflow-y:auto; overscroll-behavior:contain; padding:13px 12px 24px; }
+        .sidebar-group { margin-bottom:16px; }
+        .sidebar-group-title { min-height:22px; padding:0 4px 6px; color:#64748b; font-size:9px; font-weight:900; letter-spacing:.08em; }
+        .sidebar-nav,.analysis-nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; overflow:visible; padding:0; margin:0; }
+        .sidebar-nav-button,.analysis-nav button { min-width:0; border:1px solid #dce8ee; border-radius:9px; padding:7px; background:#fff; color:#475569; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; font-weight:800; line-height:1.2; text-align:left; }
+        .sidebar-nav-button:hover,.analysis-nav button:hover { border-color:rgba(20,142,204,.34); background:var(--viewer-brand-blue-soft); color:var(--viewer-brand-blue-dark); }
+        .sidebar-nav-button.active,.analysis-nav button.active { position:relative; border-color:rgba(20,142,204,.46); background:var(--viewer-brand-blue-soft); color:var(--viewer-brand-blue-dark); box-shadow:inset 3px 0 0 var(--viewer-brand-blue); }
+        .sidebar-nav-button.active::after,.analysis-nav button.active::after { content:""; position:absolute; top:6px; right:6px; width:5px; height:5px; border-radius:999px; background:var(--viewer-accent-yellow); box-shadow:0 0 0 1px rgba(13,103,149,.12); }
+        .report-main { min-width:0; margin-left:var(--viewer-sidebar-width); padding:22px var(--viewer-content-gutter) 60px; transition:margin-left .18s ease; }
+        .report-app.sidebar-collapsed .report-sidebar { width:var(--viewer-sidebar-collapsed-width); }
+        .report-app.sidebar-collapsed .report-main { margin-left:var(--viewer-sidebar-collapsed-width); }
+        .report-app.sidebar-collapsed .sidebar-brand,.report-app.sidebar-collapsed .sidebar-content { display:none; }
+        .report-app.sidebar-collapsed .sidebar-header { justify-content:center; padding-inline:8px; }
+        .report-app.sidebar-collapsed .sidebar-toggle { transform:rotate(180deg); }
+        .sidebar-period-panel { margin:0!important; padding:11px!important; border-radius:12px!important; box-shadow:none!important; background:linear-gradient(180deg,rgba(237,248,253,.78),#fff)!important; }
+        .sidebar-period-panel .period-head { display:block; margin-bottom:8px; }
+        .sidebar-period-panel .period-title { font-size:11px; }
+        .sidebar-period-panel .period-note { margin-top:3px; font-size:9px; line-height:1.45; }
+        .sidebar-period-panel .period-controls { display:grid; grid-template-columns:1fr; gap:7px; }
+        .sidebar-period-panel .period-field,.sidebar-period-panel .period-field input { width:100%; min-width:0; }
+        .sidebar-period-panel .period-action { width:100%; min-height:34px; padding:6px 8px; font-size:10px; }
+        .sidebar-period-panel #viewerAllPeriodBtn { margin-top:8px; }
+        #reportOverview,.section[id],#kpiSection { scroll-margin-top:16px; }
+        .card,.section,.table-wrap { max-width:none; width:100%; }
+        .table-wrap { background:#fff; }
+        table { width:100%; }
+        .cross-table { width:100%; min-width:max(100%,1320px); }
+        .custom-table { width:100%; }
+        .table-wrap table th:first-child,.table-wrap table td:first-child { width:var(--viewer-row-label-width); min-width:var(--viewer-row-label-width); max-width:var(--viewer-row-label-width); }
+        .row-label-text { display:block; width:100%; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .row-label-tooltip { position:fixed; z-index:100; max-width:min(520px,calc(100vw - 30px)); pointer-events:none; padding:7px 10px; border:1px solid rgba(20,142,204,.22); border-radius:9px; background:rgba(23,48,67,.96); color:#fff; box-shadow:0 9px 24px rgba(15,23,42,.18); font-size:11px; line-height:1.55; opacity:0; transform:translateY(3px); transition:opacity .1s ease,transform .1s ease; }
+        .row-label-tooltip.visible { opacity:1; transform:translateY(0); }
+        .table-wrap tbody tr:not(.total-row):not(.composition-row):hover>td { background:var(--viewer-brand-blue-soft)!important; }
+        .table-wrap tbody tr:not(.total-row):not(.composition-row):hover>td:first-child { box-shadow:inset 3px 0 0 var(--viewer-brand-blue),1px 0 0 #dce8ee; }
+        .table-wrap th[data-sortable="true"] { user-select:none; cursor:pointer; }
+        .table-wrap th[data-sortable="true"]:hover { background:#eef8fc; color:var(--viewer-brand-blue-dark); }
+        .table-sort-indicator { display:inline-flex; width:14px; margin-left:4px; align-items:center; justify-content:center; color:#94a3b8; font-size:9px; font-weight:900; }
+        .table-wrap th.sort-desc,.table-wrap th.sort-asc { color:var(--viewer-brand-blue-dark); background:var(--viewer-brand-blue-soft); }
+        .table-wrap th.sort-desc .table-sort-indicator,.table-wrap th.sort-asc .table-sort-indicator { color:var(--viewer-brand-blue); }
+        @media(max-width:980px){ :root{--viewer-sidebar-width:220px;--viewer-row-label-width:180px;} .sidebar-nav,.analysis-nav{grid-template-columns:1fr;} }
+        @media(max-width:720px){ .report-sidebar{width:var(--viewer-sidebar-collapsed-width);} .report-main{margin-left:var(--viewer-sidebar-collapsed-width);padding-inline:10px;} .report-sidebar .sidebar-brand,.report-sidebar .sidebar-content{display:none;} .report-sidebar .sidebar-header{justify-content:center;padding-inline:8px;} }
+
     </style>
 </head>
 <body>
@@ -636,8 +706,46 @@
 
     <div id="errorView" class="error hidden"></div>
 
-    <main id="reportView" class="shell hidden">
-        <div class="topbar">
+    <main id="reportView" class="report-app hidden">
+        <aside id="reportSidebar" class="report-sidebar" aria-label="分析レポート操作">
+            <div class="sidebar-header">
+                <div class="sidebar-brand"><div class="sidebar-brand-main">分析レポート</div><div class="sidebar-brand-sub">分析ナビ・操作</div></div>
+                <button id="viewerSidebarToggle" type="button" class="sidebar-toggle" aria-label="サイドバーを折りたたむ" aria-expanded="true" title="サイドバーを折りたたむ">‹</button>
+            </div>
+            <div class="sidebar-content">
+                <section class="sidebar-group"><div class="sidebar-group-title">期間</div>
+        <div class="period-panel sidebar-period-panel">
+            <div class="period-head">
+                <div>
+                    <div class="period-title">分析期間</div>
+                    <div id="viewerPeriodRangeNote" class="period-note">応募データの全期間を読み込んでいます。</div>
+                </div>
+                <button id="viewerAllPeriodBtn" type="button" class="period-action">全期間に戻す</button>
+            </div>
+            <div class="period-controls">
+                <div class="period-field">
+                    <label for="viewerPeriodStart">開始日</label>
+                    <input id="viewerPeriodStart" type="date">
+                </div>
+                <div class="period-field">
+                    <label for="viewerPeriodEnd">終了日</label>
+                    <input id="viewerPeriodEnd" type="date">
+                </div>
+                <button id="viewerApplyPeriodBtn" type="button" class="period-action primary">この期間で集計</button>
+            </div>
+        </div>
+                </section>
+                <section class="sidebar-group"><div class="sidebar-group-title">概要</div><nav class="sidebar-nav" aria-label="概要">
+                    <button type="button" class="sidebar-nav-button" data-target="reportOverview" title="レポート概要">概要</button>
+                    <button type="button" class="sidebar-nav-button" data-target="kpiSection" title="主要指標">主要指標</button>
+                    <button type="button" class="sidebar-nav-button" data-target="ageSection" title="年代構成">年代</button>
+                </nav></section>
+                <section id="basicSidebarGroup" class="sidebar-group"><div class="sidebar-group-title">基本分析</div><nav id="analysisNav" class="analysis-nav" aria-label="基本分析"></nav></section>
+                <section id="detailSidebarGroup" class="sidebar-group"><div class="sidebar-group-title">詳細・自由分析</div><nav id="detailAnalysisNav" class="sidebar-nav" aria-label="詳細・自由分析"></nav></section>
+            </div>
+        </aside>
+        <div id="reportMain" class="report-main">
+        <div id="reportOverview" class="topbar">
             <div>
                 <div class="eyebrow">Valid Application Analysis</div>
                 <h1 id="reportTitle">有効応募分析レポート</h1>
@@ -670,28 +778,9 @@
             期間は分析レポート上で自由に絞り込めます。
         </div>
 
-        <div class="period-panel">
-            <div class="period-head">
-                <div>
-                    <div class="period-title">分析期間</div>
-                    <div id="viewerPeriodRangeNote" class="period-note">応募データの全期間を読み込んでいます。</div>
-                </div>
-                <button id="viewerAllPeriodBtn" type="button" class="period-action">全期間に戻す</button>
-            </div>
-            <div class="period-controls">
-                <div class="period-field">
-                    <label for="viewerPeriodStart">開始日</label>
-                    <input id="viewerPeriodStart" type="date">
-                </div>
-                <div class="period-field">
-                    <label for="viewerPeriodEnd">終了日</label>
-                    <input id="viewerPeriodEnd" type="date">
-                </div>
-                <button id="viewerApplyPeriodBtn" type="button" class="period-action primary">この期間で集計</button>
-            </div>
-        </div>
 
-        <section class="grid-kpi">
+
+        <section id="kpiSection" class="grid-kpi">
             <div class="card kpi">
                 <div class="kpi-label">分析対象応募数</div>
                 <div id="kpiTotal" class="kpi-value">-</div>
@@ -734,18 +823,6 @@
                     <tbody id="ageTableBody"></tbody>
                 </table>
             </div>
-        </section>
-
-        <section id="basicAnalysisIndexSection" class="card section">
-            <div class="section-head">
-                <div>
-                    <h2>基本分析</h2>
-                    <div class="section-note">
-                        各分析表は独立して横スクロールできます。
-                    </div>
-                </div>
-            </div>
-            <nav id="analysisNav" class="analysis-nav"></nav>
         </section>
 
         <div id="basicCrossTables"></div>
@@ -840,6 +917,7 @@
 </details>
 
 <div class="footer">有効応募分析｜分析レポート</div>
+        </div>
     </main>
 
     <script src="./common-masters-v1.js"></script>
@@ -1181,6 +1259,71 @@
                 .replace(/'/g, "&#039;");
         }
 
+
+
+const VIEWER_UI_RELEASE = "2026.09.03-viewer-ui-v25-sidebar-table-ux";
+const VIEWER_SIDEBAR_STATE_KEY = "validApplicationAnalysis.viewerSidebarCollapsed.v1";
+const BASIC_ANALYSIS_SHORT_LABELS = Object.freeze({
+  "status":"対応状況","month":"応募月","media":"媒体","enterprise":"企業","name-script":"氏名文字","residence":"居住地","job-category":"職種","employment":"雇用形態","job-location-name":"勤務地名","job-prefecture":"勤務地県","prefecture-match":"居住一致","job-keyword":"仕事名KW","job-full-keyword":"フルKW","recruit-background":"募集背景","month-day":"月内日","weekday":"曜日","hour":"時間帯","hourly-salary":"時給","daily-salary":"日給","monthly-salary":"月給","annual-salary":"年収","text-length":"原稿文字数","main-image":"メイン画像","image-count":"画像枚数","job-video":"動画","indeed-tag-count":"タグ数"
+});
+let viewerSidebarObserver=null;
+function viewerBasicShortLabel(table){ return BASIC_ANALYSIS_SHORT_LABELS[table?.id] || String(table?.label||"").replace(/別$/,""); }
+function setViewerSidebarCollapsed(collapsed,{persist=true}={}){
+  const app=document.getElementById("reportView"),toggle=document.getElementById("viewerSidebarToggle"); if(!app)return;
+  app.classList.toggle("sidebar-collapsed",!!collapsed);
+  if(toggle){ toggle.setAttribute("aria-expanded",collapsed?"false":"true"); toggle.setAttribute("aria-label",collapsed?"サイドバーを表示":"サイドバーを折りたたむ"); toggle.title=collapsed?"サイドバーを表示":"サイドバーを折りたたむ"; }
+  if(persist){ try{localStorage.setItem(VIEWER_SIDEBAR_STATE_KEY,collapsed?"1":"0");}catch(_){} }
+}
+function initializeViewerSidebar(){
+  let collapsed=false; try{collapsed=localStorage.getItem(VIEWER_SIDEBAR_STATE_KEY)==="1";}catch(_){}
+  setViewerSidebarCollapsed(collapsed,{persist:false});
+  document.getElementById("viewerSidebarToggle")?.addEventListener("click",()=>{const app=document.getElementById("reportView");setViewerSidebarCollapsed(!app?.classList.contains("sidebar-collapsed"));});
+  document.getElementById("reportSidebar")?.addEventListener("click",event=>{const button=event.target.closest("button[data-target]"); if(!button)return; const target=document.getElementById(button.dataset.target); if(!target)return; const top=target.getBoundingClientRect().top+window.scrollY-12; window.scrollTo({top:Math.max(0,top),behavior:"smooth"});});
+}
+function setActiveSidebarTarget(targetId){ document.querySelectorAll('#reportSidebar button[data-target]').forEach(button=>button.classList.toggle("active",button.dataset.target===targetId)); }
+function refreshViewerSidebarObserver(){
+  viewerSidebarObserver?.disconnect(); if(!("IntersectionObserver" in window))return;
+  const targets=Array.from(document.querySelectorAll('#reportSidebar button[data-target]')).map(b=>document.getElementById(b.dataset.target)).filter(el=>el&&!el.classList.contains("hidden"));
+  viewerSidebarObserver=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>Math.abs(a.boundingClientRect.top)-Math.abs(b.boundingClientRect.top)); if(visible.length)setActiveSidebarTarget(visible[0].target.id);},{root:null,rootMargin:"-10% 0px -68% 0px",threshold:[0,.05,.2]});
+  targets.forEach(t=>viewerSidebarObserver.observe(t));
+}
+function refreshDetailSidebarNavigation(){
+  const nav=document.getElementById("detailAnalysisNav"),group=document.getElementById("detailSidebarGroup"); if(!nav||!group)return;
+  const candidates=[{id:"noteDetailSection",label:"備考"},{id:"indeedTagDetailSection",label:"Indeedタグ"},{id:"topImageDetailSection",label:"TOP画像"},{id:"customAnalysisSection",label:"カスタム"}];
+  const visible=candidates.filter(x=>{const el=document.getElementById(x.id);return el&&!el.classList.contains("hidden");}); group.classList.toggle("hidden",visible.length===0);
+  nav.innerHTML=visible.map(x=>`<button type="button" class="sidebar-nav-button" data-target="${escapeHtml(x.id)}" title="${escapeHtml(x.label)}">${escapeHtml(x.label)}</button>`).join("");
+}
+function parseTableSortValue(cell){
+  const raw=String(cell?.dataset?.sortValue??cell?.textContent??"").replace(/\u00a0/g," ").trim(); if(!raw)return{kind:"empty",value:""}; const compact=raw.replace(/,/g,"");
+  const month=compact.match(/^(\d{4})[\/\-年](\d{1,2})/); if(month)return{kind:"number",value:Number(month[1])*100+Number(month[2])};
+  const num=compact.match(/^[-+]?\d+(?:\.\d+)?/); if(num)return{kind:"number",value:Number(num[0])}; return{kind:"text",value:raw.toLocaleLowerCase("ja")};
+}
+function compareTableCells(aCell,bCell,direction){
+  const a=parseTableSortValue(aCell),b=parseTableSortValue(bCell); if(a.kind==="empty"&&b.kind!=="empty")return 1;if(b.kind==="empty"&&a.kind!=="empty")return-1;
+  let result=(a.kind==="number"&&b.kind==="number")?a.value-b.value:String(a.value).localeCompare(String(b.value),"ja",{numeric:true,sensitivity:"base"}); return direction==="desc"?-result:result;
+}
+function resetTableSortIndicators(table,activeTh=null,state="none"){
+  table.querySelectorAll("thead th[data-sortable='true']").forEach(th=>{th.classList.remove("sort-desc","sort-asc");th.setAttribute("aria-sort","none");const i=th.querySelector(".table-sort-indicator");if(i)i.textContent="↕";});
+  if(!activeTh||state==="none")return; activeTh.classList.add(state==="desc"?"sort-desc":"sort-asc");activeTh.setAttribute("aria-sort",state==="desc"?"descending":"ascending");const i=activeTh.querySelector(".table-sort-indicator");if(i)i.textContent=state==="desc"?"↓":"↑";
+}
+function sortTableByHeader(table,th){
+  const tbody=table.tBodies?.[0];if(!tbody)return;const col=Array.from(th.parentElement.children).indexOf(th);if(col<0)return;
+  const currentCol=Number(table.dataset.sortColumn),currentState=table.dataset.sortState||"none";let next="desc";if(currentCol===col)next=currentState==="desc"?"asc":currentState==="asc"?"none":"desc";
+  const rows=Array.from(tbody.rows),fixed=rows.filter(r=>r.classList.contains("total-row")||r.classList.contains("composition-row")),normal=rows.filter(r=>!fixed.includes(r));
+  if(next==="none"){normal.sort((a,b)=>Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0));table.dataset.sortColumn="";table.dataset.sortState="none";}else{normal.sort((a,b)=>compareTableCells(a.cells[col],b.cells[col],next));table.dataset.sortColumn=String(col);table.dataset.sortState=next;}
+  [...normal,...fixed.sort((a,b)=>Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0))].forEach(r=>tbody.appendChild(r));resetTableSortIndicators(table,th,next);
+}
+function prepareTableRowLabels(table){
+  const tbody=table.tBodies?.[0];if(!tbody)return;Array.from(tbody.rows).forEach((row,index)=>{row.dataset.originalOrder=String(index);const first=row.cells?.[0];if(!first||first.querySelector(".row-label-text")||first.children.length>0)return;const text=String(first.textContent||"").trim();first.textContent="";const span=document.createElement("span");span.className="row-label-text";span.textContent=text;span.dataset.fullText=text;first.appendChild(span);});
+}
+function enhanceReportTable(table){
+  if(!table)return;prepareTableRowLabels(table);Array.from(table.querySelectorAll("thead th")).forEach(th=>{const header=String(th.childNodes?.[0]?.textContent||th.textContent||"").trim();if(["比率","プレビュー"].includes(header)){th.dataset.sortable="false";return;}th.dataset.sortable="true";if(!th.querySelector(".table-sort-indicator")){const i=document.createElement("span");i.className="table-sort-indicator";i.setAttribute("aria-hidden","true");i.textContent="↕";th.appendChild(i);}if(th.dataset.sortBound!=="1"){th.dataset.sortBound="1";th.setAttribute("aria-sort","none");th.addEventListener("click",()=>sortTableByHeader(table,th));}});table.dataset.sortColumn="";table.dataset.sortState="none";resetTableSortIndicators(table);
+}
+function enhanceReportTables(root=document){root.querySelectorAll(".table-wrap table").forEach(enhanceReportTable);}
+function ensureRowLabelTooltip(){let t=document.getElementById("rowLabelTooltip");if(t)return t;t=document.createElement("div");t.id="rowLabelTooltip";t.className="row-label-tooltip";t.setAttribute("role","tooltip");document.body.appendChild(t);return t;}
+function positionRowLabelTooltip(t,event){const margin=14,w=t.offsetWidth||240,h=t.offsetHeight||40;let left=event.clientX+12,top=event.clientY+14;if(left+w+margin>innerWidth)left=event.clientX-w-12;if(top+h+margin>innerHeight)top=event.clientY-h-12;t.style.left=`${Math.max(margin,left)}px`;t.style.top=`${Math.max(margin,top)}px`;}
+function initializeRowLabelTooltip(){const t=ensureRowLabelTooltip();document.addEventListener("mouseover",e=>{const label=e.target.closest(".row-label-text");if(!label||label.scrollWidth<=label.clientWidth+1)return;t.textContent=label.dataset.fullText||label.textContent||"";t.classList.add("visible");positionRowLabelTooltip(t,e);});document.addEventListener("mousemove",e=>{if(t.classList.contains("visible"))positionRowLabelTooltip(t,e);});document.addEventListener("mouseout",e=>{if(e.target.closest(".row-label-text"))t.classList.remove("visible");});}
+function initializeViewerDesktopUx(){initializeViewerSidebar();initializeRowLabelTooltip();}
 
 function renderCrossTable(table, core) {
     const agg = table.aggregate;
@@ -1604,6 +1747,8 @@ function renderCustomResult(result, core) {
             </table>
         </div>
     `;
+
+    enhanceReportTables(output);
 }
 
 function initializeCustomAnalysis(data, viewerResult, core) {
@@ -2068,7 +2213,7 @@ function renderReport(data) {
                 )
         );
 
-    document.getElementById("basicAnalysisIndexSection")
+    document.getElementById("basicSidebarGroup")
         ?.classList.toggle(
             "hidden",
             visibleBasicTables.length === 0
@@ -2077,31 +2222,10 @@ function renderReport(data) {
     const nav =
         document.getElementById("analysisNav");
 
-    const basicSectionNote =
-        nav.closest(".section")?.querySelector(".section-note");
-
-    if (basicSectionNote) {
-        basicSectionNote.textContent =
-            `表示設定に基づき ${visibleBasicTables.length}表を表示しています。各表は独立して横スクロールできます。`;
-    }
-
     nav.innerHTML =
         visibleBasicTables.map(table => `
-            <button type="button" data-target="analysis-${escapeHtml(table.id)}">${escapeHtml(table.label)}</button>
+            <button type="button" data-target="analysis-${escapeHtml(table.id)}" title="${escapeHtml(table.label)}">${escapeHtml(viewerBasicShortLabel(table))}</button>
         `).join("");
-
-    nav.querySelectorAll("button[data-target]")
-        .forEach(button => {
-            button.addEventListener("click", () => {
-                const target =
-                    document.getElementById(button.dataset.target);
-
-                target?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-            });
-        });
 
     const container =
         document.getElementById("basicCrossTables");
@@ -2156,6 +2280,10 @@ function renderReport(data) {
             core
         );
     }
+
+    refreshDetailSidebarNavigation();
+    enhanceReportTables(document.getElementById("reportMain"));
+    requestAnimationFrame(refreshViewerSidebarObserver);
 
     stopViewerLoadingTimer();
 
@@ -3735,6 +3863,7 @@ function stopViewerLoadingTimer() {
         document.getElementById("reloadBtn")
             .addEventListener("click", loadReport);
 
+        initializeViewerDesktopUx();
         loadReport();
     </script>
 </body>
