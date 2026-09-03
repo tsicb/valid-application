@@ -435,7 +435,7 @@
 const API_URL =
     "https://script.google.com/macros/s/AKfycbwS_-ptDyhVk5yrNtRB8I32WUJen-xdjKUtp-Rf7Dbdhhg4V9Vw3gneD9K7ErZgP_Y/exec";
 const SCHEMA_VERSION = "3.0";
-const PAGES_VERSION = "2026.09.03-etl-v2.20-fast-handoff";
+const PAGES_VERSION = "2026.09.03-etl-v2.22-prerelease-clean";
 const ACCESS_KEY_STORAGE_KEY =
     "validApplicationAnalysis.sheetsAccessKey";
 const RECENT_REPORTS_STORAGE_KEY =
@@ -1028,8 +1028,6 @@ async function callApi(
             pageUrl("report.html"),
         manageBaseUrl:
             pageUrl("index.html"),
-        maintenanceBaseUrl:
-            pageUrl("maintenance.html"),
         viewerAdminBaseUrl:
             pageUrl("viewer-admin.html"),
         ...extra

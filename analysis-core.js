@@ -287,17 +287,57 @@ function displayLimit(value, fallback = 50) {
         : fallback;
 }
 
-function buildTagMaster(dataset) {
-    const rows = datasetObjects(dataset);
-    const map = {};
+function commonMasters() {
+    return global.VAA_COMMON_MASTERS || {};
+}
 
-    rows.forEach(row => {
-        const code = s(row["コード"]);
-        if (!code) return;
-        map[code] = s(row["表示名"]) || code;
-    });
+function commonMasterMap(key) {
+    const map = commonMasters()?.[key];
+    return map && typeof map === "object" ? map : {};
+}
 
-    return map;
+function resolveCommonCode(map, value) {
+    const code = s(value);
+    if (!code) return "";
+    return s(map[code]) || code;
+}
+
+function resolveCommonCodes(map, value) {
+    return splitCodes(value).map(code => resolveCommonCode(map, code)).filter(Boolean).join("::");
+}
+
+function hydrateJobCommonLabels(job) {
+    if (!job || typeof job !== "object") return job;
+    const salaryMap = commonMasterMap("salaryTypeMap");
+    const featureMap = commonMasterMap("featureCodeMap");
+    const indeedMap = commonMasterMap("indeedTagMap");
+
+    job["給与区分"] =
+        resolveCommonCode(
+            salaryMap,
+            job["給与区分コード"]
+        );
+
+    job["特徴"] =
+        resolveCommonCodes(
+            featureMap,
+            job["特徴コード"]
+        );
+
+    job["Indeed求人タグ"] =
+        resolveCommonCodes(
+            indeedMap,
+            job["Indeed求人タグコード"]
+        );
+    return job;
+}
+
+function buildTagMaster() {
+    return {
+        ...commonMasterMap(
+            "indeedTagMap"
+        )
+    };
 }
 
 function buildImageMap(dataset) {
@@ -354,6 +394,8 @@ function buildImageMap(dataset) {
 
         const jobs = datasetObjects(
             viewerResponse?.datasets?.jobAnalysisMaster || {}
+        ).map(
+            hydrateJobCommonLabels
         );
 
         const keywordMaster = readKeywordMaster(

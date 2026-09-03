@@ -842,6 +842,7 @@
 <div class="footer">有効応募分析｜分析レポート</div>
     </main>
 
+    <script src="./common-masters-v1.js"></script>
     <script src="./analysis-core.js"></script>
     <script>
         "use strict";
@@ -2383,6 +2384,8 @@ function renderViewerPerformance(
 
 const VIEWER_FLOW_HANDOFF_STORAGE_KEY =
     "validApplicationAnalysis.viewerFlowHandoff.v1";
+const EXPECTED_COMMON_MASTER_VERSION =
+    "2026.09.03-common-v1";
 const RECENT_REPORTS_STORAGE_KEY =
     "validApplicationAnalysis.recentReports.v1";
 const INTERNAL_ACCESS_KEY_STORAGE_KEY =
@@ -2929,13 +2932,6 @@ async function fetchManagedConfigForFastHandoff(
                         manageBaseUrl:
                             new URL(
                                 "index.html",
-                                window.location.href
-                            ).href
-                                .split("#")[0]
-                                .split("?")[0],
-                        maintenanceBaseUrl:
-                            new URL(
-                                "maintenance.html",
                                 window.location.href
                             ).href
                                 .split("#")[0]
@@ -3657,6 +3653,17 @@ function stopViewerLoadingTimer() {
             startViewerLoading(
                 urlName
             );
+
+            if (
+                !window.VAA_COMMON_MASTERS ||
+                window.VAA_COMMON_MASTERS.version !==
+                    EXPECTED_COMMON_MASTER_VERSION
+            ) {
+                showError(
+                    "共通マスタを読み込めませんでした。ページを再読み込みしてください。"
+                );
+                return;
+            }
 
             document.getElementById("errorView").classList.add("hidden");
             document.getElementById("reportView").classList.add("hidden");
