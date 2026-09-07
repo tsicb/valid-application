@@ -1256,6 +1256,256 @@
         @media (max-width:1180px) { .custom-controls-v27 { grid-template-columns:repeat(2,minmax(170px,1fr)); } }
         @media (max-width:720px) { .custom-controls-v27 { grid-template-columns:1fr; } }
 
+    
+        /* =========================================================
+           Viewer UI v28
+           Robust table sticky for local horizontal scrolling
+           ========================================================= */
+
+        /* Make the sticky analysis-condition block visually distinct. */
+        #analysisConditionSidebarGroup {
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(237,248,253,.995) 0%,
+                    rgba(247,252,254,.99) 72%,
+                    rgba(255,255,255,.97) 100%
+                );
+            border:
+                1px solid
+                rgba(20,142,204,.14);
+            border-left:
+                3px solid
+                var(--viewer-brand-blue);
+            border-radius:
+                11px;
+            padding:
+                10px 8px 12px;
+            margin:
+                -3px -4px 16px;
+            box-shadow:
+                0 8px 18px -16px
+                rgba(13,103,149,.58);
+        }
+
+        #analysisConditionSidebarGroup
+        .sidebar-group-title {
+            color:
+                var(--viewer-brand-blue-dark);
+        }
+
+        #analysisConditionSidebarGroup
+        .viewer-condition-button {
+            background:
+                rgba(255,255,255,.94);
+        }
+
+        /* Keep each table's independent horizontal scrollbar. */
+        .table-wrap {
+            position:
+                relative;
+            overflow-x:
+                auto;
+            overscroll-behavior-x:
+                contain;
+            scrollbar-gutter:
+                stable;
+        }
+
+        /* Existing source header remains in normal document flow.
+           Vertical stickiness is provided by a synced fixed clone. */
+        .table-wrap thead th {
+            position:
+                static;
+            top:
+                auto;
+        }
+
+        /* First column remains visible during local horizontal scrolling. */
+        .table-wrap thead th:first-child,
+        .table-wrap tbody td:first-child {
+            position:
+                sticky;
+            left:
+                0;
+            background-clip:
+                padding-box;
+        }
+
+        .table-wrap tbody td:first-child {
+            z-index:
+                8;
+            background:
+                #fff;
+            box-shadow:
+                1px 0 0 #dce8ee;
+        }
+
+        .table-wrap thead th:first-child {
+            z-index:
+                14;
+            background:
+                #f7fbfd;
+            box-shadow:
+                1px 0 0 #dce8ee,
+                inset 0 -1px 0 #dce7ed;
+        }
+
+        .table-wrap tbody tr.total-row td:first-child,
+        .table-wrap tbody tr.composition-row td:first-child {
+            background:
+                #f8fafc;
+        }
+
+        .table-wrap tbody tr:not(.total-row):not(.composition-row):hover > td:first-child {
+            background:
+                var(--viewer-brand-blue-soft)
+                !important;
+        }
+
+        /* Fixed cloned header avoids the overflow-x/sticky conflict. */
+        .table-sticky-header {
+            position:
+                fixed;
+            z-index:
+                70;
+            top:
+                0;
+            left:
+                0;
+            display:
+                none;
+            overflow:
+                hidden;
+            pointer-events:
+                none;
+            background:
+                #f7fbfd;
+            border-bottom:
+                1px solid
+                #dce7ed;
+            box-shadow:
+                0 7px 16px -14px
+                rgba(13,103,149,.55);
+        }
+
+        .table-sticky-header.visible {
+            display:
+                block;
+            pointer-events:
+                auto;
+        }
+
+        .table-sticky-header-track {
+            position:
+                relative;
+            will-change:
+                transform;
+        }
+
+        .table-sticky-header table {
+            margin:
+                0;
+            border-collapse:
+                separate;
+            border-spacing:
+                0;
+            table-layout:
+                fixed;
+            background:
+                #f7fbfd;
+        }
+
+        .table-sticky-header thead th {
+            position:
+                static;
+            top:
+                auto;
+            background:
+                #f7fbfd;
+            box-shadow:
+                inset 0 -1px 0
+                #dce7ed;
+            white-space:
+                normal;
+        }
+
+        /* Fixed corner cell overlays the horizontally translated header track. */
+        .table-sticky-corner {
+            position:
+                absolute;
+            z-index:
+                4;
+            top:
+                0;
+            left:
+                0;
+            display:
+                flex;
+            align-items:
+                center;
+            overflow:
+                hidden;
+            padding:
+                8px 10px;
+            background:
+                #f3f9fc;
+            color:
+                #475569;
+            border-right:
+                1px solid
+                #dce8ee;
+            border-bottom:
+                1px solid
+                #dce7ed;
+            font-size:
+                11px;
+            font-weight:
+                800;
+            text-align:
+                left;
+            cursor:
+                pointer;
+        }
+
+        .table-sticky-corner:hover {
+            background:
+                #eef8fc;
+            color:
+                var(--viewer-brand-blue-dark);
+        }
+
+        /* Sort state on the clone should look the same as the source. */
+        .table-sticky-header th.sort-desc,
+        .table-sticky-header th.sort-asc {
+            color:
+                var(--viewer-brand-blue-dark);
+            background:
+                var(--viewer-brand-blue-soft);
+        }
+
+        /* Custom Pivot: only the first row-axis column sticks.
+           Axes 2/3 continue with the horizontal scroll. */
+        #customResult
+        .custom-table
+        thead th:first-child,
+        #customResult
+        .custom-table
+        tbody td:first-child {
+            position:
+                sticky;
+            left:
+                0;
+        }
+
+        /* In-page jumps should land just below the viewport edge. */
+        .section[id],
+        #kpiSection,
+        #reportOverview {
+            scroll-margin-top:
+                14px;
+        }
+
     </style>
 </head>
 <body>
@@ -2479,7 +2729,579 @@ function prepareTableRowLabels(table){
 function enhanceReportTable(table){
   if(!table)return;prepareTableRowLabels(table);Array.from(table.querySelectorAll("thead th")).forEach(th=>{const header=String(th.childNodes?.[0]?.textContent||th.textContent||"").trim();if(["比率","プレビュー"].includes(header)){th.dataset.sortable="false";return;}th.dataset.sortable="true";if(!th.querySelector(".table-sort-indicator")){const i=document.createElement("span");i.className="table-sort-indicator";i.setAttribute("aria-hidden","true");i.textContent="↕";th.appendChild(i);}if(th.dataset.sortBound!=="1"){th.dataset.sortBound="1";th.setAttribute("aria-sort","none");th.addEventListener("click",()=>sortTableByHeader(table,th));}});table.dataset.sortColumn="";table.dataset.sortState="none";resetTableSortIndicators(table);
 }
-function enhanceReportTables(root=document){root.querySelectorAll(".table-wrap table").forEach(enhanceReportTable);}
+const stickyTableControllers =
+    new Set();
+
+let stickyTableScrollRaf =
+    0;
+
+function stickyHeaderTopOffset() {
+    return 0;
+}
+
+function cleanupStickyTableControllers() {
+    Array.from(
+        stickyTableControllers
+    )
+        .forEach(
+            controller => {
+                if (
+                    !document.body.contains(
+                        controller.wrap
+                    )
+                ) {
+                    controller.overlay
+                        ?.remove();
+
+                    stickyTableControllers
+                        .delete(
+                            controller
+                        );
+                }
+            }
+        );
+}
+
+function copyStickyHeaderGeometry(
+    controller
+) {
+    const {
+        table,
+        wrap,
+        overlay,
+        track,
+        cloneTable,
+        corner
+    } = controller;
+
+    if (
+        !table?.tHead ||
+        !wrap ||
+        !overlay
+    ) {
+        return;
+    }
+
+    const wrapRect =
+        wrap.getBoundingClientRect();
+
+    const sourceHead =
+        table.tHead;
+
+    const sourceRows =
+        Array.from(
+            sourceHead.rows
+        );
+
+    const cloneRows =
+        Array.from(
+            cloneTable
+                .tHead
+                ?.rows ||
+            []
+        );
+
+    const headerRect =
+        sourceHead
+            .getBoundingClientRect();
+
+    overlay.style.left =
+        `${Math.round(
+            wrapRect.left
+        )}px`;
+
+    overlay.style.width =
+        `${Math.round(
+            wrapRect.width
+        )}px`;
+
+    overlay.style.height =
+        `${Math.ceil(
+            headerRect.height
+        )}px`;
+
+    cloneTable.style.width =
+        `${Math.max(
+            table.scrollWidth,
+            wrap.scrollWidth
+        )}px`;
+
+    sourceRows.forEach(
+        (sourceRow, rowIndex) => {
+            const cloneRow =
+                cloneRows[
+                    rowIndex
+                ];
+
+            if (!cloneRow) {
+                return;
+            }
+
+            Array.from(
+                sourceRow.cells
+            )
+                .forEach(
+                    (sourceCell, cellIndex) => {
+                        const cloneCell =
+                            cloneRow.cells[
+                                cellIndex
+                            ];
+
+                        if (!cloneCell) {
+                            return;
+                        }
+
+                        const width =
+                            sourceCell
+                                .getBoundingClientRect()
+                                .width;
+
+                        cloneCell.style.width =
+                            `${width}px`;
+
+                        cloneCell.style.minWidth =
+                            `${width}px`;
+
+                        cloneCell.style.maxWidth =
+                            `${width}px`;
+
+                        cloneCell.style.height =
+                            `${sourceCell.getBoundingClientRect().height}px`;
+                    }
+                );
+        }
+    );
+
+    const firstSourceCell =
+        sourceHead.rows?.[0]
+            ?.cells?.[0];
+
+    if (firstSourceCell) {
+        const firstRect =
+            firstSourceCell
+                .getBoundingClientRect();
+
+        corner.style.width =
+            `${firstRect.width}px`;
+
+        corner.style.height =
+            `${headerRect.height}px`;
+
+        corner.innerHTML =
+            firstSourceCell.innerHTML;
+
+        corner.className =
+            "table-sticky-corner";
+
+        if (
+            firstSourceCell
+                .classList
+                .contains(
+                    "sort-desc"
+                )
+        ) {
+            corner.classList.add(
+                "sort-desc"
+            );
+        }
+
+        if (
+            firstSourceCell
+                .classList
+                .contains(
+                    "sort-asc"
+                )
+        ) {
+            corner.classList.add(
+                "sort-asc"
+            );
+        }
+
+        corner.style.cursor =
+            firstSourceCell
+                .dataset
+                .sortable ===
+                "true"
+                ? "pointer"
+                : "default";
+    }
+
+    track.style.transform =
+        `translateX(${-wrap.scrollLeft}px)`;
+}
+
+function refreshStickyHeaderClone(
+    controller
+) {
+    const {
+        table,
+        cloneTable
+    } = controller;
+
+    if (
+        !table?.tHead ||
+        !cloneTable
+    ) {
+        return;
+    }
+
+    cloneTable.innerHTML =
+        "";
+
+    cloneTable.appendChild(
+        table.tHead.cloneNode(
+            true
+        )
+    );
+
+    cloneTable
+        .querySelectorAll(
+            "[id]"
+        )
+        .forEach(
+            element =>
+                element.removeAttribute(
+                    "id"
+                )
+        );
+
+    copyStickyHeaderGeometry(
+        controller
+    );
+}
+
+function updateStickyHeaderVisibility(
+    controller
+) {
+    const {
+        table,
+        wrap,
+        overlay
+    } = controller;
+
+    if (
+        !document.body.contains(
+            wrap
+        ) ||
+        !table?.tHead
+    ) {
+        return;
+    }
+
+    const top =
+        stickyHeaderTopOffset();
+
+    const headRect =
+        table.tHead
+            .getBoundingClientRect();
+
+    const wrapRect =
+        wrap
+            .getBoundingClientRect();
+
+    const headerHeight =
+        Math.max(
+            1,
+            headRect.height
+        );
+
+    const shouldShow =
+        headRect.top <
+            top &&
+        wrapRect.bottom >
+            top +
+            headerHeight;
+
+    overlay.classList.toggle(
+        "visible",
+        shouldShow
+    );
+
+    if (shouldShow) {
+        copyStickyHeaderGeometry(
+            controller
+        );
+    }
+}
+
+function updateAllStickyHeaders() {
+    stickyTableScrollRaf =
+        0;
+
+    cleanupStickyTableControllers();
+
+    stickyTableControllers
+        .forEach(
+            updateStickyHeaderVisibility
+        );
+}
+
+function scheduleStickyHeaderUpdate() {
+    if (
+        stickyTableScrollRaf
+    ) {
+        return;
+    }
+
+    stickyTableScrollRaf =
+        requestAnimationFrame(
+            updateAllStickyHeaders
+        );
+}
+
+function installStickyHeader(
+    table
+) {
+    if (
+        !table ||
+        !table.tHead
+    ) {
+        return;
+    }
+
+    const wrap =
+        table.closest(
+            ".table-wrap"
+        );
+
+    if (
+        !wrap ||
+        wrap.dataset
+            .stickyHeaderInstalled ===
+            "1"
+    ) {
+        return;
+    }
+
+    wrap.dataset
+        .stickyHeaderInstalled =
+        "1";
+
+    const overlay =
+        document.createElement(
+            "div"
+        );
+
+    overlay.className =
+        "table-sticky-header";
+
+    overlay.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    const track =
+        document.createElement(
+            "div"
+        );
+
+    track.className =
+        "table-sticky-header-track";
+
+    const cloneTable =
+        document.createElement(
+            "table"
+        );
+
+    cloneTable.className =
+        table.className;
+
+    const corner =
+        document.createElement(
+            "div"
+        );
+
+    corner.className =
+        "table-sticky-corner";
+
+    track.appendChild(
+        cloneTable
+    );
+
+    overlay.appendChild(
+        track
+    );
+
+    overlay.appendChild(
+        corner
+    );
+
+    document.body.appendChild(
+        overlay
+    );
+
+    const controller = {
+        table,
+        wrap,
+        overlay,
+        track,
+        cloneTable,
+        corner
+    };
+
+    stickyTableControllers.add(
+        controller
+    );
+
+    refreshStickyHeaderClone(
+        controller
+    );
+
+    wrap.addEventListener(
+        "scroll",
+        () => {
+            track.style.transform =
+                `translateX(${-wrap.scrollLeft}px)`;
+
+            scheduleStickyHeaderUpdate();
+        },
+        {
+            passive:
+                true
+        }
+    );
+
+    overlay.addEventListener(
+        "click",
+        event => {
+            const cloneTh =
+                event.target.closest(
+                    "th"
+                );
+
+            if (cloneTh) {
+                const cloneRow =
+                    cloneTh.parentElement;
+
+                const rowIndex =
+                    Array.from(
+                        cloneTable
+                            .tHead
+                            .rows
+                    ).indexOf(
+                        cloneRow
+                    );
+
+                const cellIndex =
+                    Array.from(
+                        cloneRow.cells
+                    ).indexOf(
+                        cloneTh
+                    );
+
+                const sourceTh =
+                    table.tHead
+                        .rows[
+                            rowIndex
+                        ]
+                        ?.cells[
+                            cellIndex
+                        ];
+
+                if (
+                    sourceTh?.dataset
+                        ?.sortable ===
+                    "true"
+                ) {
+                    sourceTh.click();
+
+                    requestAnimationFrame(
+                        () =>
+                            refreshStickyHeaderClone(
+                                controller
+                            )
+                    );
+                }
+
+                return;
+            }
+
+            if (
+                event.target.closest(
+                    ".table-sticky-corner"
+                )
+            ) {
+                const sourceTh =
+                    table.tHead
+                        .rows?.[0]
+                        ?.cells?.[0];
+
+                if (
+                    sourceTh?.dataset
+                        ?.sortable ===
+                    "true"
+                ) {
+                    sourceTh.click();
+
+                    requestAnimationFrame(
+                        () =>
+                            refreshStickyHeaderClone(
+                                controller
+                            )
+                    );
+                }
+            }
+        }
+    );
+
+    table.tHead.addEventListener(
+        "click",
+        () => {
+            requestAnimationFrame(
+                () =>
+                    refreshStickyHeaderClone(
+                        controller
+                    )
+            );
+        }
+    );
+
+    if (
+        "ResizeObserver" in
+        window
+    ) {
+        const resizeObserver =
+            new ResizeObserver(
+                () => {
+                    refreshStickyHeaderClone(
+                        controller
+                    );
+
+                    scheduleStickyHeaderUpdate();
+                }
+            );
+
+        resizeObserver.observe(
+            table
+        );
+
+        resizeObserver.observe(
+            wrap
+        );
+
+        controller.resizeObserver =
+            resizeObserver;
+    }
+
+    scheduleStickyHeaderUpdate();
+}
+
+function enhanceReportTables(root=document){
+    root.querySelectorAll(
+        ".table-wrap table"
+    )
+        .forEach(
+            table => {
+                enhanceReportTable(
+                    table
+                );
+
+                installStickyHeader(
+                    table
+                );
+            }
+        );
+}
 function ensureRowLabelTooltip(){let t=document.getElementById("rowLabelTooltip");if(t)return t;t=document.createElement("div");t.id="rowLabelTooltip";t.className="row-label-tooltip";t.setAttribute("role","tooltip");document.body.appendChild(t);return t;}
 function positionRowLabelTooltip(t,event){const margin=14,w=t.offsetWidth||240,h=t.offsetHeight||40;let left=event.clientX+12,top=event.clientY+14;if(left+w+margin>innerWidth)left=event.clientX-w-12;if(top+h+margin>innerHeight)top=event.clientY-h-12;t.style.left=`${Math.max(margin,left)}px`;t.style.top=`${Math.max(margin,top)}px`;}
 function initializeRowLabelTooltip(){const t=ensureRowLabelTooltip();document.addEventListener("mouseover",e=>{const label=e.target.closest(".row-label-text");if(!label||label.scrollWidth<=label.clientWidth+1)return;t.textContent=label.dataset.fullText||label.textContent||"";t.classList.add("visible");positionRowLabelTooltip(t,e);});document.addEventListener("mousemove",e=>{if(t.classList.contains("visible"))positionRowLabelTooltip(t,e);});document.addEventListener("mouseout",e=>{if(e.target.closest(".row-label-text"))t.classList.remove("visible");});}
@@ -2488,6 +3310,24 @@ function initializeViewerDesktopUx(){
     initializeRowLabelTooltip();
     initializeBucketControls();
     initializeViewerAnalysisPickers();
+
+    window.addEventListener(
+        "scroll",
+        scheduleStickyHeaderUpdate,
+        {
+            passive:
+                true
+        }
+    );
+
+    window.addEventListener(
+        "resize",
+        scheduleStickyHeaderUpdate,
+        {
+            passive:
+                true
+        }
+    );
 }
 
 
@@ -3771,13 +4611,6 @@ function periodLabel() {
 }
 
 function periodSummaryLabel() {
-    if (
-        !currentViewerPeriod.start &&
-        !currentViewerPeriod.end
-    ) {
-        return "全期間";
-    }
-
     const start =
         currentViewerPeriod
             .start ||
@@ -3789,6 +4622,20 @@ function periodSummaryLabel() {
             .end ||
         currentViewerBounds
             .end;
+
+    if (
+        !currentViewerPeriod.start &&
+        !currentViewerPeriod.end
+    ) {
+        if (
+            start &&
+            end
+        ) {
+            return `全期間（${formatYmdLabel(start)} ～ ${formatYmdLabel(end)}）`;
+        }
+
+        return "全期間";
+    }
 
     return currentViewerPeriod
         .mode ===
