@@ -370,6 +370,7 @@ function buildImageMap(dataset) {
             hour: positiveInt(settings["応募時間帯幅"], 6),
             text: positiveInt(settings["求人原稿文字数幅"], 300),
             tagCount: positiveInt(settings["Indeed求人タグ数幅"], 5),
+            imageCount: positiveInt(settings["求人画像枚数幅"], 1),
             hourlySalary: positiveInt(settings["時給下限幅"], 50),
             dailySalary: positiveInt(settings["日給下限幅"], 1000),
             monthlySalary: positiveInt(settings["月給下限幅"], 50000),
@@ -950,10 +951,26 @@ function buildImageMap(dataset) {
             baseLabel: "求人突合済応募",
             records: matched,
             sort: "numericAsc",
+            conditionText: `バケット幅: ${w.imageCount}枚`,
             categoryFn: record => {
                 let value = n(record.job?.["求人画像枚数"]);
                 if (value === null) value = 0;
-                return category(`${value}枚`, value);
+
+                if (w.imageCount <= 1) {
+                    return category(`${value}枚`, value);
+                }
+
+                const rangeStart =
+                    Math.floor(value / w.imageCount) *
+                    w.imageCount;
+
+                const rangeEnd =
+                    rangeStart + w.imageCount - 1;
+
+                return category(
+                    `${rangeStart}-${rangeEnd}枚`,
+                    rangeStart
+                );
             }
         });
 

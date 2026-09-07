@@ -668,6 +668,561 @@
         @media(max-width:980px){ :root{--viewer-sidebar-width:220px;--viewer-row-label-width:180px;} .sidebar-nav,.analysis-nav{grid-template-columns:1fr;} }
         @media(max-width:720px){ .report-sidebar{width:var(--viewer-sidebar-collapsed-width);} .report-main{margin-left:var(--viewer-sidebar-collapsed-width);padding-inline:10px;} .report-sidebar .sidebar-brand,.report-sidebar .sidebar-content{display:none;} .report-sidebar .sidebar-header{justify-content:center;padding-inline:8px;} }
 
+    
+        /* =========================================================
+           Viewer UI v26
+           Sidebar legibility / grouped navigation / analysis controls
+           ========================================================= */
+        .report-sidebar,
+        .report-sidebar button,
+        .report-sidebar input,
+        .report-sidebar select {
+            font-family:
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                "Yu Gothic UI",
+                "Yu Gothic",
+                Meiryo,
+                sans-serif;
+        }
+
+        .sidebar-group-title {
+            padding-bottom: 7px;
+            color: #526576;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .045em;
+        }
+
+        .sidebar-nav-button,
+        .analysis-nav button {
+            min-height: 31px;
+            padding: 6px 7px;
+            font-size: 11.5px;
+            font-weight: 600;
+            line-height: 1.34;
+            letter-spacing: 0;
+        }
+
+        .analysis-nav {
+            display: block;
+        }
+
+        .sidebar-analysis-subgroup {
+            margin-bottom: 11px;
+        }
+
+        .sidebar-analysis-subgroup:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar-analysis-subgroup-title {
+            margin: 0 3px 5px;
+            color: #8796a4;
+            font-size: 9.5px;
+            font-weight: 650;
+            line-height: 1.3;
+        }
+
+        .sidebar-analysis-subgroup-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .viewer-condition-stack {
+            display: grid;
+            gap: 7px;
+        }
+
+        .viewer-condition-button {
+            width: 100%;
+            display: grid;
+            gap: 3px;
+            padding: 9px 10px;
+            border: 1px solid #d7e5ec;
+            border-radius: 11px;
+            background: #fff;
+            color: #173043;
+            cursor: pointer;
+            text-align: left;
+            transition:
+                border-color .14s ease,
+                background .14s ease,
+                box-shadow .14s ease;
+        }
+
+        .viewer-condition-button:hover {
+            border-color: rgba(20,142,204,.38);
+            background: var(--viewer-brand-blue-soft);
+        }
+
+        .viewer-condition-label {
+            color: #718292;
+            font-size: 9.5px;
+            font-weight: 600;
+        }
+
+        .viewer-condition-value {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--viewer-brand-blue-dark);
+            font-size: 11.5px;
+            font-weight: 650;
+        }
+
+        .section-head-actions {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .bucket-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 7px;
+            border: 1px solid #dce8ee;
+            border-radius: 9px;
+            background: #fff;
+        }
+
+        .bucket-control-label {
+            color: #718292;
+            font-size: 9.5px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .bucket-control select,
+        .bucket-control input {
+            height: 29px;
+            border: 1px solid #cfdee6;
+            border-radius: 7px;
+            background: #fff;
+            color: #173043;
+            font: inherit;
+            font-size: 10.5px;
+        }
+
+        .bucket-control select {
+            min-width: 82px;
+            padding: 0 24px 0 7px;
+        }
+
+        .bucket-control input {
+            width: 76px;
+            padding: 0 7px;
+        }
+
+        .bucket-control input.hidden {
+            display: none;
+        }
+
+        .cross-table {
+            table-layout: fixed;
+        }
+
+        .cross-table col.cross-col-label {
+            width: 210px;
+        }
+
+        .cross-table col.cross-col-age {
+            width: 72px;
+        }
+
+        .cross-table col.cross-col-total {
+            width: 90px;
+        }
+
+        .cross-table col.cross-col-share {
+            width: 100px;
+        }
+
+        .cross-table col.cross-col-target {
+            width: 112px;
+        }
+
+        .cross-table col.cross-col-target-rate {
+            width: 94px;
+        }
+
+        .cross-table col.cross-col-target-share {
+            width: 132px;
+        }
+
+        #customResult .table-wrap {
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        #customResult .custom-table {
+            width: max-content;
+            min-width: 520px;
+            max-width: none;
+            table-layout: auto;
+        }
+
+        #customResult .custom-table th,
+        #customResult .custom-table td {
+            min-width: 112px;
+        }
+
+        #customResult .custom-table th:first-child,
+        #customResult .custom-table td:first-child {
+            width: 210px;
+            min-width: 210px;
+            max-width: 210px;
+        }
+
+        /* Range picker modal */
+        .viewer-modal {
+            position: fixed;
+            z-index: 120;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: rgba(15,23,42,.32);
+            backdrop-filter: blur(2px);
+        }
+
+        .viewer-modal.hidden {
+            display: none;
+        }
+
+        .viewer-modal-dialog {
+            width: min(880px, calc(100vw - 34px));
+            max-height: min(760px, calc(100vh - 34px));
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #d8e6ed;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 26px 70px rgba(15,23,42,.24);
+        }
+
+        .viewer-modal-dialog.age-dialog {
+            width: min(620px, calc(100vw - 34px));
+        }
+
+        .viewer-modal-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 18px 12px;
+            border-bottom: 1px solid #e7eef2;
+        }
+
+        .viewer-modal-title {
+            color: #173043;
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .viewer-modal-note {
+            margin-top: 4px;
+            color: #718292;
+            font-size: 10.5px;
+            line-height: 1.55;
+        }
+
+        .viewer-modal-close {
+            flex: 0 0 34px;
+            width: 34px;
+            height: 34px;
+            border: 1px solid #d8e6ed;
+            border-radius: 9px;
+            background: #fff;
+            color: #526576;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .viewer-modal-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px 12px;
+            padding: 10px 18px;
+            border-bottom: 1px solid #eef3f6;
+            background: #fbfdfe;
+        }
+
+        .viewer-segmented {
+            display: inline-flex;
+            padding: 3px;
+            border: 1px solid #dbe7ed;
+            border-radius: 10px;
+            background: #f4f8fa;
+        }
+
+        .viewer-segmented button {
+            min-width: 72px;
+            padding: 6px 11px;
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 10.5px;
+            font-weight: 650;
+        }
+
+        .viewer-segmented button.active {
+            background: #fff;
+            color: var(--viewer-brand-blue-dark);
+            box-shadow: 0 1px 4px rgba(15,23,42,.09);
+        }
+
+        .viewer-quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .viewer-quick-actions button {
+            padding: 6px 9px;
+            border: 1px solid #d8e6ed;
+            border-radius: 8px;
+            background: #fff;
+            color: #526576;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .viewer-quick-actions button:hover {
+            border-color: rgba(20,142,204,.36);
+            background: var(--viewer-brand-blue-soft);
+        }
+
+        .viewer-picker-status {
+            padding: 9px 18px 0;
+            color: var(--viewer-brand-blue-dark);
+            font-size: 10.5px;
+            font-weight: 650;
+        }
+
+        .viewer-modal-body {
+            min-height: 280px;
+            overflow: auto;
+            padding: 14px 18px 18px;
+        }
+
+        .viewer-modal-foot {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 12px 18px;
+            border-top: 1px solid #e7eef2;
+            background: #fbfdfe;
+        }
+
+        .viewer-modal-foot button {
+            min-width: 90px;
+            min-height: 34px;
+            border: 1px solid #d4e2e9;
+            border-radius: 9px;
+            background: #fff;
+            color: #526576;
+            cursor: pointer;
+            font-size: 10.5px;
+            font-weight: 650;
+        }
+
+        .viewer-modal-foot button.primary {
+            border-color: var(--viewer-brand-blue);
+            background: var(--viewer-brand-blue);
+            color: #fff;
+        }
+
+        .viewer-modal-foot button:disabled {
+            opacity: .42;
+            cursor: not-allowed;
+        }
+
+        .period-month-years {
+            display: grid;
+            gap: 14px;
+        }
+
+        .period-year-block {
+            display: grid;
+            gap: 7px;
+        }
+
+        .period-year-title {
+            color: #526576;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .period-month-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(72px, 1fr));
+            gap: 6px;
+        }
+
+        .period-month-button,
+        .age-band-button {
+            min-height: 38px;
+            border: 1px solid #dbe7ed;
+            border-radius: 9px;
+            background: #fff;
+            color: #405466;
+            cursor: pointer;
+            font-size: 10.5px;
+            font-weight: 600;
+        }
+
+        .period-month-button:hover,
+        .age-band-button:hover {
+            border-color: rgba(20,142,204,.42);
+        }
+
+        .period-month-button.in-range,
+        .period-day.in-range,
+        .age-band-button.in-range {
+            border-color: rgba(20,142,204,.18);
+            background: var(--viewer-brand-blue-soft);
+        }
+
+        .period-month-button.preview,
+        .period-day.preview,
+        .age-band-button.preview {
+            background: #f3fbfe;
+        }
+
+        .period-month-button.range-edge,
+        .period-day.range-edge,
+        .age-band-button.range-edge {
+            border-color: var(--viewer-brand-blue);
+            background: var(--viewer-brand-blue);
+            color: #fff;
+        }
+
+        .calendar-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 9px;
+        }
+
+        .calendar-toolbar button {
+            width: 34px;
+            height: 30px;
+            border: 1px solid #d8e6ed;
+            border-radius: 8px;
+            background: #fff;
+            color: #526576;
+            cursor: pointer;
+        }
+
+        .calendar-pair {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .calendar-month-title {
+            margin-bottom: 7px;
+            color: #405466;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 3px;
+        }
+
+        .calendar-weekday {
+            padding: 4px 0;
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 650;
+            text-align: center;
+        }
+
+        .period-day {
+            min-height: 34px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: #fff;
+            color: #405466;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .period-day:hover {
+            border-color: rgba(20,142,204,.36);
+        }
+
+        .period-day:disabled {
+            color: #cbd5e1;
+            cursor: default;
+            background: transparent;
+        }
+
+        .calendar-empty {
+            min-height: 34px;
+        }
+
+        .age-band-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 7px;
+        }
+
+        .age-band-button {
+            min-height: 42px;
+        }
+
+        .range-accent {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            margin-right: 6px;
+            border-radius: 999px;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.14);
+        }
+
+        @media (max-width: 980px) {
+            .sidebar-analysis-subgroup-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .period-month-grid {
+                grid-template-columns: repeat(4, minmax(68px, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .calendar-pair {
+                grid-template-columns: 1fr;
+            }
+
+            .period-month-grid {
+                grid-template-columns: repeat(3, minmax(68px, 1fr));
+            }
+
+            .age-band-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -713,27 +1268,18 @@
                 <button id="viewerSidebarToggle" type="button" class="sidebar-toggle" aria-label="サイドバーを折りたたむ" aria-expanded="true" title="サイドバーを折りたたむ">‹</button>
             </div>
             <div class="sidebar-content">
-                <section class="sidebar-group"><div class="sidebar-group-title">期間</div>
-        <div class="period-panel sidebar-period-panel">
-            <div class="period-head">
-                <div>
-                    <div class="period-title">分析期間</div>
-                    <div id="viewerPeriodRangeNote" class="period-note">応募データの全期間を読み込んでいます。</div>
-                </div>
-                <button id="viewerAllPeriodBtn" type="button" class="period-action">全期間に戻す</button>
-            </div>
-            <div class="period-controls">
-                <div class="period-field">
-                    <label for="viewerPeriodStart">開始日</label>
-                    <input id="viewerPeriodStart" type="date">
-                </div>
-                <div class="period-field">
-                    <label for="viewerPeriodEnd">終了日</label>
-                    <input id="viewerPeriodEnd" type="date">
-                </div>
-                <button id="viewerApplyPeriodBtn" type="button" class="period-action primary">この期間で集計</button>
-            </div>
-        </div>
+                <section class="sidebar-group">
+                    <div class="sidebar-group-title">分析条件</div>
+                    <div class="viewer-condition-stack">
+                        <button id="viewerPeriodPickerBtn" type="button" class="viewer-condition-button">
+                            <span class="viewer-condition-label">集計期間</span>
+                            <span id="viewerPeriodSummary" class="viewer-condition-value">全期間</span>
+                        </button>
+                        <button id="viewerTargetAgePickerBtn" type="button" class="viewer-condition-button">
+                            <span class="viewer-condition-label">ターゲット年齢</span>
+                            <span id="viewerTargetAgeSummary" class="viewer-condition-value">全年齢</span>
+                        </button>
+                    </div>
                 </section>
                 <section class="sidebar-group"><div class="sidebar-group-title">概要</div><nav class="sidebar-nav" aria-label="概要">
                     <button type="button" class="sidebar-nav-button" data-target="reportOverview" title="レポート概要">概要</button>
@@ -919,6 +1465,59 @@
 <div class="footer">有効応募分析｜分析レポート</div>
         </div>
     </main>
+
+
+    <div id="viewerPeriodModal" class="viewer-modal hidden" aria-hidden="true">
+        <div class="viewer-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="viewerPeriodModalTitle">
+            <div class="viewer-modal-head">
+                <div>
+                    <div id="viewerPeriodModalTitle" class="viewer-modal-title">集計期間を選択</div>
+                    <div class="viewer-modal-note">開始点を選び、次に終了点を選択します。終了点を選ぶまでは候補範囲をプレビューします。</div>
+                </div>
+                <button type="button" class="viewer-modal-close" data-close-modal="viewerPeriodModal" aria-label="閉じる">×</button>
+            </div>
+            <div class="viewer-modal-toolbar">
+                <div class="viewer-segmented">
+                    <button id="viewerPeriodModeMonth" type="button" data-period-mode="month">月単位</button>
+                    <button id="viewerPeriodModeDay" type="button" data-period-mode="day">日付単位</button>
+                </div>
+                <div class="viewer-quick-actions">
+                    <button type="button" data-period-quick="all">全期間</button>
+                    <button type="button" data-period-quick="30">直近30日</button>
+                    <button type="button" data-period-quick="90">直近90日</button>
+                </div>
+            </div>
+            <div id="viewerPeriodPickStatus" class="viewer-picker-status"></div>
+            <div id="viewerPeriodPickerBody" class="viewer-modal-body"></div>
+            <div class="viewer-modal-foot">
+                <button type="button" data-close-modal="viewerPeriodModal">キャンセル</button>
+                <button id="viewerPeriodApplyBtn" type="button" class="primary">この期間で集計</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewerTargetAgeModal" class="viewer-modal hidden" aria-hidden="true">
+        <div class="viewer-modal-dialog age-dialog" role="dialog" aria-modal="true" aria-labelledby="viewerTargetAgeModalTitle">
+            <div class="viewer-modal-head">
+                <div>
+                    <div id="viewerTargetAgeModalTitle" class="viewer-modal-title">ターゲット年齢を選択</div>
+                    <div class="viewer-modal-note">5歳刻みで下限側を選び、次に上限側を選択します。これは表全体の表示年齢フィルターではなく、ターゲット応募数・率の定義です。</div>
+                </div>
+                <button type="button" class="viewer-modal-close" data-close-modal="viewerTargetAgeModal" aria-label="閉じる">×</button>
+            </div>
+            <div class="viewer-modal-toolbar">
+                <div class="viewer-quick-actions">
+                    <button type="button" data-age-quick="all">全年齢</button>
+                </div>
+            </div>
+            <div id="viewerAgePickStatus" class="viewer-picker-status"></div>
+            <div id="viewerAgePickerBody" class="viewer-modal-body"></div>
+            <div class="viewer-modal-foot">
+                <button type="button" data-close-modal="viewerTargetAgeModal">キャンセル</button>
+                <button id="viewerAgeApplyBtn" type="button" class="primary">この年齢範囲を適用</button>
+            </div>
+        </div>
+    </div>
 
     <script src="./common-masters-v1.js"></script>
     <script src="./analysis-core.js"></script>
@@ -1261,38 +1860,583 @@
 
 
 
-const VIEWER_UI_RELEASE = "2026.09.03-viewer-ui-v25-sidebar-table-ux";
-const VIEWER_SIDEBAR_STATE_KEY = "validApplicationAnalysis.viewerSidebarCollapsed.v1";
-const BASIC_ANALYSIS_SHORT_LABELS = Object.freeze({
-  "status":"対応状況","month":"応募月","media":"媒体","enterprise":"企業","name-script":"氏名文字","residence":"居住地","job-category":"職種","employment":"雇用形態","job-location-name":"勤務地名","job-prefecture":"勤務地県","prefecture-match":"居住一致","job-keyword":"仕事名KW","job-full-keyword":"フルKW","recruit-background":"募集背景","month-day":"月内日","weekday":"曜日","hour":"時間帯","hourly-salary":"時給","daily-salary":"日給","monthly-salary":"月給","annual-salary":"年収","text-length":"原稿文字数","main-image":"メイン画像","image-count":"画像枚数","job-video":"動画","indeed-tag-count":"タグ数"
-});
-let viewerSidebarObserver=null;
-function viewerBasicShortLabel(table){ return BASIC_ANALYSIS_SHORT_LABELS[table?.id] || String(table?.label||"").replace(/別$/,""); }
-function setViewerSidebarCollapsed(collapsed,{persist=true}={}){
-  const app=document.getElementById("reportView"),toggle=document.getElementById("viewerSidebarToggle"); if(!app)return;
-  app.classList.toggle("sidebar-collapsed",!!collapsed);
-  if(toggle){ toggle.setAttribute("aria-expanded",collapsed?"false":"true"); toggle.setAttribute("aria-label",collapsed?"サイドバーを表示":"サイドバーを折りたたむ"); toggle.title=collapsed?"サイドバーを表示":"サイドバーを折りたたむ"; }
-  if(persist){ try{localStorage.setItem(VIEWER_SIDEBAR_STATE_KEY,collapsed?"1":"0");}catch(_){} }
+
+const VIEWER_UI_RELEASE =
+    "2026.09.08-viewer-ui-v26-analysis-controls";
+const VIEWER_SIDEBAR_STATE_KEY =
+    "validApplicationAnalysis.viewerSidebarCollapsed.v1";
+
+const BASIC_ANALYSIS_SHORT_LABELS =
+    Object.freeze({
+        "status": "対応状況",
+        "month": "応募月",
+        "media": "媒体",
+        "enterprise": "企業",
+        "name-script": "氏名文字",
+        "residence": "居住地",
+        "job-category": "職種",
+        "employment": "雇用形態",
+        "job-location-name": "勤務地名",
+        "job-prefecture": "勤務地県",
+        "prefecture-match": "居住一致",
+        "job-keyword": "仕事名KW",
+        "job-full-keyword": "フルKW",
+        "recruit-background": "募集背景",
+        "month-day": "月内日",
+        "weekday": "曜日",
+        "hour": "時間帯",
+        "hourly-salary": "時給",
+        "daily-salary": "日給",
+        "monthly-salary": "月給",
+        "annual-salary": "年収",
+        "text-length": "原稿文字数",
+        "main-image": "メイン画像",
+        "image-count": "画像枚数",
+        "job-video": "動画",
+        "indeed-tag-count": "タグ数"
+    });
+
+const BASIC_ANALYSIS_GROUPS =
+    Object.freeze([
+        {
+            label: "応募・選考",
+            ids: [
+                "status",
+                "month",
+                "media",
+                "enterprise"
+            ]
+        },
+        {
+            label: "求職者",
+            ids: [
+                "name-script",
+                "residence",
+                "prefecture-match"
+            ]
+        },
+        {
+            label: "求人属性",
+            ids: [
+                "job-category",
+                "employment",
+                "job-location-name",
+                "job-prefecture"
+            ]
+        },
+        {
+            label: "応募タイミング",
+            ids: [
+                "month-day",
+                "weekday",
+                "hour"
+            ]
+        },
+        {
+            label: "条件・待遇",
+            ids: [
+                "hourly-salary",
+                "daily-salary",
+                "monthly-salary",
+                "annual-salary"
+            ]
+        },
+        {
+            label: "原稿・訴求",
+            ids: [
+                "recruit-background",
+                "text-length",
+                "main-image",
+                "image-count",
+                "job-video",
+                "indeed-tag-count"
+            ]
+        },
+        {
+            label: "テキスト分析",
+            ids: [
+                "job-keyword",
+                "job-full-keyword"
+            ]
+        }
+    ]);
+
+const BASIC_ANALYSIS_ORDER =
+    Object.freeze(
+        BASIC_ANALYSIS_GROUPS
+            .flatMap(group =>
+                group.ids
+            )
+    );
+
+let viewerSidebarLockedTarget =
+    "";
+let viewerSidebarScrollEndTimer =
+    null;
+let viewerSidebarScrollRaf =
+    0;
+
+function viewerBasicShortLabel(
+    table
+) {
+    return (
+        BASIC_ANALYSIS_SHORT_LABELS[
+            table?.id
+        ] ||
+        String(
+            table?.label || ""
+        ).replace(
+            /別$/,
+            ""
+        )
+    );
 }
-function initializeViewerSidebar(){
-  let collapsed=false; try{collapsed=localStorage.getItem(VIEWER_SIDEBAR_STATE_KEY)==="1";}catch(_){}
-  setViewerSidebarCollapsed(collapsed,{persist:false});
-  document.getElementById("viewerSidebarToggle")?.addEventListener("click",()=>{const app=document.getElementById("reportView");setViewerSidebarCollapsed(!app?.classList.contains("sidebar-collapsed"));});
-  document.getElementById("reportSidebar")?.addEventListener("click",event=>{const button=event.target.closest("button[data-target]"); if(!button)return; const target=document.getElementById(button.dataset.target); if(!target)return; const top=target.getBoundingClientRect().top+window.scrollY-12; window.scrollTo({top:Math.max(0,top),behavior:"smooth"});});
+
+function viewerOrderBasicTables(
+    tables
+) {
+    const order =
+        new Map(
+            BASIC_ANALYSIS_ORDER
+                .map(
+                    (id, index) => [
+                        id,
+                        index
+                    ]
+                )
+        );
+
+    return [
+        ...(Array.isArray(tables)
+            ? tables
+            : [])
+    ].sort(
+        (a, b) =>
+            (
+                order.get(a.id) ??
+                9999
+            ) -
+            (
+                order.get(b.id) ??
+                9999
+            )
+    );
 }
-function setActiveSidebarTarget(targetId){ document.querySelectorAll('#reportSidebar button[data-target]').forEach(button=>button.classList.toggle("active",button.dataset.target===targetId)); }
-function refreshViewerSidebarObserver(){
-  viewerSidebarObserver?.disconnect(); if(!("IntersectionObserver" in window))return;
-  const targets=Array.from(document.querySelectorAll('#reportSidebar button[data-target]')).map(b=>document.getElementById(b.dataset.target)).filter(el=>el&&!el.classList.contains("hidden"));
-  viewerSidebarObserver=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>Math.abs(a.boundingClientRect.top)-Math.abs(b.boundingClientRect.top)); if(visible.length)setActiveSidebarTarget(visible[0].target.id);},{root:null,rootMargin:"-10% 0px -68% 0px",threshold:[0,.05,.2]});
-  targets.forEach(t=>viewerSidebarObserver.observe(t));
+
+function renderBasicSidebarNavigation(
+    tables
+) {
+    const nav =
+        document.getElementById(
+            "analysisNav"
+        );
+
+    if (!nav) return;
+
+    const byId =
+        new Map(
+            tables.map(
+                table => [
+                    table.id,
+                    table
+                ]
+            )
+        );
+
+    nav.innerHTML =
+        BASIC_ANALYSIS_GROUPS
+            .map(group => {
+                const groupTables =
+                    group.ids
+                        .map(
+                            id =>
+                                byId.get(id)
+                        )
+                        .filter(Boolean);
+
+                if (!groupTables.length) {
+                    return "";
+                }
+
+                const buttons =
+                    groupTables
+                        .map(table => `
+                            <button
+                                type="button"
+                                data-target="analysis-${escapeHtml(table.id)}"
+                                title="${escapeHtml(table.label)}"
+                            >${escapeHtml(viewerBasicShortLabel(table))}</button>
+                        `)
+                        .join("");
+
+                return `
+                    <div class="sidebar-analysis-subgroup">
+                        <div class="sidebar-analysis-subgroup-title">${escapeHtml(group.label)}</div>
+                        <div class="sidebar-analysis-subgroup-buttons">${buttons}</div>
+                    </div>
+                `;
+            })
+            .join("");
 }
-function refreshDetailSidebarNavigation(){
-  const nav=document.getElementById("detailAnalysisNav"),group=document.getElementById("detailSidebarGroup"); if(!nav||!group)return;
-  const candidates=[{id:"noteDetailSection",label:"備考"},{id:"indeedTagDetailSection",label:"Indeedタグ"},{id:"topImageDetailSection",label:"TOP画像"},{id:"customAnalysisSection",label:"カスタム"}];
-  const visible=candidates.filter(x=>{const el=document.getElementById(x.id);return el&&!el.classList.contains("hidden");}); group.classList.toggle("hidden",visible.length===0);
-  nav.innerHTML=visible.map(x=>`<button type="button" class="sidebar-nav-button" data-target="${escapeHtml(x.id)}" title="${escapeHtml(x.label)}">${escapeHtml(x.label)}</button>`).join("");
+
+function setViewerSidebarCollapsed(
+    collapsed,
+    {
+        persist = true
+    } = {}
+) {
+    const app =
+        document.getElementById(
+            "reportView"
+        );
+
+    const toggle =
+        document.getElementById(
+            "viewerSidebarToggle"
+        );
+
+    if (!app) return;
+
+    app.classList.toggle(
+        "sidebar-collapsed",
+        !!collapsed
+    );
+
+    if (toggle) {
+        toggle.setAttribute(
+            "aria-expanded",
+            collapsed
+                ? "false"
+                : "true"
+        );
+
+        toggle.setAttribute(
+            "aria-label",
+            collapsed
+                ? "サイドバーを表示"
+                : "サイドバーを折りたたむ"
+        );
+
+        toggle.title =
+            collapsed
+                ? "サイドバーを表示"
+                : "サイドバーを折りたたむ";
+    }
+
+    if (persist) {
+        try {
+            localStorage.setItem(
+                VIEWER_SIDEBAR_STATE_KEY,
+                collapsed
+                    ? "1"
+                    : "0"
+            );
+        } catch (_) {}
+    }
 }
+
+function setActiveSidebarTarget(
+    targetId
+) {
+    document.querySelectorAll(
+        '#reportSidebar button[data-target]'
+    )
+        .forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.target ===
+                    targetId
+            );
+        });
+}
+
+function viewerSidebarTargets() {
+    return Array.from(
+        document.querySelectorAll(
+            '#reportSidebar button[data-target]'
+        )
+    )
+        .map(button => ({
+            button,
+            target:
+                document.getElementById(
+                    button.dataset.target
+                )
+        }))
+        .filter(item =>
+            item.target &&
+            !item.target.classList
+                .contains("hidden")
+        );
+}
+
+function updateViewerSidebarFromScroll() {
+    if (
+        viewerSidebarLockedTarget
+    ) {
+        return;
+    }
+
+    const targets =
+        viewerSidebarTargets();
+
+    if (!targets.length) return;
+
+    const guideLine =
+        38;
+
+    let current =
+        null;
+
+    targets.forEach(item => {
+        const top =
+            item.target
+                .getBoundingClientRect()
+                .top;
+
+        if (
+            top <= guideLine
+        ) {
+            current =
+                item;
+        }
+    });
+
+    if (!current) {
+        current =
+            targets.find(item =>
+                item.target
+                    .getBoundingClientRect()
+                    .top >
+                guideLine
+            ) ||
+            targets[0];
+    }
+
+    setActiveSidebarTarget(
+        current?.button
+            ?.dataset
+            ?.target ||
+        ""
+    );
+}
+
+function scheduleViewerSidebarScrollSpy() {
+    if (
+        viewerSidebarScrollRaf
+    ) {
+        return;
+    }
+
+    viewerSidebarScrollRaf =
+        requestAnimationFrame(
+            () => {
+                viewerSidebarScrollRaf =
+                    0;
+
+                updateViewerSidebarFromScroll();
+            }
+        );
+}
+
+function releaseViewerSidebarLockAfterScroll() {
+    clearTimeout(
+        viewerSidebarScrollEndTimer
+    );
+
+    viewerSidebarScrollEndTimer =
+        setTimeout(
+            () => {
+                viewerSidebarLockedTarget =
+                    "";
+
+                updateViewerSidebarFromScroll();
+            },
+            150
+        );
+}
+
+function initializeViewerSidebar() {
+    let collapsed = false;
+
+    try {
+        collapsed =
+            localStorage.getItem(
+                VIEWER_SIDEBAR_STATE_KEY
+            ) === "1";
+    } catch (_) {}
+
+    setViewerSidebarCollapsed(
+        collapsed,
+        {
+            persist: false
+        }
+    );
+
+    document.getElementById(
+        "viewerSidebarToggle"
+    )?.addEventListener(
+        "click",
+        () => {
+            const app =
+                document.getElementById(
+                    "reportView"
+                );
+
+            setViewerSidebarCollapsed(
+                !app?.classList.contains(
+                    "sidebar-collapsed"
+                )
+            );
+        }
+    );
+
+    document.getElementById(
+        "reportSidebar"
+    )?.addEventListener(
+        "click",
+        event => {
+            const button =
+                event.target.closest(
+                    "button[data-target]"
+                );
+
+            if (!button) return;
+
+            const targetId =
+                button.dataset.target;
+
+            const target =
+                document.getElementById(
+                    targetId
+                );
+
+            if (!target) return;
+
+            viewerSidebarLockedTarget =
+                targetId;
+
+            setActiveSidebarTarget(
+                targetId
+            );
+
+            const top =
+                target.getBoundingClientRect()
+                    .top +
+                window.scrollY -
+                12;
+
+            window.scrollTo({
+                top:
+                    Math.max(
+                        0,
+                        top
+                    ),
+                behavior:
+                    "smooth"
+            });
+
+            releaseViewerSidebarLockAfterScroll();
+        }
+    );
+
+    window.addEventListener(
+        "scroll",
+        () => {
+            scheduleViewerSidebarScrollSpy();
+
+            if (
+                viewerSidebarLockedTarget
+            ) {
+                releaseViewerSidebarLockAfterScroll();
+            }
+        },
+        {
+            passive: true
+        }
+    );
+}
+
+function refreshViewerSidebarObserver() {
+    requestAnimationFrame(
+        updateViewerSidebarFromScroll
+    );
+}
+
+function refreshDetailSidebarNavigation() {
+    const nav =
+        document.getElementById(
+            "detailAnalysisNav"
+        );
+
+    const group =
+        document.getElementById(
+            "detailSidebarGroup"
+        );
+
+    if (!nav || !group) return;
+
+    const candidates = [
+        {
+            id:
+                "noteDetailSection",
+            label:
+                "備考"
+        },
+        {
+            id:
+                "indeedTagDetailSection",
+            label:
+                "Indeedタグ"
+        },
+        {
+            id:
+                "topImageDetailSection",
+            label:
+                "TOP画像"
+        },
+        {
+            id:
+                "customAnalysisSection",
+            label:
+                "カスタム"
+        }
+    ];
+
+    const visible =
+        candidates.filter(
+            item => {
+                const element =
+                    document.getElementById(
+                        item.id
+                    );
+
+                return (
+                    element &&
+                    !element.classList
+                        .contains("hidden")
+                );
+            }
+        );
+
+    group.classList.toggle(
+        "hidden",
+        visible.length === 0
+    );
+
+    nav.innerHTML =
+        visible.map(
+            item => `
+                <button
+                    type="button"
+                    class="sidebar-nav-button"
+                    data-target="${escapeHtml(item.id)}"
+                    title="${escapeHtml(item.label)}"
+                >${escapeHtml(item.label)}</button>
+            `
+        ).join("");
+}
+
 function parseTableSortValue(cell){
   const raw=String(cell?.dataset?.sortValue??cell?.textContent??"").replace(/\u00a0/g," ").trim(); if(!raw)return{kind:"empty",value:""}; const compact=raw.replace(/,/g,"");
   const month=compact.match(/^(\d{4})[\/\-年](\d{1,2})/); if(month)return{kind:"number",value:Number(month[1])*100+Number(month[2])};
@@ -1323,7 +2467,361 @@ function enhanceReportTables(root=document){root.querySelectorAll(".table-wrap t
 function ensureRowLabelTooltip(){let t=document.getElementById("rowLabelTooltip");if(t)return t;t=document.createElement("div");t.id="rowLabelTooltip";t.className="row-label-tooltip";t.setAttribute("role","tooltip");document.body.appendChild(t);return t;}
 function positionRowLabelTooltip(t,event){const margin=14,w=t.offsetWidth||240,h=t.offsetHeight||40;let left=event.clientX+12,top=event.clientY+14;if(left+w+margin>innerWidth)left=event.clientX-w-12;if(top+h+margin>innerHeight)top=event.clientY-h-12;t.style.left=`${Math.max(margin,left)}px`;t.style.top=`${Math.max(margin,top)}px`;}
 function initializeRowLabelTooltip(){const t=ensureRowLabelTooltip();document.addEventListener("mouseover",e=>{const label=e.target.closest(".row-label-text");if(!label||label.scrollWidth<=label.clientWidth+1)return;t.textContent=label.dataset.fullText||label.textContent||"";t.classList.add("visible");positionRowLabelTooltip(t,e);});document.addEventListener("mousemove",e=>{if(t.classList.contains("visible"))positionRowLabelTooltip(t,e);});document.addEventListener("mouseout",e=>{if(e.target.closest(".row-label-text"))t.classList.remove("visible");});}
-function initializeViewerDesktopUx(){initializeViewerSidebar();initializeRowLabelTooltip();}
+function initializeViewerDesktopUx(){
+    initializeViewerSidebar();
+    initializeRowLabelTooltip();
+    initializeBucketControls();
+    initializeViewerAnalysisPickers();
+}
+
+
+const BUCKET_TABLE_CONFIG =
+    Object.freeze({
+        "month-day": {
+            settingKey:
+                "月内応募日幅",
+            presets:
+                [1, 3, 5, 7, 10, 15],
+            unit:
+                "日",
+            defaultValue:
+                7
+        },
+        "hour": {
+            settingKey:
+                "応募時間帯幅",
+            presets:
+                [1, 2, 3, 4, 6, 8, 12],
+            unit:
+                "時間",
+            defaultValue:
+                6
+        },
+        "hourly-salary": {
+            settingKey:
+                "時給下限幅",
+            presets:
+                [25, 50, 100, 200, 500],
+            unit:
+                "円",
+            defaultValue:
+                50
+        },
+        "daily-salary": {
+            settingKey:
+                "日給下限幅",
+            presets:
+                [500, 1000, 2000, 5000],
+            unit:
+                "円",
+            defaultValue:
+                1000
+        },
+        "monthly-salary": {
+            settingKey:
+                "月給下限幅",
+            presets:
+                [10000, 25000, 50000, 100000],
+            unit:
+                "円",
+            defaultValue:
+                50000
+        },
+        "annual-salary": {
+            settingKey:
+                "年収下限幅",
+            presets:
+                [100000, 250000, 500000, 1000000],
+            unit:
+                "円",
+            defaultValue:
+                500000
+        },
+        "text-length": {
+            settingKey:
+                "求人原稿文字数幅",
+            presets:
+                [100, 200, 300, 500, 1000],
+            unit:
+                "文字",
+            defaultValue:
+                300
+        },
+        "image-count": {
+            settingKey:
+                "求人画像枚数幅",
+            presets:
+                [1, 2, 3, 5],
+            unit:
+                "枚",
+            defaultValue:
+                1
+        },
+        "indeed-tag-count": {
+            settingKey:
+                "Indeed求人タグ数幅",
+            presets:
+                [1, 2, 3, 5, 10],
+            unit:
+                "個",
+            defaultValue:
+                5
+        }
+    });
+
+let currentViewerBucketOverrides =
+    {};
+
+function viewerPositiveInt(
+    value,
+    fallback
+) {
+    const number =
+        Number(value);
+
+    if (
+        !Number.isFinite(number) ||
+        number <= 0
+    ) {
+        return fallback;
+    }
+
+    return Math.max(
+        1,
+        Math.floor(number)
+    );
+}
+
+function viewerBucketValue(
+    tableId
+) {
+    const config =
+        BUCKET_TABLE_CONFIG[
+            tableId
+        ];
+
+    if (!config) return null;
+
+    if (
+        Object.prototype
+            .hasOwnProperty
+            .call(
+                currentViewerBucketOverrides,
+                config.settingKey
+            )
+    ) {
+        return viewerPositiveInt(
+            currentViewerBucketOverrides[
+                config.settingKey
+            ],
+            config.defaultValue
+        );
+    }
+
+    return viewerPositiveInt(
+        currentViewerData
+            ?.settings
+            ?.[
+                config.settingKey
+            ],
+        config.defaultValue
+    );
+}
+
+function bucketControlHtml(
+    tableId
+) {
+    const config =
+        BUCKET_TABLE_CONFIG[
+            tableId
+        ];
+
+    if (!config) return "";
+
+    const value =
+        viewerBucketValue(
+            tableId
+        );
+
+    const isPreset =
+        config.presets
+            .includes(value);
+
+    const options =
+        config.presets
+            .map(
+                preset => `
+                    <option
+                        value="${preset}"
+                        ${preset === value ? "selected" : ""}
+                    >${preset.toLocaleString("ja-JP")}${escapeHtml(config.unit)}</option>
+                `
+            )
+            .join("");
+
+    return `
+        <div class="bucket-control" data-bucket-table="${escapeHtml(tableId)}">
+            <span class="bucket-control-label">バケット</span>
+            <select
+                data-bucket-select="${escapeHtml(tableId)}"
+                aria-label="${escapeHtml(tableId)}のバケット幅"
+            >
+                ${options}
+                <option value="custom" ${isPreset ? "" : "selected"}>自由入力</option>
+            </select>
+            <input
+                data-bucket-custom="${escapeHtml(tableId)}"
+                class="${isPreset ? "hidden" : ""}"
+                type="number"
+                min="1"
+                step="1"
+                value="${escapeHtml(value)}"
+                aria-label="自由入力のバケット幅"
+            >
+        </div>
+    `;
+}
+
+function initializeBucketControls() {
+    document.getElementById(
+        "reportMain"
+    )?.addEventListener(
+        "change",
+        event => {
+            const select =
+                event.target.closest(
+                    "select[data-bucket-select]"
+                );
+
+            if (select) {
+                const tableId =
+                    select.dataset
+                        .bucketSelect;
+
+                const config =
+                    BUCKET_TABLE_CONFIG[
+                        tableId
+                    ];
+
+                if (!config) return;
+
+                const holder =
+                    select.closest(
+                        ".bucket-control"
+                    );
+
+                const custom =
+                    holder?.querySelector(
+                        "input[data-bucket-custom]"
+                    );
+
+                if (
+                    select.value ===
+                    "custom"
+                ) {
+                    custom?.classList
+                        .remove(
+                            "hidden"
+                        );
+
+                    custom?.focus();
+                    custom?.select();
+                    return;
+                }
+
+                currentViewerBucketOverrides[
+                    config.settingKey
+                ] =
+                    viewerPositiveInt(
+                        select.value,
+                        config.defaultValue
+                    );
+
+                renderReport(
+                    currentViewerData
+                );
+
+                return;
+            }
+
+            const custom =
+                event.target.closest(
+                    "input[data-bucket-custom]"
+                );
+
+            if (!custom) return;
+
+            const tableId =
+                custom.dataset
+                    .bucketCustom;
+
+            const config =
+                BUCKET_TABLE_CONFIG[
+                    tableId
+                ];
+
+            if (!config) return;
+
+            currentViewerBucketOverrides[
+                config.settingKey
+            ] =
+                viewerPositiveInt(
+                    custom.value,
+                    config.defaultValue
+                );
+
+            renderReport(
+                currentViewerData
+            );
+        }
+    );
+
+    document.getElementById(
+        "reportMain"
+    )?.addEventListener(
+        "keydown",
+        event => {
+            const custom =
+                event.target.closest(
+                    "input[data-bucket-custom]"
+                );
+
+            if (
+                !custom ||
+                event.key !==
+                    "Enter"
+            ) {
+                return;
+            }
+
+            custom.dispatchEvent(
+                new Event(
+                    "change",
+                    {
+                        bubbles: true
+                    }
+                )
+            );
+        }
+    );
+}
+
+function crossTableColgroupHtml(
+    ageCols
+) {
+    return `
+        <colgroup>
+            <col class="cross-col-label">
+            ${ageCols.map(() => '<col class="cross-col-age">').join("")}
+            <col class="cross-col-total">
+            <col class="cross-col-share">
+            <col class="cross-col-target">
+            <col class="cross-col-target-rate">
+            <col class="cross-col-target-share">
+        </colgroup>
+    `;
+}
+
 
 function renderCrossTable(table, core) {
     const agg = table.aggregate;
@@ -1383,9 +2881,13 @@ function renderCrossTable(table, core) {
                         集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""}
                     </div>
                 </div>
+                <div class="section-head-actions">
+                    ${bucketControlHtml(table.id)}
+                </div>
             </div>
             <div class="table-wrap">
                 <table class="cross-table">
+                    ${crossTableColgroupHtml(ageCols)}
                     <thead>
                         <tr>${headerHtml}</tr>
                     </thead>
@@ -1464,6 +2966,7 @@ function renderStandaloneCross(agg, core, firstHeader) {
     return `
         <div class="table-wrap">
             <table class="cross-table">
+                ${crossTableColgroupHtml(ageCols)}
                 <thead><tr>${headers}</tr></thead>
                 <tbody>
                     ${rows}
@@ -1940,173 +3443,2000 @@ function initializeCustomAnalysis(data, viewerResult, core) {
 }
 
 
-let currentViewerData = null;
+
+let currentViewerData =
+    null;
+
 let currentViewerPeriod = {
     start: "",
-    end: ""
+    end: "",
+    mode: "day"
 };
+
 let currentViewerBounds = {
     start: "",
     end: ""
 };
 
-function ymd(date) {
-    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+let currentViewerTargetAge = {
+    min: "",
+    max: ""
+};
+
+let viewerTargetAgeTouched =
+    false;
+
+const VIEWER_AGE_BANDS =
+    Object.freeze([
+        { min: 15, max: 19, label: "15～19" },
+        { min: 20, max: 24, label: "20～24" },
+        { min: 25, max: 29, label: "25～29" },
+        { min: 30, max: 34, label: "30～34" },
+        { min: 35, max: 39, label: "35～39" },
+        { min: 40, max: 44, label: "40～44" },
+        { min: 45, max: 49, label: "45～49" },
+        { min: 50, max: 54, label: "50～54" },
+        { min: 55, max: 59, label: "55～59" },
+        { min: 60, max: 64, label: "60～64" },
+        { min: 65, max: 69, label: "65～69" },
+        { min: 70, max: 74, label: "70～74" },
+        { min: 75, max: null, label: "75歳～" }
+    ]);
+
+let viewerPeriodPickerState = {
+    mode: "day",
+    phase: "start",
+    start: "",
+    end: "",
+    hover: "",
+    cursorMonth: ""
+};
+
+let viewerAgePickerState = {
+    phase: "start",
+    startIndex: null,
+    endIndex: null,
+    hoverIndex: null
+};
+
+function ymd(
+    date
+) {
+    if (
+        !(date instanceof Date) ||
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
     return [
         date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, "0"),
-        String(date.getDate()).padStart(2, "0")
+        String(
+            date.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        ),
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        )
     ].join("-");
 }
 
-function viewerApplicationDateBounds(data, core) {
-    const rows =
-        core.datasetObjects(
-            data?.datasets?.applicationData || {}
+function parseYmdLocal(
+    value
+) {
+    const match =
+        String(
+            value || ""
+        ).match(
+            /^(\d{4})-(\d{2})-(\d{2})$/
         );
 
-    let min = null;
-    let max = null;
+    if (!match) return null;
+
+    const date =
+        new Date(
+            Number(match[1]),
+            Number(match[2]) - 1,
+            Number(match[3])
+        );
+
+    return Number.isNaN(
+        date.getTime()
+    )
+        ? null
+        : date;
+}
+
+function addDaysYmd(
+    value,
+    days
+) {
+    const date =
+        parseYmdLocal(
+            value
+        );
+
+    if (!date) return "";
+
+    date.setDate(
+        date.getDate() +
+        Number(days || 0)
+    );
+
+    return ymd(date);
+}
+
+function firstDayOfMonthYmd(
+    value
+) {
+    const date =
+        parseYmdLocal(
+            value
+        );
+
+    if (!date) return "";
+
+    return ymd(
+        new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            1
+        )
+    );
+}
+
+function lastDayOfMonthYmd(
+    value
+) {
+    const date =
+        parseYmdLocal(
+            value
+        );
+
+    if (!date) return "";
+
+    return ymd(
+        new Date(
+            date.getFullYear(),
+            date.getMonth() + 1,
+            0
+        )
+    );
+}
+
+function addMonthsYmd(
+    value,
+    months
+) {
+    const date =
+        parseYmdLocal(
+            firstDayOfMonthYmd(
+                value
+            )
+        );
+
+    if (!date) return "";
+
+    return ymd(
+        new Date(
+            date.getFullYear(),
+            date.getMonth() +
+                Number(months || 0),
+            1
+        )
+    );
+}
+
+function monthKeyFromYmd(
+    value
+) {
+    return String(
+        value || ""
+    ).slice(
+        0,
+        7
+    );
+}
+
+function clampYmd(
+    value,
+    minValue,
+    maxValue
+) {
+    let result =
+        value;
+
+    if (
+        minValue &&
+        result <
+            minValue
+    ) {
+        result =
+            minValue;
+    }
+
+    if (
+        maxValue &&
+        result >
+            maxValue
+    ) {
+        result =
+            maxValue;
+    }
+
+    return result;
+}
+
+function formatYmdLabel(
+    value
+) {
+    return value
+        ? value.replace(
+            /-/g,
+            "/"
+        )
+        : "";
+}
+
+function formatMonthLabel(
+    value
+) {
+    return String(
+        value || ""
+    )
+        .slice(
+            0,
+            7
+        )
+        .replace(
+            "-",
+            "/"
+        );
+}
+
+function viewerApplicationDateBounds(
+    data,
+    core
+) {
+    const rows =
+        core.datasetObjects(
+            data?.datasets
+                ?.applicationData ||
+            {}
+        );
+
+    let min =
+        null;
+
+    let max =
+        null;
 
     rows.forEach(row => {
-        const date = core.parseDate(row["応募日時"]);
-        if (!date || Number.isNaN(date.getTime())) return;
-        if (!min || date < min) min = date;
-        if (!max || date > max) max = date;
+        const date =
+            core.parseDate(
+                row["応募日時"]
+            );
+
+        if (
+            !date ||
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return;
+        }
+
+        if (
+            !min ||
+            date < min
+        ) {
+            min =
+                date;
+        }
+
+        if (
+            !max ||
+            date > max
+        ) {
+            max =
+                date;
+        }
     });
 
     return {
-        start: ymd(min),
-        end: ymd(max)
+        start:
+            ymd(min),
+        end:
+            ymd(max)
     };
 }
 
-function viewerDisplayMap(data) {
+function viewerDisplayMap(
+    data
+) {
     const map = {};
-    const items = Array.isArray(data?.displaySettings)
-        ? data.displaySettings
-        : [];
+
+    const items =
+        Array.isArray(
+            data?.displaySettings
+        )
+            ? data.displaySettings
+            : [];
 
     items.forEach(item => {
-        const id = String(item?.id || "").trim();
+        const id =
+            String(
+                item?.id || ""
+            ).trim();
+
         if (!id) return;
-        map[id] = item?.visible !== false;
+
+        map[id] =
+            item?.visible !==
+            false;
     });
 
     return map;
 }
 
-function viewerDisplayEnabled(displayMap, id) {
-    return !Object.prototype.hasOwnProperty.call(displayMap, id) ||
-        displayMap[id] !== false;
+function viewerDisplayEnabled(
+    displayMap,
+    id
+) {
+    return (
+        !Object.prototype
+            .hasOwnProperty
+            .call(
+                displayMap,
+                id
+            ) ||
+        displayMap[id] !==
+            false
+    );
 }
 
-function dataForCurrentViewerPeriod(data) {
+function syncViewerTargetAgeFromData(
+    data
+) {
+    if (
+        viewerTargetAgeTouched
+    ) {
+        return;
+    }
+
+    const settings =
+        data?.settings ||
+        {};
+
+    currentViewerTargetAge = {
+        min:
+            settings[
+                "ターゲット年齢下限"
+            ] ?? "",
+        max:
+            settings[
+                "ターゲット年齢上限"
+            ] ?? ""
+    };
+}
+
+function dataForCurrentViewerPeriod(
+    data
+) {
     return {
         ...data,
         settings: {
             ...(data?.settings || {}),
-            "集計開始日": currentViewerPeriod.start,
-            "集計終了日": currentViewerPeriod.end
+            ...currentViewerBucketOverrides,
+            "集計開始日":
+                currentViewerPeriod
+                    .start,
+            "集計終了日":
+                currentViewerPeriod
+                    .end,
+            "ターゲット年齢下限":
+                currentViewerTargetAge
+                    .min,
+            "ターゲット年齢上限":
+                currentViewerTargetAge
+                    .max
         }
     };
 }
 
 function periodLabel() {
     const start =
-        currentViewerPeriod.start ||
-        currentViewerBounds.start;
+        currentViewerPeriod
+            .start ||
+        currentViewerBounds
+            .start;
 
     const end =
-        currentViewerPeriod.end ||
-        currentViewerBounds.end;
+        currentViewerPeriod
+            .end ||
+        currentViewerBounds
+            .end;
 
-    if (!currentViewerPeriod.start && !currentViewerPeriod.end) {
-        return start && end
-            ? `全期間：${start} ～ ${end}`
+    if (
+        !currentViewerPeriod.start &&
+        !currentViewerPeriod.end
+    ) {
+        return (
+            start &&
+            end
+        )
+            ? `全期間：${formatYmdLabel(start)} ～ ${formatYmdLabel(end)}`
             : "全期間";
     }
 
-    return `${start || "指定なし"} ～ ${end || "指定なし"}`;
+    if (
+        currentViewerPeriod.mode ===
+        "month"
+    ) {
+        return `${formatMonthLabel(start)} ～ ${formatMonthLabel(end)}`;
+    }
+
+    return `${formatYmdLabel(start) || "指定なし"} ～ ${formatYmdLabel(end) || "指定なし"}`;
 }
 
-function initializeViewerPeriod(data) {
-    const core = window.ValidApplicationAnalysisCore;
+function periodSummaryLabel() {
+    if (
+        !currentViewerPeriod.start &&
+        !currentViewerPeriod.end
+    ) {
+        return "全期間";
+    }
 
-    currentViewerData = data;
-    currentViewerPeriod = {
-        start: "",
-        end: ""
+    const start =
+        currentViewerPeriod
+            .start ||
+        currentViewerBounds
+            .start;
+
+    const end =
+        currentViewerPeriod
+            .end ||
+        currentViewerBounds
+            .end;
+
+    return currentViewerPeriod
+        .mode ===
+        "month"
+            ? `${formatMonthLabel(start)} ～ ${formatMonthLabel(end)}`
+            : `${formatYmdLabel(start)} ～ ${formatYmdLabel(end)}`;
+}
+
+function viewerOptionalNumber(
+    value
+) {
+    if (
+        value === null ||
+        value === undefined ||
+        String(value).trim() ===
+            ""
+    ) {
+        return null;
+    }
+
+    const number =
+        Number(value);
+
+    return Number.isFinite(number)
+        ? number
+        : null;
+}
+
+function targetAgeSummaryLabel() {
+    const min =
+        viewerOptionalNumber(
+            currentViewerTargetAge
+                .min
+        );
+
+    const max =
+        viewerOptionalNumber(
+            currentViewerTargetAge
+                .max
+        );
+
+    if (
+        min === null &&
+        max === null
+    ) {
+        return "全年齢";
+    }
+
+    if (
+        min !== null &&
+        max !== null
+    ) {
+        return `${min}～${max}歳`;
+    }
+
+    if (
+        min !== null
+    ) {
+        return `${min}歳以上`;
+    }
+
+    return `${max}歳以下`;
+}
+
+function updateViewerConditionSummaries() {
+    const period =
+        document.getElementById(
+            "viewerPeriodSummary"
+        );
+
+    if (period) {
+        period.textContent =
+            periodSummaryLabel();
+    }
+
+    const age =
+        document.getElementById(
+            "viewerTargetAgeSummary"
+        );
+
+    if (age) {
+        age.textContent =
+            targetAgeSummaryLabel();
+    }
+}
+
+function closeViewerModal(
+    id
+) {
+    const modal =
+        document.getElementById(
+            id
+        );
+
+    if (!modal) return;
+
+    modal.classList.add(
+        "hidden"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+}
+
+function openViewerModal(
+    id
+) {
+    const modal =
+        document.getElementById(
+            id
+        );
+
+    if (!modal) return;
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+}
+
+function periodEffectiveStart() {
+    return (
+        currentViewerPeriod
+            .start ||
+        currentViewerBounds
+            .start
+    );
+}
+
+function periodEffectiveEnd() {
+    return (
+        currentViewerPeriod
+            .end ||
+        currentViewerBounds
+            .end
+    );
+}
+
+function periodPreviewEnd() {
+    if (
+        viewerPeriodPickerState
+            .end
+    ) {
+        return viewerPeriodPickerState
+            .end;
+    }
+
+    if (
+        viewerPeriodPickerState
+            .phase ===
+            "end" &&
+        viewerPeriodPickerState
+            .hover
+    ) {
+        return viewerPeriodPickerState
+            .hover;
+    }
+
+    return "";
+}
+
+function periodValueClass(
+    value,
+    mode
+) {
+    const start =
+        viewerPeriodPickerState
+            .start;
+
+    const end =
+        periodPreviewEnd();
+
+    if (!start) return "";
+
+    const compareValue =
+        mode === "month"
+            ? monthKeyFromYmd(
+                value
+            )
+            : value;
+
+    const compareStart =
+        mode === "month"
+            ? monthKeyFromYmd(
+                start
+            )
+            : start;
+
+    const compareEnd =
+        mode === "month"
+            ? monthKeyFromYmd(
+                end
+            )
+            : end;
+
+    const classes = [];
+
+    if (
+        compareValue ===
+            compareStart ||
+        (
+            compareEnd &&
+            compareValue ===
+                compareEnd
+        )
+    ) {
+        classes.push(
+            "range-edge"
+        );
+    }
+
+    if (
+        compareEnd &&
+        compareValue >=
+            compareStart &&
+        compareValue <=
+            compareEnd
+    ) {
+        classes.push(
+            viewerPeriodPickerState
+                .end
+                ? "in-range"
+                : "preview"
+        );
+    }
+
+    return classes.join(
+        " "
+    );
+}
+
+function renderPeriodMonthPicker() {
+    const body =
+        document.getElementById(
+            "viewerPeriodPickerBody"
+        );
+
+    if (!body) return;
+
+    const startMonth =
+        monthKeyFromYmd(
+            currentViewerBounds
+                .start
+        );
+
+    const endMonth =
+        monthKeyFromYmd(
+            currentViewerBounds
+                .end
+        );
+
+    if (
+        !startMonth ||
+        !endMonth
+    ) {
+        body.innerHTML =
+            "<div>期間データがありません。</div>";
+        return;
+    }
+
+    const groups = [];
+
+    let cursor =
+        `${startMonth}-01`;
+
+    const endCursor =
+        `${endMonth}-01`;
+
+    while (
+        cursor <=
+        endCursor
+    ) {
+        const date =
+            parseYmdLocal(
+                cursor
+            );
+
+        const year =
+            date.getFullYear();
+
+        let group =
+            groups.find(
+                item =>
+                    item.year ===
+                    year
+            );
+
+        if (!group) {
+            group = {
+                year,
+                months: []
+            };
+
+            groups.push(
+                group
+            );
+        }
+
+        group.months.push({
+            value:
+                cursor,
+            month:
+                date.getMonth() +
+                1
+        });
+
+        cursor =
+            addMonthsYmd(
+                cursor,
+                1
+            );
+    }
+
+    body.innerHTML = `
+        <div class="period-month-years">
+            ${groups.map(group => `
+                <div class="period-year-block">
+                    <div class="period-year-title">${group.year}年</div>
+                    <div class="period-month-grid">
+                        ${group.months.map(item => `
+                            <button
+                                type="button"
+                                class="period-month-button ${periodValueClass(item.value, "month")}"
+                                data-period-month="${escapeHtml(item.value)}"
+                            >${item.month}月</button>
+                        `).join("")}
+                    </div>
+                </div>
+            `).join("")}
+        </div>
+    `;
+}
+
+function renderCalendarMonth(
+    monthValue
+) {
+    const monthStart =
+        parseYmdLocal(
+            firstDayOfMonthYmd(
+                monthValue
+            )
+        );
+
+    if (!monthStart) return "";
+
+    const year =
+        monthStart.getFullYear();
+
+    const month =
+        monthStart.getMonth();
+
+    const firstWeekday =
+        monthStart.getDay();
+
+    const lastDate =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+    const weekdays =
+        ["日", "月", "火", "水", "木", "金", "土"];
+
+    const blanks =
+        Array.from({
+            length:
+                firstWeekday
+        })
+            .map(
+                () =>
+                    '<div class="calendar-empty"></div>'
+            )
+            .join("");
+
+    const days =
+        Array.from({
+            length:
+                lastDate
+        })
+            .map(
+                (_, index) => {
+                    const dateValue =
+                        ymd(
+                            new Date(
+                                year,
+                                month,
+                                index + 1
+                            )
+                        );
+
+                    const disabled =
+                        (
+                            currentViewerBounds
+                                .start &&
+                            dateValue <
+                                currentViewerBounds
+                                    .start
+                        ) ||
+                        (
+                            currentViewerBounds
+                                .end &&
+                            dateValue >
+                                currentViewerBounds
+                                    .end
+                        );
+
+                    return `
+                        <button
+                            type="button"
+                            class="period-day ${periodValueClass(dateValue, "day")}"
+                            data-period-day="${dateValue}"
+                            ${disabled ? "disabled" : ""}
+                        >${index + 1}</button>
+                    `;
+                }
+            )
+            .join("");
+
+    return `
+        <div>
+            <div class="calendar-month-title">${year}年${month + 1}月</div>
+            <div class="calendar-grid">
+                ${weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join("")}
+                ${blanks}
+                ${days}
+            </div>
+        </div>
+    `;
+}
+
+function renderPeriodDayPicker() {
+    const body =
+        document.getElementById(
+            "viewerPeriodPickerBody"
+        );
+
+    if (!body) return;
+
+    let cursor =
+        viewerPeriodPickerState
+            .cursorMonth ||
+        firstDayOfMonthYmd(
+            currentViewerBounds
+                .start
+        );
+
+    const minMonth =
+        firstDayOfMonthYmd(
+            currentViewerBounds
+                .start
+        );
+
+    const maxMonth =
+        firstDayOfMonthYmd(
+            currentViewerBounds
+                .end
+        );
+
+    if (
+        cursor <
+        minMonth
+    ) {
+        cursor =
+            minMonth;
+    }
+
+    if (
+        cursor >
+        maxMonth
+    ) {
+        cursor =
+            maxMonth;
+    }
+
+    viewerPeriodPickerState
+        .cursorMonth =
+        cursor;
+
+    const next =
+        addMonthsYmd(
+            cursor,
+            1
+        );
+
+    body.innerHTML = `
+        <div class="calendar-toolbar">
+            <button
+                type="button"
+                data-calendar-nav="-1"
+                ${cursor <= minMonth ? "disabled" : ""}
+            >‹</button>
+            <div class="viewer-modal-note">2か月表示</div>
+            <button
+                type="button"
+                data-calendar-nav="1"
+                ${next > maxMonth ? "disabled" : ""}
+            >›</button>
+        </div>
+        <div class="calendar-pair">
+            ${renderCalendarMonth(cursor)}
+            ${next <= maxMonth ? renderCalendarMonth(next) : ""}
+        </div>
+    `;
+}
+
+function updatePeriodPickerStatus() {
+    const status =
+        document.getElementById(
+            "viewerPeriodPickStatus"
+        );
+
+    const apply =
+        document.getElementById(
+            "viewerPeriodApplyBtn"
+        );
+
+    if (!status) return;
+
+    const state =
+        viewerPeriodPickerState;
+
+    if (
+        !state.start
+    ) {
+        status.innerHTML =
+            '<span class="range-accent"></span>開始点を選んでください。';
+    } else if (
+        !state.end
+    ) {
+        status.innerHTML =
+            `<span class="range-accent"></span>開始：${escapeHtml(state.mode === "month" ? formatMonthLabel(state.start) : formatYmdLabel(state.start))} ／ 終了点を選んでください。`;
+    } else {
+        status.innerHTML =
+            `<span class="range-accent"></span>${escapeHtml(state.mode === "month" ? formatMonthLabel(state.start) : formatYmdLabel(state.start))} ～ ${escapeHtml(state.mode === "month" ? formatMonthLabel(state.end) : formatYmdLabel(state.end))}`;
+    }
+
+    if (apply) {
+        apply.disabled =
+            !state.start ||
+            !state.end;
+    }
+}
+
+function renderPeriodPicker() {
+    document.querySelectorAll(
+        "[data-period-mode]"
+    )
+        .forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset
+                    .periodMode ===
+                    viewerPeriodPickerState
+                        .mode
+            );
+        });
+
+    if (
+        viewerPeriodPickerState
+            .mode ===
+        "month"
+    ) {
+        renderPeriodMonthPicker();
+    } else {
+        renderPeriodDayPicker();
+    }
+
+    updatePeriodPickerStatus();
+}
+
+function openPeriodPicker() {
+    viewerPeriodPickerState = {
+        mode:
+            currentViewerPeriod
+                .mode ||
+            "day",
+        phase:
+            "start",
+        start:
+            periodEffectiveStart(),
+        end:
+            periodEffectiveEnd(),
+        hover:
+            "",
+        cursorMonth:
+            firstDayOfMonthYmd(
+                periodEffectiveStart() ||
+                currentViewerBounds
+                    .start
+            )
     };
-    currentViewerBounds =
-        viewerApplicationDateBounds(data, core);
 
-    const startInput =
-        document.getElementById("viewerPeriodStart");
-    const endInput =
-        document.getElementById("viewerPeriodEnd");
+    openViewerModal(
+        "viewerPeriodModal"
+    );
 
-    if (startInput) {
-        startInput.value = currentViewerBounds.start;
-        startInput.min = currentViewerBounds.start;
-        startInput.max = currentViewerBounds.end;
+    renderPeriodPicker();
+}
+
+function setCurrentViewerPeriod(
+    start,
+    end,
+    mode = "day"
+) {
+    const normalizedStart =
+        clampYmd(
+            start,
+            currentViewerBounds
+                .start,
+            currentViewerBounds
+                .end
+        );
+
+    const normalizedEnd =
+        clampYmd(
+            end,
+            currentViewerBounds
+                .start,
+            currentViewerBounds
+                .end
+        );
+
+    currentViewerPeriod = {
+        start:
+            normalizedStart ===
+                currentViewerBounds
+                    .start
+                ? ""
+                : normalizedStart,
+        end:
+            normalizedEnd ===
+                currentViewerBounds
+                    .end
+                ? ""
+                : normalizedEnd,
+        mode
+    };
+
+    updateViewerConditionSummaries();
+
+    renderReport(
+        currentViewerData
+    );
+}
+
+function renderAgePicker() {
+    const body =
+        document.getElementById(
+            "viewerAgePickerBody"
+        );
+
+    const status =
+        document.getElementById(
+            "viewerAgePickStatus"
+        );
+
+    const apply =
+        document.getElementById(
+            "viewerAgeApplyBtn"
+        );
+
+    if (!body) return;
+
+    const state =
+        viewerAgePickerState;
+
+    const effectiveEnd =
+        state.endIndex !==
+            null
+            ? state.endIndex
+            : (
+                state.phase ===
+                    "end" &&
+                state.hoverIndex !==
+                    null
+                    ? state.hoverIndex
+                    : null
+            );
+
+    body.innerHTML = `
+        <div class="age-band-grid">
+            ${VIEWER_AGE_BANDS.map((band, index) => {
+                const classes = [];
+
+                if (
+                    state.startIndex !==
+                        null &&
+                    (
+                        index ===
+                            state.startIndex ||
+                        (
+                            effectiveEnd !==
+                                null &&
+                            index ===
+                                effectiveEnd
+                        )
+                    )
+                ) {
+                    classes.push(
+                        "range-edge"
+                    );
+                }
+
+                if (
+                    state.startIndex !==
+                        null &&
+                    effectiveEnd !==
+                        null &&
+                    index >=
+                        state.startIndex &&
+                    index <=
+                        effectiveEnd
+                ) {
+                    classes.push(
+                        state.endIndex !==
+                            null
+                            ? "in-range"
+                            : "preview"
+                    );
+                }
+
+                return `
+                    <button
+                        type="button"
+                        class="age-band-button ${classes.join(" ")}"
+                        data-age-band="${index}"
+                    >${escapeHtml(band.label)}</button>
+                `;
+            }).join("")}
+        </div>
+    `;
+
+    if (status) {
+        if (
+            state.startIndex ===
+            null
+        ) {
+            status.innerHTML =
+                '<span class="range-accent"></span>下限側の年齢帯を選んでください。';
+        } else if (
+            state.endIndex ===
+            null
+        ) {
+            status.innerHTML =
+                `<span class="range-accent"></span>開始：${escapeHtml(VIEWER_AGE_BANDS[state.startIndex].label)} ／ 上限側を選んでください。`;
+        } else {
+            status.innerHTML =
+                `<span class="range-accent"></span>${escapeHtml(VIEWER_AGE_BANDS[state.startIndex].label)} ～ ${escapeHtml(VIEWER_AGE_BANDS[state.endIndex].label)}`;
+        }
     }
 
-    if (endInput) {
-        endInput.value = currentViewerBounds.end;
-        endInput.min = currentViewerBounds.start;
-        endInput.max = currentViewerBounds.end;
+    if (apply) {
+        apply.disabled =
+            state.startIndex ===
+                null ||
+            state.endIndex ===
+                null;
+    }
+}
+
+function ageBandIndexForMin(
+    value
+) {
+    const number =
+        viewerOptionalNumber(
+            value
+        );
+
+    if (
+        number === null
+    ) {
+        return null;
     }
 
-    const applyPeriodBtn =
-        document.getElementById("viewerApplyPeriodBtn");
+    return VIEWER_AGE_BANDS
+        .findIndex(
+            band =>
+                number >=
+                    band.min &&
+                (
+                    band.max ===
+                        null ||
+                    number <=
+                        band.max
+                )
+        );
+}
 
-    if (applyPeriodBtn) {
-        applyPeriodBtn.onclick = () => {
-            const start = startInput?.value || "";
-            const end = endInput?.value || "";
+function ageBandIndexForMax(
+    value
+) {
+    const number =
+        viewerOptionalNumber(
+            value
+        );
 
-            if (start && end && start > end) {
-                window.alert("開始日は終了日以前を指定してください。");
+    if (
+        number === null
+    ) {
+        return null;
+    }
+
+    return VIEWER_AGE_BANDS
+        .findIndex(
+            band =>
+                number >=
+                    band.min &&
+                (
+                    band.max ===
+                        null ||
+                    number <=
+                        band.max
+                )
+        );
+}
+
+function openAgePicker() {
+    let startIndex =
+        ageBandIndexForMin(
+            currentViewerTargetAge
+                .min
+        );
+
+    let endIndex =
+        ageBandIndexForMax(
+            currentViewerTargetAge
+                .max
+        );
+
+    if (
+        startIndex !==
+            null &&
+        startIndex < 0
+    ) {
+        startIndex =
+            null;
+    }
+
+    if (
+        endIndex !==
+            null &&
+        endIndex < 0
+    ) {
+        endIndex =
+            null;
+    }
+
+    viewerAgePickerState = {
+        phase:
+            "start",
+        startIndex,
+        endIndex,
+        hoverIndex:
+            null
+    };
+
+    openViewerModal(
+        "viewerTargetAgeModal"
+    );
+
+    renderAgePicker();
+}
+
+function initializeViewerAnalysisPickers() {
+    document.getElementById(
+        "viewerPeriodPickerBtn"
+    )?.addEventListener(
+        "click",
+        openPeriodPicker
+    );
+
+    document.getElementById(
+        "viewerTargetAgePickerBtn"
+    )?.addEventListener(
+        "click",
+        openAgePicker
+    );
+
+    document.addEventListener(
+        "click",
+        event => {
+            const closeButton =
+                event.target.closest(
+                    "[data-close-modal]"
+                );
+
+            if (closeButton) {
+                closeViewerModal(
+                    closeButton.dataset
+                        .closeModal
+                );
+
                 return;
             }
 
-            currentViewerPeriod = {
-                start:
-                    start === currentViewerBounds.start
-                        ? ""
-                        : start,
-                end:
-                    end === currentViewerBounds.end
-                        ? ""
-                        : end
-            };
+            const modeButton =
+                event.target.closest(
+                    "[data-period-mode]"
+                );
 
-            renderReport(currentViewerData);
-        };
-    }
+            if (modeButton) {
+                viewerPeriodPickerState
+                    .mode =
+                    modeButton.dataset
+                        .periodMode;
 
-    const allPeriodBtn =
-        document.getElementById("viewerAllPeriodBtn");
+                viewerPeriodPickerState
+                    .phase =
+                    "start";
 
-    if (allPeriodBtn) {
-        allPeriodBtn.onclick = () => {
-            currentViewerPeriod = {
-                start: "",
-                end: ""
-            };
+                viewerPeriodPickerState
+                    .hover =
+                    "";
 
-            if (startInput) {
-                startInput.value = currentViewerBounds.start;
+                renderPeriodPicker();
+                return;
             }
 
-            if (endInput) {
-                endInput.value = currentViewerBounds.end;
+            const quick =
+                event.target.closest(
+                    "[data-period-quick]"
+                );
+
+            if (quick) {
+                const value =
+                    quick.dataset
+                        .periodQuick;
+
+                if (
+                    value ===
+                    "all"
+                ) {
+                    closeViewerModal(
+                        "viewerPeriodModal"
+                    );
+
+                    setCurrentViewerPeriod(
+                        currentViewerBounds
+                            .start,
+                        currentViewerBounds
+                            .end,
+                        "day"
+                    );
+
+                    return;
+                }
+
+                const days =
+                    Number(value);
+
+                const end =
+                    currentViewerBounds
+                        .end;
+
+                const start =
+                    clampYmd(
+                        addDaysYmd(
+                            end,
+                            -(days - 1)
+                        ),
+                        currentViewerBounds
+                            .start,
+                        currentViewerBounds
+                            .end
+                    );
+
+                closeViewerModal(
+                    "viewerPeriodModal"
+                );
+
+                setCurrentViewerPeriod(
+                    start,
+                    end,
+                    "day"
+                );
+
+                return;
             }
 
-            renderReport(currentViewerData);
-        };
-    }
+            const month =
+                event.target.closest(
+                    "[data-period-month]"
+                );
+
+            if (month) {
+                const value =
+                    month.dataset
+                        .periodMonth;
+
+                if (
+                    viewerPeriodPickerState
+                        .phase ===
+                        "start" ||
+                    !viewerPeriodPickerState
+                        .start
+                ) {
+                    viewerPeriodPickerState
+                        .start =
+                        clampYmd(
+                            firstDayOfMonthYmd(
+                                value
+                            ),
+                            currentViewerBounds
+                                .start,
+                            currentViewerBounds
+                                .end
+                        );
+
+                    viewerPeriodPickerState
+                        .end =
+                        "";
+
+                    viewerPeriodPickerState
+                        .phase =
+                        "end";
+                } else {
+                    const candidate =
+                        clampYmd(
+                            lastDayOfMonthYmd(
+                                value
+                            ),
+                            currentViewerBounds
+                                .start,
+                            currentViewerBounds
+                                .end
+                        );
+
+                    if (
+                        candidate <
+                        viewerPeriodPickerState
+                            .start
+                    ) {
+                        viewerPeriodPickerState
+                            .start =
+                            clampYmd(
+                                firstDayOfMonthYmd(
+                                    value
+                                ),
+                                currentViewerBounds
+                                    .start,
+                                currentViewerBounds
+                                    .end
+                            );
+
+                        viewerPeriodPickerState
+                            .end =
+                            "";
+                    } else {
+                        viewerPeriodPickerState
+                            .end =
+                            candidate;
+
+                        viewerPeriodPickerState
+                            .phase =
+                            "done";
+                    }
+                }
+
+                viewerPeriodPickerState
+                    .hover =
+                    "";
+
+                renderPeriodPicker();
+                return;
+            }
+
+            const day =
+                event.target.closest(
+                    "[data-period-day]"
+                );
+
+            if (
+                day &&
+                !day.disabled
+            ) {
+                const value =
+                    day.dataset
+                        .periodDay;
+
+                if (
+                    viewerPeriodPickerState
+                        .phase ===
+                        "start" ||
+                    !viewerPeriodPickerState
+                        .start
+                ) {
+                    viewerPeriodPickerState
+                        .start =
+                        value;
+
+                    viewerPeriodPickerState
+                        .end =
+                        "";
+
+                    viewerPeriodPickerState
+                        .phase =
+                        "end";
+                } else if (
+                    value <
+                    viewerPeriodPickerState
+                        .start
+                ) {
+                    viewerPeriodPickerState
+                        .start =
+                        value;
+
+                    viewerPeriodPickerState
+                        .end =
+                        "";
+                } else {
+                    viewerPeriodPickerState
+                        .end =
+                        value;
+
+                    viewerPeriodPickerState
+                        .phase =
+                        "done";
+                }
+
+                viewerPeriodPickerState
+                    .hover =
+                    "";
+
+                renderPeriodPicker();
+                return;
+            }
+
+            const nav =
+                event.target.closest(
+                    "[data-calendar-nav]"
+                );
+
+            if (
+                nav &&
+                !nav.disabled
+            ) {
+                viewerPeriodPickerState
+                    .cursorMonth =
+                    addMonthsYmd(
+                        viewerPeriodPickerState
+                            .cursorMonth,
+                        Number(
+                            nav.dataset
+                                .calendarNav
+                        )
+                    );
+
+                renderPeriodPicker();
+                return;
+            }
+
+            const age =
+                event.target.closest(
+                    "[data-age-band]"
+                );
+
+            if (age) {
+                const index =
+                    Number(
+                        age.dataset
+                            .ageBand
+                    );
+
+                if (
+                    viewerAgePickerState
+                        .phase ===
+                        "start" ||
+                    viewerAgePickerState
+                        .startIndex ===
+                        null
+                ) {
+                    viewerAgePickerState
+                        .startIndex =
+                        index;
+
+                    viewerAgePickerState
+                        .endIndex =
+                        null;
+
+                    viewerAgePickerState
+                        .phase =
+                        "end";
+                } else if (
+                    index <
+                    viewerAgePickerState
+                        .startIndex
+                ) {
+                    viewerAgePickerState
+                        .startIndex =
+                        index;
+
+                    viewerAgePickerState
+                        .endIndex =
+                        null;
+                } else {
+                    viewerAgePickerState
+                        .endIndex =
+                        index;
+
+                    viewerAgePickerState
+                        .phase =
+                        "done";
+                }
+
+                viewerAgePickerState
+                    .hoverIndex =
+                    null;
+
+                renderAgePicker();
+                return;
+            }
+
+            const ageQuick =
+                event.target.closest(
+                    "[data-age-quick]"
+                );
+
+            if (
+                ageQuick?.dataset
+                    .ageQuick ===
+                "all"
+            ) {
+                currentViewerTargetAge = {
+                    min: "",
+                    max: ""
+                };
+
+                viewerTargetAgeTouched =
+                    true;
+
+                closeViewerModal(
+                    "viewerTargetAgeModal"
+                );
+
+                updateViewerConditionSummaries();
+
+                renderReport(
+                    currentViewerData
+                );
+            }
+        }
+    );
+
+    document.addEventListener(
+        "mouseover",
+        event => {
+            const month =
+                event.target.closest(
+                    "[data-period-month]"
+                );
+
+            if (
+                month &&
+                viewerPeriodPickerState
+                    .phase ===
+                    "end" &&
+                viewerPeriodPickerState
+                    .start
+            ) {
+                const candidate =
+                    clampYmd(
+                        lastDayOfMonthYmd(
+                            month.dataset
+                                .periodMonth
+                        ),
+                        currentViewerBounds
+                            .start,
+                        currentViewerBounds
+                            .end
+                    );
+
+                const nextHover =
+                    candidate >=
+                        viewerPeriodPickerState
+                            .start
+                        ? candidate
+                        : "";
+
+                if (
+                    viewerPeriodPickerState
+                        .hover !==
+                    nextHover
+                ) {
+                    viewerPeriodPickerState
+                        .hover =
+                        nextHover;
+
+                    renderPeriodPicker();
+                }
+
+                return;
+            }
+
+            const day =
+                event.target.closest(
+                    "[data-period-day]"
+                );
+
+            if (
+                day &&
+                !day.disabled &&
+                viewerPeriodPickerState
+                    .phase ===
+                    "end" &&
+                viewerPeriodPickerState
+                    .start
+            ) {
+                const value =
+                    day.dataset
+                        .periodDay;
+
+                const nextHover =
+                    value >=
+                        viewerPeriodPickerState
+                            .start
+                        ? value
+                        : "";
+
+                if (
+                    viewerPeriodPickerState
+                        .hover !==
+                    nextHover
+                ) {
+                    viewerPeriodPickerState
+                        .hover =
+                        nextHover;
+
+                    renderPeriodPicker();
+                }
+
+                return;
+            }
+
+            const age =
+                event.target.closest(
+                    "[data-age-band]"
+                );
+
+            if (
+                age &&
+                viewerAgePickerState
+                    .phase ===
+                    "end" &&
+                viewerAgePickerState
+                    .startIndex !==
+                    null
+            ) {
+                const index =
+                    Number(
+                        age.dataset
+                            .ageBand
+                    );
+
+                const nextHover =
+                    index >=
+                        viewerAgePickerState
+                            .startIndex
+                        ? index
+                        : null;
+
+                if (
+                    viewerAgePickerState
+                        .hoverIndex !==
+                    nextHover
+                ) {
+                    viewerAgePickerState
+                        .hoverIndex =
+                        nextHover;
+
+                    renderAgePicker();
+                }
+            }
+        }
+    );
+
+    document.getElementById(
+        "viewerPeriodApplyBtn"
+    )?.addEventListener(
+        "click",
+        () => {
+            const state =
+                viewerPeriodPickerState;
+
+            if (
+                !state.start ||
+                !state.end
+            ) {
+                return;
+            }
+
+            closeViewerModal(
+                "viewerPeriodModal"
+            );
+
+            setCurrentViewerPeriod(
+                state.start,
+                state.end,
+                state.mode
+            );
+        }
+    );
+
+    document.getElementById(
+        "viewerAgeApplyBtn"
+    )?.addEventListener(
+        "click",
+        () => {
+            const state =
+                viewerAgePickerState;
+
+            if (
+                state.startIndex ===
+                    null ||
+                state.endIndex ===
+                    null
+            ) {
+                return;
+            }
+
+            const startBand =
+                VIEWER_AGE_BANDS[
+                    state.startIndex
+                ];
+
+            const endBand =
+                VIEWER_AGE_BANDS[
+                    state.endIndex
+                ];
+
+            currentViewerTargetAge = {
+                min:
+                    startBand.min,
+                max:
+                    endBand.max ??
+                    ""
+            };
+
+            viewerTargetAgeTouched =
+                true;
+
+            closeViewerModal(
+                "viewerTargetAgeModal"
+            );
+
+            updateViewerConditionSummaries();
+
+            renderReport(
+                currentViewerData
+            );
+        }
+    );
+
+    document.querySelectorAll(
+        ".viewer-modal"
+    )
+        .forEach(modal => {
+            modal.addEventListener(
+                "click",
+                event => {
+                    if (
+                        event.target ===
+                        modal
+                    ) {
+                        closeViewerModal(
+                            modal.id
+                        );
+                    }
+                }
+            );
+        });
+
+    document.addEventListener(
+        "keydown",
+        event => {
+            if (
+                event.key !==
+                "Escape"
+            ) {
+                return;
+            }
+
+            closeViewerModal(
+                "viewerPeriodModal"
+            );
+
+            closeViewerModal(
+                "viewerTargetAgeModal"
+            );
+        }
+    );
+}
+
+function initializeViewerPeriod(
+    data
+) {
+    const core =
+        window
+            .ValidApplicationAnalysisCore;
+
+    currentViewerData =
+        data;
+
+    currentViewerPeriod = {
+        start: "",
+        end: "",
+        mode: "day"
+    };
+
+    currentViewerBounds =
+        viewerApplicationDateBounds(
+            data,
+            core
+        );
+
+    viewerTargetAgeTouched =
+        false;
+
+    syncViewerTargetAgeFromData(
+        data
+    );
+
+    currentViewerBucketOverrides =
+        {};
+
+    updateViewerConditionSummaries();
 }
 
 function renderReport(data) {
@@ -2114,7 +5444,17 @@ function renderReport(data) {
         performance.now();
 
     const core = window.ValidApplicationAnalysisCore;
-    const runtimeData = dataForCurrentViewerPeriod(data);
+
+    syncViewerTargetAgeFromData(
+        data
+    );
+
+    updateViewerConditionSummaries();
+
+    const runtimeData =
+        dataForCurrentViewerPeriod(
+            data
+        );
 
     const aggregateStartedAt =
         performance.now();
@@ -2156,9 +5496,6 @@ function renderReport(data) {
 
     document.getElementById("reportSubtitle").textContent =
         `集計期間：${periodLabel()} ／ 最終データ更新：${formatDateLabel(metadata.lastDataUpdateAt)}`;
-
-    document.getElementById("viewerPeriodRangeNote").textContent =
-        `現在：${periodLabel()}`;
 
     document.getElementById("kpiTotal").textContent =
         core.formatNumber(result.totalCount);
@@ -2205,12 +5542,14 @@ function renderReport(data) {
         );
 
     const visibleBasicTables =
-        result.basicCrossTables.filter(
-            table =>
-                viewerDisplayEnabled(
-                    displayMap,
-                    table.id
-                )
+        viewerOrderBasicTables(
+            result.basicCrossTables.filter(
+                table =>
+                    viewerDisplayEnabled(
+                        displayMap,
+                        table.id
+                    )
+            )
         );
 
     document.getElementById("basicSidebarGroup")
@@ -2219,13 +5558,9 @@ function renderReport(data) {
             visibleBasicTables.length === 0
         );
 
-    const nav =
-        document.getElementById("analysisNav");
-
-    nav.innerHTML =
-        visibleBasicTables.map(table => `
-            <button type="button" data-target="analysis-${escapeHtml(table.id)}" title="${escapeHtml(table.label)}">${escapeHtml(viewerBasicShortLabel(table))}</button>
-        `).join("");
+    renderBasicSidebarNavigation(
+        visibleBasicTables
+    );
 
     const container =
         document.getElementById("basicCrossTables");
