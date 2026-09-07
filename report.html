@@ -1223,6 +1223,39 @@
             }
         }
 
+    
+        /* Viewer UI v27: range selection / sticky conditions / lightweight Pivot */
+        #analysisConditionSidebarGroup {
+            position: sticky;
+            z-index: 8;
+            top: 0;
+            margin: -3px -4px 15px;
+            padding: 8px 4px 11px;
+            border-bottom: 1px solid #e3edf2;
+            background: linear-gradient(180deg,rgba(255,255,255,.995) 0%,rgba(255,255,255,.985) 78%,rgba(255,255,255,.94) 100%);
+            box-shadow: 0 9px 16px -18px rgba(13,103,149,.70);
+        }
+        .report-condition-summary { display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+        .report-condition-chip { display:inline-flex; align-items:center; gap:6px; min-height:26px; padding:4px 8px; border:1px solid #dce8ee; border-radius:999px; background:#fff; color:#607486; font-size:10px; line-height:1.2; }
+        .report-condition-chip strong { color:var(--viewer-brand-blue-dark); font-weight:700; }
+        .target-header { display:inline-flex; min-width:0; flex-direction:column; align-items:flex-end; gap:1px; line-height:1.16; }
+        .target-header-main { font-size:10.5px; font-weight:750; }
+        .target-header-age { color:var(--viewer-brand-blue); font-size:9px; font-weight:650; }
+        .viewer-picker-reset { border-style:dashed!important; }
+        .custom-controls-v27 { display:grid; grid-template-columns:repeat(4,minmax(170px,1fr)); gap:10px; align-items:end; }
+        .custom-control-wide { min-width:0; }
+        .custom-age-button { width:100%; min-height:38px; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 9px; border:1px solid #cfdfe7; border-radius:8px; background:#fff; color:#173043; cursor:pointer; font:inherit; font-size:11px; text-align:left; }
+        .custom-age-button:hover { border-color:rgba(20,142,204,.42); background:var(--viewer-brand-blue-soft); }
+        .custom-age-button .custom-age-current { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--viewer-brand-blue-dark); font-weight:650; }
+        .custom-auto-note { margin-top:8px; color:#7b8d9d; font-size:10px; line-height:1.5; }
+        .custom-auto-note strong { color:var(--viewer-brand-blue-dark); font-weight:650; }
+        #customResult .custom-table th.custom-row-axis-col,#customResult .custom-table td.custom-row-axis-col { width:180px; min-width:180px; max-width:180px; text-align:left; }
+        #customResult .custom-table th.custom-row-axis-col:first-child,#customResult .custom-table td.custom-row-axis-col:first-child { width:210px; min-width:210px; max-width:210px; }
+        #customResult .custom-table tr.custom-group-start>td { border-top:2px solid #dce8ee; }
+        #customResult .custom-table td.custom-row-axis-col .row-label-text { width:100%; max-width:100%; }
+        @media (max-width:1180px) { .custom-controls-v27 { grid-template-columns:repeat(2,minmax(170px,1fr)); } }
+        @media (max-width:720px) { .custom-controls-v27 { grid-template-columns:1fr; } }
+
     </style>
 </head>
 <body>
@@ -1268,7 +1301,7 @@
                 <button id="viewerSidebarToggle" type="button" class="sidebar-toggle" aria-label="サイドバーを折りたたむ" aria-expanded="true" title="サイドバーを折りたたむ">‹</button>
             </div>
             <div class="sidebar-content">
-                <section class="sidebar-group">
+                <section id="analysisConditionSidebarGroup" class="sidebar-group">
                     <div class="sidebar-group-title">分析条件</div>
                     <div class="viewer-condition-stack">
                         <button id="viewerPeriodPickerBtn" type="button" class="viewer-condition-button">
@@ -1296,6 +1329,10 @@
                 <div class="eyebrow">Valid Application Analysis</div>
                 <h1 id="reportTitle">有効応募分析レポート</h1>
                 <div id="reportSubtitle" class="subtitle"></div>
+                <div class="report-condition-summary" aria-label="現在の分析条件">
+                    <span class="report-condition-chip">集計期間 <strong id="reportPeriodCondition">全期間</strong></span>
+                    <span class="report-condition-chip">ターゲット年齢 <strong id="reportTargetAgeCondition">全年齢</strong></span>
+                </div>
             </div>
             <button id="reloadBtn" type="button" class="reload">データを再読み込み</button>
         </div>
@@ -1416,37 +1453,14 @@
             </div>
         </div>
 
-        <div class="custom-controls">
-            <div class="field">
-                <label for="customRowAxis">行軸</label>
-                <select id="customRowAxis"></select>
-            </div>
-            <div class="field">
-                <label for="customColAxis">列軸</label>
-                <select id="customColAxis"></select>
-            </div>
-            <div class="field">
-                <label for="customAgeMode">年齢フィルタ</label>
-                <select id="customAgeMode">
-                    <option value="全年齢">全年齢</option>
-                    <option value="指定範囲">指定範囲</option>
-                </select>
-            </div>
-            <div class="field">
-                <label for="customAgeMin">年齢下限</label>
-                <input id="customAgeMin" type="number" min="0" max="120">
-            </div>
-            <div class="field">
-                <label for="customAgeMax">年齢上限</label>
-                <input id="customAgeMax" type="number" min="0" max="120">
-            </div>
+        <div class="custom-controls-v27">
+            <div class="field custom-control-wide"><label for="customRowAxis1">行軸1</label><select id="customRowAxis1"></select></div>
+            <div class="field custom-control-wide"><label for="customRowAxis2">行軸2（任意）</label><select id="customRowAxis2"></select></div>
+            <div class="field custom-control-wide"><label for="customRowAxis3">行軸3（任意）</label><select id="customRowAxis3"></select></div>
+            <div class="field custom-control-wide"><label for="customColAxis">列軸</label><select id="customColAxis"></select></div>
+            <div class="field custom-control-wide"><label for="customAgePickerBtn">集計対象年齢</label><button id="customAgePickerBtn" type="button" class="custom-age-button"><span id="customAgeSummary" class="custom-age-current">全年齢</span><span aria-hidden="true">›</span></button></div>
         </div>
-
-        <div style="margin-top:10px;">
-            <button id="customRunBtn" type="button" class="custom-run">
-                カスタム集計を更新
-            </button>
-        </div>
+        <div class="custom-auto-note">軸や年齢を変更すると<strong>自動で再集計</strong>します。行軸は最大3段まで指定できます。</div>
 
         <div id="customMessage" class="custom-message hidden"></div>
         <div id="customMeta" class="custom-meta hidden"></div>
@@ -1472,7 +1486,7 @@
             <div class="viewer-modal-head">
                 <div>
                     <div id="viewerPeriodModalTitle" class="viewer-modal-title">集計期間を選択</div>
-                    <div class="viewer-modal-note">開始点を選び、次に終了点を選択します。終了点を選ぶまでは候補範囲をプレビューします。</div>
+                    <div class="viewer-modal-note">1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。2点目を選ぶまでは候補範囲をプレビューします。</div>
                 </div>
                 <button type="button" class="viewer-modal-close" data-close-modal="viewerPeriodModal" aria-label="閉じる">×</button>
             </div>
@@ -1482,6 +1496,7 @@
                     <button id="viewerPeriodModeDay" type="button" data-period-mode="day">日付単位</button>
                 </div>
                 <div class="viewer-quick-actions">
+                    <button type="button" class="viewer-picker-reset" data-period-reset="1">選択をやり直す</button>
                     <button type="button" data-period-quick="all">全期間</button>
                     <button type="button" data-period-quick="30">直近30日</button>
                     <button type="button" data-period-quick="90">直近90日</button>
@@ -1501,12 +1516,13 @@
             <div class="viewer-modal-head">
                 <div>
                     <div id="viewerTargetAgeModalTitle" class="viewer-modal-title">ターゲット年齢を選択</div>
-                    <div class="viewer-modal-note">5歳刻みで下限側を選び、次に上限側を選択します。これは表全体の表示年齢フィルターではなく、ターゲット応募数・率の定義です。</div>
+                    <div id="viewerAgeModalNote" class="viewer-modal-note">5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。</div>
                 </div>
                 <button type="button" class="viewer-modal-close" data-close-modal="viewerTargetAgeModal" aria-label="閉じる">×</button>
             </div>
             <div class="viewer-modal-toolbar">
                 <div class="viewer-quick-actions">
+                    <button type="button" class="viewer-picker-reset" data-age-reset="1">選択をやり直す</button>
                     <button type="button" data-age-quick="all">全年齢</button>
                 </div>
             </div>
@@ -2823,6 +2839,12 @@ function crossTableColgroupHtml(
 }
 
 
+let currentViewerTargetDisplayLabel = "全年齢";
+
+function targetMetricHeaderHtml(label) {
+    return `<th><span class="target-header"><span class="target-header-main">${escapeHtml(label)}</span><span class="target-header-age">${escapeHtml(currentViewerTargetDisplayLabel)}</span></span></th>`;
+}
+
 function renderCrossTable(table, core) {
     const agg = table.aggregate;
     const ageCols = agg.ageCols;
@@ -2841,9 +2863,9 @@ function renderCrossTable(table, core) {
         ...ageCols.map(age => `<th>${escapeHtml(age)}</th>`),
         "<th>総応募数</th>",
         "<th>応募構成比</th>",
-        "<th>ターゲット応募数</th>",
-        "<th>ターゲット率</th>",
-        "<th>ターゲット応募構成比</th>"
+        targetMetricHeaderHtml("ターゲット応募数"),
+        targetMetricHeaderHtml("ターゲット率"),
+        targetMetricHeaderHtml("ターゲット応募構成比")
     ].join("");
 
     const rowsHtml = agg.groups.map(group => {
@@ -2932,9 +2954,9 @@ function renderStandaloneCross(agg, core, firstHeader) {
         ...ageCols.map(age => `<th>${escapeHtml(age)}</th>`),
         "<th>総応募数</th>",
         "<th>応募構成比</th>",
-        "<th>ターゲット応募数</th>",
-        "<th>ターゲット率</th>",
-        "<th>ターゲット応募構成比</th>"
+        targetMetricHeaderHtml("ターゲット応募数"),
+        targetMetricHeaderHtml("ターゲット率"),
+        targetMetricHeaderHtml("ターゲット応募構成比")
     ].join("");
 
     const rows = agg.groups.map(group => {
@@ -3058,9 +3080,9 @@ function renderIndeedTagDetail(detail, core) {
                         ${ageHeaders}
                         <th>タグ対象応募数</th>
                         <th>全応募カバー率</th>
-                        <th>ターゲット応募数</th>
-                        <th>ターゲット率</th>
-                        <th>ターゲット応募カバー率</th>
+                        ${targetMetricHeaderHtml("ターゲット応募数")}
+                        ${targetMetricHeaderHtml("ターゲット率")}
+                        ${targetMetricHeaderHtml("ターゲット応募カバー率")}
                         <th>応募あり求人件数</th>
                         <th>1求人あたり応募数</th>
                     </tr>
@@ -3129,9 +3151,9 @@ function renderTopImageDetail(detail, core) {
                         ${ageHeaders}
                         <th>総応募数</th>
                         <th>応募構成比</th>
-                        <th>ターゲット応募数</th>
-                        <th>ターゲット率</th>
-                        <th>ターゲット応募構成比</th>
+                        ${targetMetricHeaderHtml("ターゲット応募数")}
+                        ${targetMetricHeaderHtml("ターゲット率")}
+                        ${targetMetricHeaderHtml("ターゲット応募構成比")}
                         <th>応募あり求人件数</th>
                         <th>1求人あたり応募数</th>
                     </tr>
@@ -3142,304 +3164,164 @@ function renderTopImageDetail(detail, core) {
     `;
 }
 
-function setCustomSelectOptions(select, options, selected) {
-    select.innerHTML =
-        options.map(option => `
-            <option value="${escapeHtml(option)}"${option === selected ? " selected" : ""}>
-                ${escapeHtml(option)}
-            </option>
-        `).join("");
-}
+let currentCustomAnalysisState = {
+    initialized: false,
+    userTouched: false,
+    rowAxes: [],
+    colAxis: "",
+    ageMin: "",
+    ageMax: ""
+};
+let currentCustomContext = null;
+let currentCustomCore = null;
+let currentCustomAxisOptions = [];
+let customAnalysisTimer = null;
 
+function customOptionalNumber(value) {
+    if (value === null || value === undefined || String(value).trim() === "") return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+function customAgeSummaryLabel() {
+    const min = customOptionalNumber(currentCustomAnalysisState.ageMin);
+    const max = customOptionalNumber(currentCustomAnalysisState.ageMax);
+    if (min === null && max === null) return "全年齢";
+    if (min !== null && max !== null) return `${min}～${max}歳`;
+    if (min !== null) return `${min}歳以上`;
+    return `${max}歳以下`;
+}
+function updateCustomAgeSummary() {
+    const element = document.getElementById("customAgeSummary");
+    if (element) element.textContent = customAgeSummaryLabel();
+}
+function normalizeCustomState(options) {
+    const allowed = new Set(options);
+    const result = [];
+    (Array.isArray(currentCustomAnalysisState.rowAxes) ? currentCustomAnalysisState.rowAxes : []).forEach(axis => {
+        if (axis && allowed.has(axis) && !result.includes(axis) && result.length < 3) result.push(axis);
+    });
+    if (!result.length && options[0]) result.push(options[0]);
+    let colAxis = currentCustomAnalysisState.colAxis;
+    if (!allowed.has(colAxis) || result.includes(colAxis)) colAxis = options.find(axis => !result.includes(axis)) || "";
+    currentCustomAnalysisState.rowAxes = result;
+    currentCustomAnalysisState.colAxis = colAxis;
+}
+function initializeCustomStateFromDefaults(data, options) {
+    if (currentCustomAnalysisState.initialized) { normalizeCustomState(options); return; }
+    const defaults = data?.customAnalysis || {};
+    const defaultRows = Array.isArray(defaults.rowAxes) ? defaults.rowAxes : [defaults.rowAxis];
+    currentCustomAnalysisState = {
+        initialized:true, userTouched:false,
+        rowAxes: defaultRows.map(item => String(item || "").trim()).filter(Boolean).slice(0,3),
+        colAxis: String(defaults.colAxis || "").trim(),
+        ageMin: defaults.ageFilterMode === "指定範囲" ? (defaults.ageMin ?? "") : "",
+        ageMax: defaults.ageFilterMode === "指定範囲" ? (defaults.ageMax ?? "") : ""
+    };
+    normalizeCustomState(options);
+}
+function customSelectedAxes() {
+    return [...currentCustomAnalysisState.rowAxes, currentCustomAnalysisState.colAxis].filter(Boolean);
+}
+function setCustomAxisSelectOptions(select, options, selected, {allowEmpty=false, ownValue=""}={}) {
+    if (!select) return;
+    const used = new Set(customSelectedAxes());
+    const rows = [];
+    if (allowEmpty) rows.push('<option value="">（未使用）</option>');
+    options.forEach(option => {
+        const disabled = used.has(option) && option !== ownValue;
+        rows.push(`<option value="${escapeHtml(option)}" ${option === selected ? "selected" : ""} ${disabled ? "disabled" : ""}>${escapeHtml(option)}</option>`);
+    });
+    select.innerHTML = rows.join("");
+}
+function renderCustomAxisControls() {
+    const rowAxes = [...currentCustomAnalysisState.rowAxes];
+    while (rowAxes.length < 3) rowAxes.push("");
+    ["customRowAxis1","customRowAxis2","customRowAxis3"].forEach((id,index) => {
+        setCustomAxisSelectOptions(document.getElementById(id), currentCustomAxisOptions, rowAxes[index] || "", {allowEmpty:index>0, ownValue:rowAxes[index] || ""});
+    });
+    setCustomAxisSelectOptions(document.getElementById("customColAxis"), currentCustomAxisOptions, currentCustomAnalysisState.colAxis, {ownValue:currentCustomAnalysisState.colAxis});
+    updateCustomAgeSummary();
+}
+function customRowAxisValuesFromDom() {
+    return ["customRowAxis1","customRowAxis2","customRowAxis3"].map(id => document.getElementById(id)?.value).map(value => String(value || "").trim()).filter(Boolean);
+}
+function runCustomAnalysisNow() {
+    clearTimeout(customAnalysisTimer); customAnalysisTimer = null;
+    if (!currentCustomContext || !currentCustomCore) return;
+    const custom = currentCustomCore.aggregateCustom(currentCustomContext, {
+        rowAxes: currentCustomAnalysisState.rowAxes,
+        colAxis: currentCustomAnalysisState.colAxis,
+        ageFilterMode: (currentCustomAnalysisState.ageMin !== "" || currentCustomAnalysisState.ageMax !== "") ? "指定範囲" : "全年齢",
+        ageMin: currentCustomAnalysisState.ageMin,
+        ageMax: currentCustomAnalysisState.ageMax
+    });
+    renderCustomResult(custom, currentCustomCore);
+}
+function scheduleCustomAnalysisRun() {
+    clearTimeout(customAnalysisTimer);
+    customAnalysisTimer = setTimeout(runCustomAnalysisNow, 150);
+}
+function customRowGroupStart(current, previous) {
+    if (!previous) return false;
+    return current?.labels?.[0] !== previous?.labels?.[0];
+}
 function renderCustomResult(result, core) {
     const message = document.getElementById("customMessage");
     const meta = document.getElementById("customMeta");
     const output = document.getElementById("customResult");
-
-    message.classList.add("hidden");
-    meta.classList.add("hidden");
-    output.innerHTML = "";
-
+    message?.classList.add("hidden"); meta?.classList.add("hidden"); if (output) output.innerHTML = "";
     if (!result.ok) {
-        const messages = {
-            AXIS_REQUIRED:
-                "行軸と列軸を選択してください。",
-            SAME_AXIS:
-                "行軸と列軸には異なる項目を選択してください。",
-            NO_DATA:
-                "現在の条件では集計対象データがありません。",
-            TOO_MANY_COLUMNS:
-                `列軸のカテゴリが ${result.columnCount || 0} 種類あります。100種類を超えるため表示できません。行軸と列軸を入れ替えるか、別の列軸を選択してください。`
-        };
-
-        message.textContent =
-            messages[result.reason] ||
-            "カスタム分析を表示できません。";
-
-        message.classList.remove("hidden");
+        const messages = { AXIS_REQUIRED:"行軸1と列軸を選択してください。", DUPLICATE_AXIS:"同じ分析軸を複数の行・列へ重複指定することはできません。", NO_DATA:"現在の条件では集計対象データがありません。", TOO_MANY_COLUMNS:`列軸のカテゴリが ${result.columnCount || 0} 種類あります。100種類を超えるため表示できません。別の列軸を選択してください。` };
+        if (message) { message.textContent = messages[result.reason] || "カスタム分析を表示できません。"; message.classList.remove("hidden"); }
         return;
     }
-
-    const ageLabel =
-        result.ageFilterMode === "指定範囲"
-            ? core.targetLabel(
-                result.ageMin,
-                result.ageMax
-            )
-            : "全年齢";
-
-    meta.textContent =
-        `行軸: ${result.rowAxis} ／ 列軸: ${result.colAxis} ／ 年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`;
-
-    meta.classList.remove("hidden");
-
-    const headers =
-        result.colLabels
-            .map(label => `<th>${escapeHtml(label)}</th>`)
-            .join("");
-
-    const rows =
-        result.rowLabels.map(rowLabel => {
-            const rowMap =
-                result.matrix.get(rowLabel) ||
-                new Map();
-
-            const cells =
-                result.colLabels
-                    .map(
-                        colLabel =>
-                            `<td>${core.formatNumber(rowMap.get(colLabel) || 0)}</td>`
-                    )
-                    .join("");
-
-            return `
-                <tr>
-                    <td>${escapeHtml(rowLabel)}</td>
-                    ${cells}
-                    <td>${core.formatNumber(result.rowTotals.get(rowLabel) || 0)}</td>
-                </tr>
-            `;
-        }).join("");
-
-    const totalCells =
-        result.colLabels
-            .map(
-                colLabel =>
-                    `<td>${core.formatNumber(result.colTotals.get(colLabel) || 0)}</td>`
-            )
-            .join("");
-
-    output.innerHTML = `
-        <div class="table-wrap">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>${escapeHtml(result.rowAxis)} ＼ ${escapeHtml(result.colAxis)}</th>
-                        ${headers}
-                        <th>行合計</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rows}
-                    <tr class="total-row">
-                        <td>列合計</td>
-                        ${totalCells}
-                        <td>${core.formatNumber(result.applicationCount)}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    `;
-
+    const ageLabel = result.ageFilterMode === "指定範囲" ? core.targetLabel(result.ageMin,result.ageMax) : "全年齢";
+    if (meta) { meta.textContent = `行軸: ${result.rowAxes.join(" > ")} ／ 列軸: ${result.colAxis} ／ 集計対象年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`; meta.classList.remove("hidden"); }
+    const rowHeaders = result.rowAxes.map(axis => `<th class="custom-row-axis-col">${escapeHtml(axis)}</th>`).join("");
+    const headers = result.colLabels.map(label => `<th title="列軸：${escapeHtml(result.colAxis)}">${escapeHtml(label)}</th>`).join("");
+    const rows = result.rowEntries.map((entry,index) => {
+        const previous = result.rowEntries[index-1];
+        const rowMap = result.matrix.get(entry.key) || new Map();
+        const rowAxisCells = entry.labels.map(label => `<td class="custom-row-axis-col"><span class="row-label-text" data-full-text="${escapeHtml(label)}">${escapeHtml(label)}</span></td>`).join("");
+        const cells = result.colLabels.map(colLabel => `<td>${core.formatNumber(rowMap.get(colLabel) || 0)}</td>`).join("");
+        return `<tr class="${customRowGroupStart(entry,previous) ? "custom-group-start" : ""}">${rowAxisCells}${cells}<td>${core.formatNumber(result.rowTotals.get(entry.key) || 0)}</td></tr>`;
+    }).join("");
+    const totalCells = result.colLabels.map(colLabel => `<td>${core.formatNumber(result.colTotals.get(colLabel) || 0)}</td>`).join("");
+    output.innerHTML = `<div class="table-wrap"><table class="custom-table"><thead><tr>${rowHeaders}${headers}<th>行合計</th></tr></thead><tbody>${rows}<tr class="total-row"><td colspan="${result.rowAxes.length}">列合計</td>${totalCells}<td>${core.formatNumber(result.applicationCount)}</td></tr></tbody></table></div>`;
     enhanceReportTables(output);
 }
-
-function initializeCustomAnalysis(data, viewerResult, core) {
-    const context =
-        viewerResult.context;
-
-    const options =
-        Array.isArray(
-            viewerResult.customAxisOptions
-        )
-            ? viewerResult.customAxisOptions
-            : [];
-
-    const defaults =
-        data.customAnalysis || {};
-
-    const rowSelect =
-        document.getElementById(
-            "customRowAxis"
-        );
-
-    const colSelect =
-        document.getElementById(
-            "customColAxis"
-        );
-
-    const ageMode =
-        document.getElementById(
-            "customAgeMode"
-        );
-
-    const ageMin =
-        document.getElementById(
-            "customAgeMin"
-        );
-
-    const ageMax =
-        document.getElementById(
-            "customAgeMax"
-        );
-
-    const runButton =
-        document.getElementById(
-            "customRunBtn"
-        );
-
-    const message =
-        document.getElementById(
-            "customMessage"
-        );
-
-    if (options.length < 2) {
-        [
-            rowSelect,
-            colSelect,
-            ageMode,
-            ageMin,
-            ageMax,
-            runButton
-        ].forEach(control => {
-            if (control) {
-                control.disabled = true;
-            }
+function bindCustomAnalysisControls() {
+    ["customRowAxis1","customRowAxis2","customRowAxis3","customColAxis"].forEach(id => {
+        const element = document.getElementById(id);
+        if (!element || element.dataset.customBound === "1") return;
+        element.dataset.customBound = "1";
+        element.addEventListener("change", () => {
+            currentCustomAnalysisState.rowAxes = customRowAxisValuesFromDom();
+            currentCustomAnalysisState.colAxis = document.getElementById("customColAxis")?.value || "";
+            currentCustomAnalysisState.userTouched = true;
+            normalizeCustomState(currentCustomAxisOptions);
+            renderCustomAxisControls();
+            scheduleCustomAnalysisRun();
         });
-
-        if (message) {
-            message.textContent =
-                "カスタム分析には、分析レポート表示設定でONになっている分析軸が2種類以上必要です。";
-            message.classList.remove(
-                "hidden"
-            );
-        }
-
-        document
-            .getElementById(
-                "customMeta"
-            )
-            ?.classList.add(
-                "hidden"
-            );
-
-        const output =
-            document.getElementById(
-                "customResult"
-            );
-
-        if (output) {
-            output.innerHTML = "";
-        }
-
+    });
+}
+function initializeCustomAnalysis(data, viewerResult, core) {
+    currentCustomContext = viewerResult.context;
+    currentCustomCore = core;
+    currentCustomAxisOptions = Array.isArray(viewerResult.customAxisOptions) ? viewerResult.customAxisOptions : [];
+    const message = document.getElementById("customMessage");
+    if (currentCustomAxisOptions.length < 2) {
+        ["customRowAxis1","customRowAxis2","customRowAxis3","customColAxis","customAgePickerBtn"].map(id => document.getElementById(id)).forEach(control => { if (control) control.disabled = true; });
+        if (message) { message.textContent = "カスタム分析には、分析レポート表示設定でONになっている分析軸が2種類以上必要です。"; message.classList.remove("hidden"); }
+        document.getElementById("customMeta")?.classList.add("hidden");
+        const output = document.getElementById("customResult"); if (output) output.innerHTML = "";
         return;
     }
-
-    [
-        rowSelect,
-        colSelect,
-        ageMode,
-        ageMin,
-        ageMax,
-        runButton
-    ].forEach(control => {
-        if (control) {
-            control.disabled = false;
-        }
-    });
-
-    const rowAxis =
-        options.includes(
-            defaults.rowAxis
-        )
-            ? defaults.rowAxis
-            : options[0];
-
-    const colAxis =
-        (
-            options.includes(
-                defaults.colAxis
-            ) &&
-            defaults.colAxis !==
-                rowAxis
-        )
-            ? defaults.colAxis
-            : options.find(
-                option =>
-                    option !==
-                    rowAxis
-            );
-
-    setCustomSelectOptions(
-        rowSelect,
-        options,
-        rowAxis
-    );
-
-    setCustomSelectOptions(
-        colSelect,
-        options,
-        colAxis
-    );
-
-    ageMode.value =
-        defaults.ageFilterMode ===
-        "指定範囲"
-            ? "指定範囲"
-            : "全年齢";
-
-    ageMin.value =
-        defaults.ageMin === "" ||
-        defaults.ageMin === null ||
-        defaults.ageMin === undefined
-            ? ""
-            : defaults.ageMin;
-
-    ageMax.value =
-        defaults.ageMax === "" ||
-        defaults.ageMax === null ||
-        defaults.ageMax === undefined
-            ? ""
-            : defaults.ageMax;
-
-    const run = () => {
-        const custom =
-            core.aggregateCustom(
-                context,
-                {
-                    rowAxis:
-                        rowSelect.value,
-                    colAxis:
-                        colSelect.value,
-                    ageFilterMode:
-                        ageMode.value,
-                    ageMin:
-                        ageMin.value,
-                    ageMax:
-                        ageMax.value
-                }
-            );
-
-        renderCustomResult(
-            custom,
-            core
-        );
-    };
-
-    runButton.onclick =
-        run;
-
-    run();
+    ["customRowAxis1","customRowAxis2","customRowAxis3","customColAxis","customAgePickerBtn"].map(id => document.getElementById(id)).forEach(control => { if (control) control.disabled = false; });
+    initializeCustomStateFromDefaults(data,currentCustomAxisOptions);
+    renderCustomAxisControls();
+    bindCustomAnalysisControls();
+    runCustomAnalysisNow();
 }
 
 
@@ -3498,6 +3380,8 @@ let viewerAgePickerState = {
     endIndex: null,
     hoverIndex: null
 };
+
+let viewerAgePickerContext = "target";
 
 function ymd(
     date
@@ -4076,70 +3960,18 @@ function periodValueClass(
     value,
     mode
 ) {
-    const start =
-        viewerPeriodPickerState
-            .start;
-
-    const end =
-        periodPreviewEnd();
-
-    if (!start) return "";
-
-    const compareValue =
-        mode === "month"
-            ? monthKeyFromYmd(
-                value
-            )
-            : value;
-
-    const compareStart =
-        mode === "month"
-            ? monthKeyFromYmd(
-                start
-            )
-            : start;
-
-    const compareEnd =
-        mode === "month"
-            ? monthKeyFromYmd(
-                end
-            )
-            : end;
-
+    const point1 = viewerPeriodPickerState.start;
+    const point2 = periodPreviewEnd();
+    if (!point1) return "";
+    const compareValue = mode === "month" ? monthKeyFromYmd(value) : value;
+    const comparePoint1 = mode === "month" ? monthKeyFromYmd(point1) : point1;
+    const comparePoint2 = mode === "month" ? monthKeyFromYmd(point2) : point2;
+    const low = comparePoint2 ? (comparePoint1 <= comparePoint2 ? comparePoint1 : comparePoint2) : comparePoint1;
+    const high = comparePoint2 ? (comparePoint1 <= comparePoint2 ? comparePoint2 : comparePoint1) : comparePoint1;
     const classes = [];
-
-    if (
-        compareValue ===
-            compareStart ||
-        (
-            compareEnd &&
-            compareValue ===
-                compareEnd
-        )
-    ) {
-        classes.push(
-            "range-edge"
-        );
-    }
-
-    if (
-        compareEnd &&
-        compareValue >=
-            compareStart &&
-        compareValue <=
-            compareEnd
-    ) {
-        classes.push(
-            viewerPeriodPickerState
-                .end
-                ? "in-range"
-                : "preview"
-        );
-    }
-
-    return classes.join(
-        " "
-    );
+    if (compareValue === comparePoint1 || (comparePoint2 && compareValue === comparePoint2)) classes.push("range-edge");
+    if (comparePoint2 && compareValue >= low && compareValue <= high) classes.push(viewerPeriodPickerState.end ? "in-range" : "preview");
+    return classes.join(" ");
 }
 
 function renderPeriodMonthPicker() {
@@ -4437,12 +4269,12 @@ function updatePeriodPickerStatus() {
         !state.start
     ) {
         status.innerHTML =
-            '<span class="range-accent"></span>開始点を選んでください。';
+            '<span class="range-accent"></span>1点目を選んでください。';
     } else if (
         !state.end
     ) {
         status.innerHTML =
-            `<span class="range-accent"></span>開始：${escapeHtml(state.mode === "month" ? formatMonthLabel(state.start) : formatYmdLabel(state.start))} ／ 終了点を選んでください。`;
+            `<span class="range-accent"></span>1点目：${escapeHtml(state.mode === "month" ? formatMonthLabel(state.start) : formatYmdLabel(state.start))} ／ もう1点を選んでください。`;
     } else {
         status.innerHTML =
             `<span class="range-accent"></span>${escapeHtml(state.mode === "month" ? formatMonthLabel(state.start) : formatYmdLabel(state.start))} ～ ${escapeHtml(state.mode === "month" ? formatMonthLabel(state.end) : formatYmdLabel(state.end))}`;
@@ -4578,18 +4410,9 @@ function renderAgePicker() {
     const state =
         viewerAgePickerState;
 
-    const effectiveEnd =
-        state.endIndex !==
-            null
-            ? state.endIndex
-            : (
-                state.phase ===
-                    "end" &&
-                state.hoverIndex !==
-                    null
-                    ? state.hoverIndex
-                    : null
-            );
+    const effectiveEnd = state.endIndex !== null ? state.endIndex : (state.phase === "end" && state.hoverIndex !== null ? state.hoverIndex : null);
+    const rangeLow = state.startIndex !== null && effectiveEnd !== null ? Math.min(state.startIndex, effectiveEnd) : state.startIndex;
+    const rangeHigh = state.startIndex !== null && effectiveEnd !== null ? Math.max(state.startIndex, effectiveEnd) : effectiveEnd;
 
     body.innerHTML = `
         <div class="age-band-grid">
@@ -4621,9 +4444,9 @@ function renderAgePicker() {
                     effectiveEnd !==
                         null &&
                     index >=
-                        state.startIndex &&
+                        rangeLow &&
                     index <=
-                        effectiveEnd
+                        rangeHigh
                 ) {
                     classes.push(
                         state.endIndex !==
@@ -4650,13 +4473,13 @@ function renderAgePicker() {
             null
         ) {
             status.innerHTML =
-                '<span class="range-accent"></span>下限側の年齢帯を選んでください。';
+                '<span class="range-accent"></span>1点目の年齢帯を選んでください。';
         } else if (
             state.endIndex ===
             null
         ) {
             status.innerHTML =
-                `<span class="range-accent"></span>開始：${escapeHtml(VIEWER_AGE_BANDS[state.startIndex].label)} ／ 上限側を選んでください。`;
+                `<span class="range-accent"></span>1点目：${escapeHtml(VIEWER_AGE_BANDS[state.startIndex].label)} ／ もう1点を選んでください。`;
         } else {
             status.innerHTML =
                 `<span class="range-accent"></span>${escapeHtml(VIEWER_AGE_BANDS[state.startIndex].label)} ～ ${escapeHtml(VIEWER_AGE_BANDS[state.endIndex].label)}`;
@@ -4728,50 +4551,36 @@ function ageBandIndexForMax(
         );
 }
 
-function openAgePicker() {
-    let startIndex =
-        ageBandIndexForMin(
-            currentViewerTargetAge
-                .min
-        );
+function agePickerSourceRange(context) {
+    if (context === "custom") return { min: currentCustomAnalysisState.ageMin, max: currentCustomAnalysisState.ageMax };
+    return { min: currentViewerTargetAge.min, max: currentViewerTargetAge.max };
+}
 
-    let endIndex =
-        ageBandIndexForMax(
-            currentViewerTargetAge
-                .max
-        );
-
-    if (
-        startIndex !==
-            null &&
-        startIndex < 0
-    ) {
-        startIndex =
-            null;
+function configureAgePickerModal(context) {
+    const title = document.getElementById("viewerTargetAgeModalTitle");
+    const note = document.getElementById("viewerAgeModalNote");
+    const apply = document.getElementById("viewerAgeApplyBtn");
+    if (context === "custom") {
+        if (title) title.textContent = "集計対象年齢を選択";
+        if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。カスタム分析の集計対象だけを絞り込みます。";
+        if (apply) apply.textContent = "この年齢範囲で集計";
+    } else {
+        if (title) title.textContent = "ターゲット年齢を選択";
+        if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。ターゲット応募数・率の定義を変更します。";
+        if (apply) apply.textContent = "この年齢範囲を適用";
     }
+}
 
-    if (
-        endIndex !==
-            null &&
-        endIndex < 0
-    ) {
-        endIndex =
-            null;
-    }
-
-    viewerAgePickerState = {
-        phase:
-            "start",
-        startIndex,
-        endIndex,
-        hoverIndex:
-            null
-    };
-
-    openViewerModal(
-        "viewerTargetAgeModal"
-    );
-
+function openAgePicker(context = "target") {
+    viewerAgePickerContext = context === "custom" ? "custom" : "target";
+    configureAgePickerModal(viewerAgePickerContext);
+    const range = agePickerSourceRange(viewerAgePickerContext);
+    let startIndex = ageBandIndexForMin(range.min);
+    let endIndex = ageBandIndexForMax(range.max);
+    if (startIndex !== null && startIndex < 0) startIndex = null;
+    if (endIndex !== null && endIndex < 0) endIndex = null;
+    viewerAgePickerState = { phase:"start", startIndex, endIndex, hoverIndex:null };
+    openViewerModal("viewerTargetAgeModal");
     renderAgePicker();
 }
 
@@ -4783,12 +4592,8 @@ function initializeViewerAnalysisPickers() {
         openPeriodPicker
     );
 
-    document.getElementById(
-        "viewerTargetAgePickerBtn"
-    )?.addEventListener(
-        "click",
-        openAgePicker
-    );
+    document.getElementById("viewerTargetAgePickerBtn")?.addEventListener("click", () => openAgePicker("target"));
+    document.getElementById("customAgePickerBtn")?.addEventListener("click", () => openAgePicker("custom"));
 
     document.addEventListener(
         "click",
@@ -4826,6 +4631,16 @@ function initializeViewerAnalysisPickers() {
                     .hover =
                     "";
 
+                renderPeriodPicker();
+                return;
+            }
+
+            const periodReset = event.target.closest("[data-period-reset]");
+            if (periodReset) {
+                viewerPeriodPickerState.phase = "start";
+                viewerPeriodPickerState.start = "";
+                viewerPeriodPickerState.end = "";
+                viewerPeriodPickerState.hover = "";
                 renderPeriodPicker();
                 return;
             }
@@ -4901,73 +4716,18 @@ function initializeViewerAnalysisPickers() {
                     month.dataset
                         .periodMonth;
 
-                if (
-                    viewerPeriodPickerState
-                        .phase ===
-                        "start" ||
-                    !viewerPeriodPickerState
-                        .start
-                ) {
-                    viewerPeriodPickerState
-                        .start =
-                        clampYmd(
-                            firstDayOfMonthYmd(
-                                value
-                            ),
-                            currentViewerBounds
-                                .start,
-                            currentViewerBounds
-                                .end
-                        );
-
-                    viewerPeriodPickerState
-                        .end =
-                        "";
-
-                    viewerPeriodPickerState
-                        .phase =
-                        "end";
+                if (viewerPeriodPickerState.phase !== "end" || !viewerPeriodPickerState.start) {
+                    viewerPeriodPickerState.start = clampYmd(firstDayOfMonthYmd(value), currentViewerBounds.start, currentViewerBounds.end);
+                    viewerPeriodPickerState.end = "";
+                    viewerPeriodPickerState.phase = "end";
                 } else {
-                    const candidate =
-                        clampYmd(
-                            lastDayOfMonthYmd(
-                                value
-                            ),
-                            currentViewerBounds
-                                .start,
-                            currentViewerBounds
-                                .end
-                        );
-
-                    if (
-                        candidate <
-                        viewerPeriodPickerState
-                            .start
-                    ) {
-                        viewerPeriodPickerState
-                            .start =
-                            clampYmd(
-                                firstDayOfMonthYmd(
-                                    value
-                                ),
-                                currentViewerBounds
-                                    .start,
-                                currentViewerBounds
-                                    .end
-                            );
-
-                        viewerPeriodPickerState
-                            .end =
-                            "";
-                    } else {
-                        viewerPeriodPickerState
-                            .end =
-                            candidate;
-
-                        viewerPeriodPickerState
-                            .phase =
-                            "done";
-                    }
+                    const point1 = viewerPeriodPickerState.start;
+                    const point2 = clampYmd(firstDayOfMonthYmd(value), currentViewerBounds.start, currentViewerBounds.end);
+                    const low = point1 <= point2 ? point1 : point2;
+                    const high = point1 <= point2 ? point2 : point1;
+                    viewerPeriodPickerState.start = clampYmd(firstDayOfMonthYmd(low), currentViewerBounds.start, currentViewerBounds.end);
+                    viewerPeriodPickerState.end = clampYmd(lastDayOfMonthYmd(high), currentViewerBounds.start, currentViewerBounds.end);
+                    viewerPeriodPickerState.phase = "done";
                 }
 
                 viewerPeriodPickerState
@@ -4991,44 +4751,15 @@ function initializeViewerAnalysisPickers() {
                     day.dataset
                         .periodDay;
 
-                if (
-                    viewerPeriodPickerState
-                        .phase ===
-                        "start" ||
-                    !viewerPeriodPickerState
-                        .start
-                ) {
-                    viewerPeriodPickerState
-                        .start =
-                        value;
-
-                    viewerPeriodPickerState
-                        .end =
-                        "";
-
-                    viewerPeriodPickerState
-                        .phase =
-                        "end";
-                } else if (
-                    value <
-                    viewerPeriodPickerState
-                        .start
-                ) {
-                    viewerPeriodPickerState
-                        .start =
-                        value;
-
-                    viewerPeriodPickerState
-                        .end =
-                        "";
+                if (viewerPeriodPickerState.phase !== "end" || !viewerPeriodPickerState.start) {
+                    viewerPeriodPickerState.start = value;
+                    viewerPeriodPickerState.end = "";
+                    viewerPeriodPickerState.phase = "end";
                 } else {
-                    viewerPeriodPickerState
-                        .end =
-                        value;
-
-                    viewerPeriodPickerState
-                        .phase =
-                        "done";
+                    const point1 = viewerPeriodPickerState.start;
+                    viewerPeriodPickerState.start = point1 <= value ? point1 : value;
+                    viewerPeriodPickerState.end = point1 <= value ? value : point1;
+                    viewerPeriodPickerState.phase = "done";
                 }
 
                 viewerPeriodPickerState
@@ -5063,6 +4794,13 @@ function initializeViewerAnalysisPickers() {
                 return;
             }
 
+            const ageReset = event.target.closest("[data-age-reset]");
+            if (ageReset) {
+                viewerAgePickerState = { phase:"start", startIndex:null, endIndex:null, hoverIndex:null };
+                renderAgePicker();
+                return;
+            }
+
             const age =
                 event.target.closest(
                     "[data-age-band]"
@@ -5075,45 +4813,15 @@ function initializeViewerAnalysisPickers() {
                             .ageBand
                     );
 
-                if (
-                    viewerAgePickerState
-                        .phase ===
-                        "start" ||
-                    viewerAgePickerState
-                        .startIndex ===
-                        null
-                ) {
-                    viewerAgePickerState
-                        .startIndex =
-                        index;
-
-                    viewerAgePickerState
-                        .endIndex =
-                        null;
-
-                    viewerAgePickerState
-                        .phase =
-                        "end";
-                } else if (
-                    index <
-                    viewerAgePickerState
-                        .startIndex
-                ) {
-                    viewerAgePickerState
-                        .startIndex =
-                        index;
-
-                    viewerAgePickerState
-                        .endIndex =
-                        null;
+                if (viewerAgePickerState.phase !== "end" || viewerAgePickerState.startIndex === null) {
+                    viewerAgePickerState.startIndex = index;
+                    viewerAgePickerState.endIndex = null;
+                    viewerAgePickerState.phase = "end";
                 } else {
-                    viewerAgePickerState
-                        .endIndex =
-                        index;
-
-                    viewerAgePickerState
-                        .phase =
-                        "done";
+                    const point1 = viewerAgePickerState.startIndex;
+                    viewerAgePickerState.startIndex = Math.min(point1, index);
+                    viewerAgePickerState.endIndex = Math.max(point1, index);
+                    viewerAgePickerState.phase = "done";
                 }
 
                 viewerAgePickerState
@@ -5129,28 +4837,21 @@ function initializeViewerAnalysisPickers() {
                     "[data-age-quick]"
                 );
 
-            if (
-                ageQuick?.dataset
-                    .ageQuick ===
-                "all"
-            ) {
-                currentViewerTargetAge = {
-                    min: "",
-                    max: ""
-                };
-
-                viewerTargetAgeTouched =
-                    true;
-
-                closeViewerModal(
-                    "viewerTargetAgeModal"
-                );
-
-                updateViewerConditionSummaries();
-
-                renderReport(
-                    currentViewerData
-                );
+            if (ageQuick?.dataset.ageQuick === "all") {
+                if (viewerAgePickerContext === "custom") {
+                    currentCustomAnalysisState.ageMin = "";
+                    currentCustomAnalysisState.ageMax = "";
+                    currentCustomAnalysisState.userTouched = true;
+                    updateCustomAgeSummary();
+                    closeViewerModal("viewerTargetAgeModal");
+                    scheduleCustomAnalysisRun();
+                } else {
+                    currentViewerTargetAge = { min:"", max:"" };
+                    viewerTargetAgeTouched = true;
+                    closeViewerModal("viewerTargetAgeModal");
+                    updateViewerConditionSummaries();
+                    renderReport(currentViewerData);
+                }
             }
         }
     );
@@ -5183,12 +4884,7 @@ function initializeViewerAnalysisPickers() {
                             .end
                     );
 
-                const nextHover =
-                    candidate >=
-                        viewerPeriodPickerState
-                            .start
-                        ? candidate
-                        : "";
+                const nextHover = candidate;
 
                 if (
                     viewerPeriodPickerState
@@ -5223,12 +4919,7 @@ function initializeViewerAnalysisPickers() {
                     day.dataset
                         .periodDay;
 
-                const nextHover =
-                    value >=
-                        viewerPeriodPickerState
-                            .start
-                        ? value
-                        : "";
+                const nextHover = value;
 
                 if (
                     viewerPeriodPickerState
@@ -5265,12 +4956,7 @@ function initializeViewerAnalysisPickers() {
                             .ageBand
                     );
 
-                const nextHover =
-                    index >=
-                        viewerAgePickerState
-                            .startIndex
-                        ? index
-                        : null;
+                const nextHover = index;
 
                 if (
                     viewerAgePickerState
@@ -5341,26 +5027,20 @@ function initializeViewerAnalysisPickers() {
                     state.endIndex
                 ];
 
-            currentViewerTargetAge = {
-                min:
-                    startBand.min,
-                max:
-                    endBand.max ??
-                    ""
-            };
-
-            viewerTargetAgeTouched =
-                true;
-
-            closeViewerModal(
-                "viewerTargetAgeModal"
-            );
-
-            updateViewerConditionSummaries();
-
-            renderReport(
-                currentViewerData
-            );
+            if (viewerAgePickerContext === "custom") {
+                currentCustomAnalysisState.ageMin = startBand.min;
+                currentCustomAnalysisState.ageMax = endBand.max ?? "";
+                currentCustomAnalysisState.userTouched = true;
+                closeViewerModal("viewerTargetAgeModal");
+                updateCustomAgeSummary();
+                scheduleCustomAnalysisRun();
+            } else {
+                currentViewerTargetAge = { min:startBand.min, max:endBand.max ?? "" };
+                viewerTargetAgeTouched = true;
+                closeViewerModal("viewerTargetAgeModal");
+                updateViewerConditionSummaries();
+                renderReport(currentViewerData);
+            }
         }
     );
 
@@ -5433,9 +5113,8 @@ function initializeViewerPeriod(
         data
     );
 
-    currentViewerBucketOverrides =
-        {};
-
+    currentViewerBucketOverrides = {};
+    currentCustomAnalysisState = { initialized:false, userTouched:false, rowAxes:[], colAxis:"", ageMin:"", ageMax:"" };
     updateViewerConditionSummaries();
 }
 
@@ -5494,8 +5173,12 @@ function renderReport(data) {
         shareWarning.textContent = "";
     }
 
-    document.getElementById("reportSubtitle").textContent =
-        `集計期間：${periodLabel()} ／ 最終データ更新：${formatDateLabel(metadata.lastDataUpdateAt)}`;
+    currentViewerTargetDisplayLabel = result.targetLabel;
+    document.getElementById("reportSubtitle").textContent = `最終データ更新：${formatDateLabel(metadata.lastDataUpdateAt)}`;
+    const reportPeriodCondition = document.getElementById("reportPeriodCondition");
+    if (reportPeriodCondition) reportPeriodCondition.textContent = periodSummaryLabel();
+    const reportTargetAgeCondition = document.getElementById("reportTargetAgeCondition");
+    if (reportTargetAgeCondition) reportTargetAgeCondition.textContent = result.targetLabel;
 
     document.getElementById("kpiTotal").textContent =
         core.formatNumber(result.totalCount);

@@ -195,7 +195,7 @@
         const min = n(minAge);
         const max = n(maxAge);
 
-        if (min !== null && max !== null) return `${min}-${max}歳`;
+        if (min !== null && max !== null) return `${min}～${max}歳`;
         if (min !== null) return `${min}歳以上`;
         if (max !== null) return `${max}歳以下`;
         return "全年齢";
@@ -856,7 +856,9 @@ function buildImageMap(dataset) {
                     Math.min(rangeStart + w.hour - 1, 23);
 
                 return category(
-                    `${rangeStart}-${rangeEnd}時`,
+                    w.hour <= 1
+                        ? `${rangeStart}時台`
+                        : `${rangeStart}～${rangeEnd}時台`,
                     rangeStart
                 );
             }
@@ -1586,7 +1588,12 @@ function customAxisValue(record, axis, context) {
         const start = Math.floor(value / w.hour) * w.hour;
         const end = Math.min(start + w.hour - 1, 23);
 
-        return category(`${start}-${end}時`, start);
+        return category(
+            w.hour <= 1
+                ? `${start}時台`
+                : `${start}～${end}時台`,
+            start
+        );
     }
 
     if (!record.matched) return null;
@@ -1684,7 +1691,24 @@ function customAxisValue(record, axis, context) {
     if (axis === "求人画像枚数") {
         let value = n(record.job?.["求人画像枚数"]);
         if (value === null) value = 0;
-        return category(`${value}枚`, value);
+
+        if (w.imageCount <= 1) {
+            return category(`${value}枚`, value);
+        }
+
+        const start =
+            Math.floor(value / w.imageCount) *
+            w.imageCount;
+
+        const end =
+            start +
+            w.imageCount -
+            1;
+
+        return category(
+            `${start}～${end}枚`,
+            start
+        );
     }
 
     if (axis === "TOP画像ファイル名") {
@@ -1760,115 +1784,398 @@ function sortCustomLabels(labels, metaMap, totalMap) {
     });
 }
 
+function compareCustomCategory(
+    a,
+    b
+) {
+    const av =
+        a?.sortValue;
+
+    const bv =
+        b?.sortValue;
+
+    const aHas =
+        av !== null &&
+        av !== undefined &&
+        Number.isFinite(
+            Number(av)
+        );
+
+    const bHas =
+        bv !== null &&
+        bv !== undefined &&
+        Number.isFinite(
+            Number(bv)
+        );
+
+    if (
+        aHas &&
+        bHas &&
+        Number(av) !==
+            Number(bv)
+    ) {
+        return (
+            Number(av) -
+            Number(bv)
+        );
+    }
+
+    if (
+        aHas !== bHas
+    ) {
+        return aHas
+            ? -1
+            : 1;
+    }
+
+    return String(
+        a?.label || ""
+    ).localeCompare(
+        String(
+            b?.label || ""
+        ),
+        "ja",
+        {
+            numeric: true,
+            sensitivity:
+                "base"
+        }
+    );
+}
+
 function aggregateCustom(context, options = {}) {
-    const rowAxis = s(options.rowAxis);
-    const colAxis = s(options.colAxis);
+    const rowAxes =
+        (
+            Array.isArray(
+                options.rowAxes
+            )
+                ? options.rowAxes
+                : [
+                    options.rowAxis
+                ]
+        )
+            .map(s)
+            .filter(Boolean)
+            .slice(0, 3);
+
+    const colAxis =
+        s(options.colAxis);
 
     const ageFilterMode =
         s(options.ageFilterMode) === "指定範囲"
             ? "指定範囲"
             : "全年齢";
 
-    const ageMin = n(options.ageMin);
-    const ageMax = n(options.ageMax);
+    const ageMin =
+        n(options.ageMin);
 
-    if (!rowAxis || !colAxis) {
-        return { ok: false, reason: "AXIS_REQUIRED" };
+    const ageMax =
+        n(options.ageMax);
+
+    if (
+        !rowAxes.length ||
+        !colAxis
+    ) {
+        return {
+            ok: false,
+            reason:
+                "AXIS_REQUIRED"
+        };
     }
 
-    if (rowAxis === colAxis) {
-        return { ok: false, reason: "SAME_AXIS" };
+    const allAxes = [
+        ...rowAxes,
+        colAxis
+    ];
+
+    if (
+        new Set(allAxes)
+            .size !==
+        allAxes.length
+    ) {
+        return {
+            ok: false,
+            reason:
+                "DUPLICATE_AXIS"
+        };
     }
 
     const requiresJob =
-        customAxisRequiresJob(rowAxis) ||
-        customAxisRequiresJob(colAxis);
+        allAxes.some(
+            customAxisRequiresJob
+        );
 
     let base =
         requiresJob
             ? context.recordsMatched
             : context.recordsAll;
 
-    if (ageFilterMode === "指定範囲") {
-        base = base.filter(record => {
-            if (record.age === null) return false;
-            if (ageMin !== null && record.age < ageMin) return false;
-            if (ageMax !== null && record.age > ageMax) return false;
-            return true;
-        });
+    if (
+        ageFilterMode ===
+        "指定範囲"
+    ) {
+        base =
+            base.filter(
+                record => {
+                    if (
+                        record.age ===
+                        null
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        ageMin !== null &&
+                        record.age <
+                            ageMin
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        ageMax !== null &&
+                        record.age >
+                            ageMax
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            );
     }
 
-    const rowMeta = new Map();
-    const colMeta = new Map();
-    const matrix = new Map();
-    const rowTotals = new Map();
-    const colTotals = new Map();
-    let usedRecords = 0;
+    const rowMeta =
+        new Map();
 
-    base.forEach(record => {
-        const rowCat = customAxisValue(record, rowAxis, context);
-        const colCat = customAxisValue(record, colAxis, context);
+    const colMeta =
+        new Map();
 
-        if (!rowCat || !colCat) return;
+    const matrix =
+        new Map();
 
-        const rLabel = rowCat.label;
-        const cLabel = colCat.label;
+    const rowTotals =
+        new Map();
 
-        if (!rowMeta.has(rLabel)) rowMeta.set(rLabel, rowCat);
-        if (!colMeta.has(cLabel)) colMeta.set(cLabel, colCat);
-        if (!matrix.has(rLabel)) matrix.set(rLabel, new Map());
+    const colTotals =
+        new Map();
 
-        const rowMap = matrix.get(rLabel);
+    let usedRecords =
+        0;
 
-        rowMap.set(
-            cLabel,
-            (rowMap.get(cLabel) || 0) + 1
+    base.forEach(
+        record => {
+            const rowCats =
+                rowAxes.map(
+                    axis =>
+                        customAxisValue(
+                            record,
+                            axis,
+                            context
+                        )
+                );
+
+            const colCat =
+                customAxisValue(
+                    record,
+                    colAxis,
+                    context
+                );
+
+            if (
+                rowCats.some(
+                    item => !item
+                ) ||
+                !colCat
+            ) {
+                return;
+            }
+
+            const rowLabels =
+                rowCats.map(
+                    item =>
+                        item.label
+                );
+
+            const rowKey =
+                JSON.stringify(
+                    rowLabels
+                );
+
+            const cLabel =
+                colCat.label;
+
+            if (
+                !rowMeta.has(
+                    rowKey
+                )
+            ) {
+                rowMeta.set(
+                    rowKey,
+                    {
+                        key:
+                            rowKey,
+                        labels:
+                            rowLabels,
+                        categories:
+                            rowCats
+                    }
+                );
+            }
+
+            if (
+                !colMeta.has(
+                    cLabel
+                )
+            ) {
+                colMeta.set(
+                    cLabel,
+                    colCat
+                );
+            }
+
+            if (
+                !matrix.has(
+                    rowKey
+                )
+            ) {
+                matrix.set(
+                    rowKey,
+                    new Map()
+                );
+            }
+
+            const rowMap =
+                matrix.get(
+                    rowKey
+                );
+
+            rowMap.set(
+                cLabel,
+                (
+                    rowMap.get(
+                        cLabel
+                    ) ||
+                    0
+                ) + 1
+            );
+
+            rowTotals.set(
+                rowKey,
+                (
+                    rowTotals.get(
+                        rowKey
+                    ) ||
+                    0
+                ) + 1
+            );
+
+            colTotals.set(
+                cLabel,
+                (
+                    colTotals.get(
+                        cLabel
+                    ) ||
+                    0
+                ) + 1
+            );
+
+            usedRecords += 1;
+        }
+    );
+
+    const rowEntries =
+        Array.from(
+            rowMeta.values()
         );
 
-        rowTotals.set(
-            rLabel,
-            (rowTotals.get(rLabel) || 0) + 1
+    rowEntries.sort(
+        (a, b) => {
+            for (
+                let i = 0;
+                i <
+                Math.max(
+                    a.categories.length,
+                    b.categories.length
+                );
+                i++
+            ) {
+                const result =
+                    compareCustomCategory(
+                        a.categories[i],
+                        b.categories[i]
+                    );
+
+                if (result) {
+                    return result;
+                }
+            }
+
+            return (
+                (
+                    rowTotals.get(
+                        b.key
+                    ) ||
+                    0
+                ) -
+                (
+                    rowTotals.get(
+                        a.key
+                    ) ||
+                    0
+                )
+            );
+        }
+    );
+
+    const colLabels =
+        Array.from(
+            colMeta.keys()
         );
 
-        colTotals.set(
-            cLabel,
-            (colTotals.get(cLabel) || 0) + 1
-        );
+    sortCustomLabels(
+        colLabels,
+        colMeta,
+        colTotals
+    );
 
-        usedRecords += 1;
-    });
-
-    const rowLabels = Array.from(rowMeta.keys());
-    const colLabels = Array.from(colMeta.keys());
-
-    sortCustomLabels(rowLabels, rowMeta, rowTotals);
-    sortCustomLabels(colLabels, colMeta, colTotals);
-
-    if (colLabels.length > 100) {
+    if (
+        colLabels.length >
+        100
+    ) {
         return {
             ok: false,
-            reason: "TOO_MANY_COLUMNS",
-            columnCount: colLabels.length
+            reason:
+                "TOO_MANY_COLUMNS",
+            columnCount:
+                colLabels.length
         };
     }
 
     if (!usedRecords) {
-        return { ok: false, reason: "NO_DATA" };
+        return {
+            ok: false,
+            reason:
+                "NO_DATA"
+        };
     }
 
     return {
         ok: true,
-        rowAxis,
+        rowAxes,
+        rowAxis:
+            rowAxes[0],
         colAxis,
         ageFilterMode,
         ageMin,
         ageMax,
-        rowLabels,
+        rowEntries,
         colLabels,
         matrix,
         rowTotals,
         colTotals,
-        applicationCount: usedRecords
+        applicationCount:
+            usedRecords
     };
 }
 
