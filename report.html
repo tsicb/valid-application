@@ -774,6 +774,56 @@
             font-weight: 650;
         }
 
+
+        .basic-column-axis-control {
+            margin: 0 0 10px;
+            padding: 9px;
+            border: 1px solid #dce8ee;
+            border-radius: 11px;
+            background: #fff;
+        }
+
+        .basic-column-axis-control label {
+            display: block;
+            margin-bottom: 5px;
+            color: #718292;
+            font-size: 9.5px;
+            font-weight: 700;
+        }
+
+        .basic-column-axis-control select {
+            width: 100%;
+            min-width: 0;
+            min-height: 32px;
+            padding: 5px 8px;
+            border: 1px solid #d7e5ec;
+            border-radius: 8px;
+            background: #fff;
+            color: #173043;
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .basic-column-axis-note {
+            margin-top: 5px;
+            color: #8796a4;
+            font-size: 8.8px;
+            line-height: 1.45;
+        }
+
+        .basic-distribution-table {
+            min-width: 900px;
+        }
+
+        .basic-distribution-table .distribution-bar-cell {
+            width: 28%;
+            min-width: 170px;
+        }
+
+        .basic-distribution-table .bar {
+            min-width: 140px;
+        }
+
         .section-head-actions {
             flex: 0 0 auto;
             display: flex;
@@ -853,6 +903,13 @@
 
         .cross-table col.cross-col-target-share {
             width: 132px;
+        }
+
+
+        .basic-axis-cross-table thead th {
+            white-space: normal;
+            line-height: 1.22;
+            overflow-wrap: anywhere;
         }
 
         #customResult .table-wrap {
@@ -2050,6 +2107,48 @@
             white-space: nowrap;
         }
 
+
+        .custom-top-image-hover-preview {
+            position: fixed;
+            z-index: 10020;
+            width: 254px;
+            padding: 7px;
+            border: 1px solid rgba(15, 103, 149, .2);
+            border-radius: 11px;
+            background: rgba(255,255,255,.985);
+            box-shadow: 0 14px 38px rgba(15, 23, 42, .18);
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(3px);
+            transition: opacity .1s ease, transform .1s ease, visibility .1s ease;
+        }
+
+        .custom-top-image-hover-preview.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .custom-top-image-hover-preview img {
+            width: 240px;
+            height: 160px;
+            display: block;
+            object-fit: cover;
+            border-radius: 7px;
+            background: #f8fafc;
+        }
+
+        .custom-top-image-hover-caption {
+            margin-top: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #475569;
+            font-size: 10px;
+            line-height: 1.3;
+        }
+
     </style>
 </head>
 <body>
@@ -2113,7 +2212,15 @@
                     <button type="button" class="sidebar-nav-button" data-target="kpiSection" title="主要指標">主要指標</button>
                     <button type="button" class="sidebar-nav-button" data-target="ageSection" title="年代構成">年代</button>
                 </nav></section>
-                <section id="basicSidebarGroup" class="sidebar-group"><div class="sidebar-group-title">基本分析</div><nav id="analysisNav" class="analysis-nav" aria-label="基本分析"></nav></section>
+                <section id="basicSidebarGroup" class="sidebar-group">
+                    <div class="sidebar-group-title">基本分析</div>
+                    <div class="basic-column-axis-control">
+                        <label for="viewerBasicColumnAxisSelect">基本表の列</label>
+                        <select id="viewerBasicColumnAxisSelect" aria-label="基本表の列"></select>
+                        <div id="viewerBasicColumnAxisNote" class="basic-column-axis-note">各分析表を年代別に比較します。</div>
+                    </div>
+                    <nav id="analysisNav" class="analysis-nav" aria-label="基本分析"></nav>
+                </section>
                 <section id="detailSidebarGroup" class="sidebar-group"><div class="sidebar-group-title">詳細・自由分析</div><nav id="detailAnalysisNav" class="sidebar-nav" aria-label="詳細・自由分析"></nav></section>
             </div>
         </aside>
@@ -2672,7 +2779,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.08-viewer-ui-v30.2-custom-top-image-preview";
+    "2026.09.08-viewer-ui-v30.3-image-ux-basic-column-axis";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -2785,6 +2892,94 @@ let viewerSidebarScrollEndTimer =
     null;
 let viewerSidebarScrollRaf =
     0;
+
+function renderBasicColumnAxisControl(
+    basicColumnAxis
+) {
+    const select =
+        document.getElementById(
+            "viewerBasicColumnAxisSelect"
+        );
+    const note =
+        document.getElementById(
+            "viewerBasicColumnAxisNote"
+        );
+
+    if (!select) return;
+
+    const options =
+        Array.isArray(
+            basicColumnAxis?.options
+        )
+            ? basicColumnAxis.options
+            : [];
+
+    select.innerHTML =
+        options.map(option => {
+            const disabled =
+                !option.available;
+            const suffix =
+                disabled &&
+                option.unavailableReason
+                    ? `（${option.unavailableReason}）`
+                    : "";
+
+            return `<option value="${escapeHtml(option.key)}" ${option.key === basicColumnAxis?.key ? "selected" : ""} ${disabled ? "disabled" : ""}>${escapeHtml(option.label + suffix)}</option>`;
+        }).join("");
+
+    select.value =
+        basicColumnAxis?.key ||
+        "age";
+
+    if (note) {
+        note.textContent =
+            basicColumnAxis?.key === "age"
+                ? "各分析表を年代別に比較します。"
+                : `各分析表を${basicColumnAxis?.label || "選択項目"}別に比較します。同じ項目の表は構成比表示になります。`;
+    }
+}
+
+function initializeBasicColumnAxisControl() {
+    const select =
+        document.getElementById(
+            "viewerBasicColumnAxisSelect"
+        );
+
+    if (
+        !select ||
+        select.dataset.bound === "1"
+    ) {
+        return;
+    }
+
+    select.dataset.bound = "1";
+    select.addEventListener(
+        "change",
+        () => {
+            const next =
+                String(
+                    select.value ||
+                    "age"
+                );
+
+            if (
+                next ===
+                currentViewerBasicColumnAxis
+            ) {
+                return;
+            }
+
+            currentViewerBasicColumnAxis =
+                next;
+
+            if (currentViewerData) {
+                renderReport(
+                    currentViewerData
+                );
+            }
+        }
+    );
+}
 
 function viewerBasicShortLabel(
     table
@@ -4343,7 +4538,7 @@ function updateCustomPivotContextBar(controller,shouldShow){
             const axis=rowAxes[index]||header.textContent||"";
             const value=labels[index]||"";
 
-            return `<div class="custom-pivot-context-cell" style="width:${widths[index]}px" title="${escapeHtml(value)}"><span class="custom-pivot-context-axis">${escapeHtml(axis)}</span><span class="custom-pivot-context-value">${customPivotContextValueHtml(axis,value)}</span></div>`;
+            return `<div class="custom-pivot-context-cell" style="width:${widths[index]}px" title="${escapeHtml(value)}"><span class="custom-pivot-context-axis">${escapeHtml(customAxisDisplayLabel(axis))}</span><span class="custom-pivot-context-value">${customPivotContextValueHtml(axis,value)}</span></div>`;
         }).join("");
 
         bindCustomPivotImageFallbacks(bar);
@@ -4728,9 +4923,75 @@ function enhanceReportTables(root=document){
 function ensureRowLabelTooltip(){let t=document.getElementById("rowLabelTooltip");if(t)return t;t=document.createElement("div");t.id="rowLabelTooltip";t.className="row-label-tooltip";t.setAttribute("role","tooltip");document.body.appendChild(t);return t;}
 function positionRowLabelTooltip(t,event){const margin=14,w=t.offsetWidth||240,h=t.offsetHeight||40;let left=event.clientX+12,top=event.clientY+14;if(left+w+margin>innerWidth)left=event.clientX-w-12;if(top+h+margin>innerHeight)top=event.clientY-h-12;t.style.left=`${Math.max(margin,left)}px`;t.style.top=`${Math.max(margin,top)}px`;}
 function initializeRowLabelTooltip(){const t=ensureRowLabelTooltip();document.addEventListener("mouseover",e=>{const label=e.target.closest(".row-label-text");if(!label||label.scrollWidth<=label.clientWidth+1)return;t.textContent=label.dataset.fullText||label.textContent||"";t.classList.add("visible");positionRowLabelTooltip(t,e);});document.addEventListener("mousemove",e=>{if(t.classList.contains("visible"))positionRowLabelTooltip(t,e);});document.addEventListener("mouseout",e=>{if(e.target.closest(".row-label-text"))t.classList.remove("visible");});}
+function ensureCustomTopImageHoverPreview(){
+    let preview=document.getElementById("customTopImageHoverPreview");
+    if(preview)return preview;
+    preview=document.createElement("div");
+    preview.id="customTopImageHoverPreview";
+    preview.className="custom-top-image-hover-preview";
+    preview.setAttribute("role","tooltip");
+    preview.innerHTML='<img alt=""><div class="custom-top-image-hover-caption"></div>';
+    document.body.appendChild(preview);
+    return preview;
+}
+function customTopImageHoverName(image){
+    return String(
+        image?.closest("[title]")?.getAttribute("title") ||
+        image?.parentElement?.querySelector("[data-image-fallback='1']")?.textContent ||
+        "TOP画像"
+    ).trim();
+}
+function positionCustomTopImageHoverPreview(preview,event){
+    const margin=14;
+    const gap=14;
+    const width=preview.offsetWidth||254;
+    const height=preview.offsetHeight||196;
+    let left=event.clientX+gap;
+    let top=event.clientY+gap;
+    if(left+width+margin>innerWidth)left=event.clientX-width-gap;
+    if(top+height+margin>innerHeight)top=event.clientY-height-gap;
+    preview.style.left=`${Math.max(margin,left)}px`;
+    preview.style.top=`${Math.max(margin,top)}px`;
+}
+function initializeCustomTopImageHoverPreview(){
+    const preview=ensureCustomTopImageHoverPreview();
+    if(preview.dataset.bound==="1")return;
+    preview.dataset.bound="1";
+    const previewImage=preview.querySelector("img");
+    const caption=preview.querySelector(".custom-top-image-hover-caption");
+    let activeImage=null;
+    document.addEventListener("mouseover",event=>{
+        const image=event.target.closest?.("#customResult img.custom-pivot-image-thumb[data-custom-top-image='1']");
+        if(!image||image.classList.contains("hidden")||!image.naturalWidth)return;
+        activeImage=image;
+        if(previewImage)previewImage.src=image.currentSrc||image.src;
+        if(caption)caption.textContent=customTopImageHoverName(image);
+        preview.classList.add("visible");
+        positionCustomTopImageHoverPreview(preview,event);
+    });
+    document.addEventListener("mousemove",event=>{
+        if(activeImage&&preview.classList.contains("visible")){
+            positionCustomTopImageHoverPreview(preview,event);
+        }
+    });
+    document.addEventListener("mouseout",event=>{
+        const image=event.target.closest?.("#customResult img.custom-pivot-image-thumb[data-custom-top-image='1']");
+        if(!image||image!==activeImage)return;
+        activeImage=null;
+        preview.classList.remove("visible");
+        if(previewImage)previewImage.removeAttribute("src");
+    });
+    previewImage?.addEventListener("error",()=>{
+        activeImage=null;
+        preview.classList.remove("visible");
+        previewImage.removeAttribute("src");
+    });
+}
 function initializeViewerDesktopUx(){
     initializeViewerSidebar();
     initializeRowLabelTooltip();
+    initializeBasicColumnAxisControl();
+    initializeCustomTopImageHoverPreview();
     initializeBucketControls();
     initializeViewerAnalysisPickers();
     ensureFloatingTableScrollbar();
@@ -5100,12 +5361,13 @@ function initializeBucketControls() {
 }
 
 function crossTableColgroupHtml(
-    ageCols
+    columns,
+    columnWidth = 72
 ) {
     return `
         <colgroup>
             <col class="cross-col-label">
-            ${ageCols.map(() => '<col class="cross-col-age">').join("")}
+            ${columns.map(() => `<col class="cross-col-age" style="width:${columnWidth}px">`).join("")}
             <col class="cross-col-total">
             <col class="cross-col-share">
             <col class="cross-col-target">
@@ -5122,22 +5384,51 @@ function targetMetricHeaderHtml(label) {
     return `<th><span class="target-header"><span class="target-header-main">${escapeHtml(label)}</span><span class="target-header-age">${escapeHtml(currentViewerTargetDisplayLabel)}</span></span></th>`;
 }
 
+function basicCrossColumnWidth(agg) {
+    const widths = {
+        "month": 92,
+        "media": 112,
+        "job-category": 142,
+        "employment": 112,
+        "weekday": 76
+    };
+
+    return widths[agg?.columnAxisKey] || 104;
+}
+
 function renderCrossTable(table, core) {
+    if (table.presentation === "distribution") {
+        return renderBasicDistributionTable(table, core);
+    }
+
     const agg = table.aggregate;
-    const ageCols = agg.ageCols;
-    const totalAge = Object.fromEntries(
-        ageCols.map(age => [age, 0])
+    const columnLabels =
+        Array.isArray(agg.columnLabels)
+            ? agg.columnLabels
+            : (agg.ageCols || []);
+    const isAgeAxis =
+        !Array.isArray(agg.columnLabels);
+    const columnAxisLabel =
+        isAgeAxis
+            ? "年齢"
+            : (agg.columnAxisLabel || "列");
+    const totalColumns = Object.fromEntries(
+        columnLabels.map(label => [label, 0])
     );
 
     agg.groups.forEach(group => {
-        ageCols.forEach(age => {
-            totalAge[age] += group.ageCounts[age] || 0;
+        columnLabels.forEach(label => {
+            const counts =
+                isAgeAxis
+                    ? group.ageCounts
+                    : group.columnCounts;
+            totalColumns[label] += counts?.[label] || 0;
         });
     });
 
     const headerHtml = [
         "<th>区分</th>",
-        ...ageCols.map(age => `<th>${escapeHtml(age)}</th>`),
+        ...columnLabels.map(label => `<th>${escapeHtml(label)}</th>`),
         "<th>総応募数</th>",
         "<th>応募構成比</th>",
         targetMetricHeaderHtml("ターゲット応募数"),
@@ -5146,14 +5437,18 @@ function renderCrossTable(table, core) {
     ].join("");
 
     const rowsHtml = agg.groups.map(group => {
-        const ageCells = ageCols
-            .map(age => `<td>${core.formatNumber(group.ageCounts[age] || 0)}</td>`)
+        const counts =
+            isAgeAxis
+                ? group.ageCounts
+                : group.columnCounts;
+        const columnCells = columnLabels
+            .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
             .join("");
 
         return `
             <tr>
                 <td>${escapeHtml(group.label)}</td>
-                ${ageCells}
+                ${columnCells}
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
                 <td>${core.formatNumber(group.target)}</td>
@@ -5163,12 +5458,12 @@ function renderCrossTable(table, core) {
         `;
     }).join("");
 
-    const totalAgeCells = ageCols
-        .map(age => `<td>${core.formatNumber(totalAge[age] || 0)}</td>`)
+    const totalColumnCells = columnLabels
+        .map(label => `<td>${core.formatNumber(totalColumns[label] || 0)}</td>`)
         .join("");
 
-    const compositionCells = ageCols
-        .map(age => `<td>${core.formatPercent(agg.baseTotal ? (totalAge[age] || 0) / agg.baseTotal : 0)}</td>`)
+    const compositionCells = columnLabels
+        .map(label => `<td>${core.formatPercent(agg.baseTotal ? (totalColumns[label] || 0) / agg.baseTotal : 0)}</td>`)
         .join("");
 
     return `
@@ -5177,7 +5472,7 @@ function renderCrossTable(table, core) {
                 <div>
                     <h2>${escapeHtml(table.label)}</h2>
                     <div class="section-note">
-                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""}
+                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""}${isAgeAxis ? "" : ` ／ 基本列：${escapeHtml(columnAxisLabel)}`}
                     </div>
                 </div>
                 <div class="section-head-actions">
@@ -5185,8 +5480,8 @@ function renderCrossTable(table, core) {
                 </div>
             </div>
             <div class="table-wrap">
-                <table class="cross-table">
-                    ${crossTableColgroupHtml(ageCols)}
+                <table class="cross-table ${isAgeAxis ? "" : "basic-axis-cross-table"}">
+                    ${crossTableColgroupHtml(columnLabels, isAgeAxis ? 72 : basicCrossColumnWidth(agg))}
                     <thead>
                         <tr>${headerHtml}</tr>
                     </thead>
@@ -5194,7 +5489,7 @@ function renderCrossTable(table, core) {
                         ${rowsHtml}
                         <tr class="total-row">
                             <td>【総計】</td>
-                            ${totalAgeCells}
+                            ${totalColumnCells}
                             <td>${core.formatNumber(agg.baseTotal)}</td>
                             <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
                             <td>${core.formatNumber(agg.baseTarget)}</td>
@@ -5202,9 +5497,76 @@ function renderCrossTable(table, core) {
                             <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
                         </tr>
                         <tr class="composition-row">
-                            <td>年齢構成比</td>
+                            <td>${escapeHtml(columnAxisLabel)}構成比</td>
                             ${compositionCells}
                             <td></td><td></td><td></td><td></td><td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    `;
+}
+
+function renderBasicDistributionTable(table, core) {
+    const agg = table.aggregate;
+    const rowsHtml = agg.groups.map(group => {
+        const share =
+            agg.baseTotal
+                ? group.total / agg.baseTotal
+                : 0;
+
+        return `
+            <tr>
+                <td>${escapeHtml(group.label)}</td>
+                <td>${core.formatNumber(group.total)}</td>
+                <td>${core.formatPercent(share)}</td>
+                <td class="distribution-bar-cell">
+                    <div class="bar"><span style="width:${Math.max(0, Math.min(100, share * 100))}%"></span></div>
+                </td>
+                <td>${core.formatNumber(group.target)}</td>
+                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
+                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
+            </tr>
+        `;
+    }).join("");
+
+    return `
+        <section id="analysis-${escapeHtml(table.id)}" class="card section">
+            <div class="section-head">
+                <div>
+                    <h2>${escapeHtml(table.label)}</h2>
+                    <div class="section-note">
+                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""} ／ 基本列自身のため構成比表示
+                    </div>
+                </div>
+                <div class="section-head-actions">
+                    ${bucketControlHtml(table.id)}
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="basic-distribution-table">
+                    <thead>
+                        <tr>
+                            <th>区分</th>
+                            <th>応募数</th>
+                            <th>応募構成比</th>
+                            <th>比率</th>
+                            ${targetMetricHeaderHtml("ターゲット応募数")}
+                            ${targetMetricHeaderHtml("ターゲット率")}
+                            ${targetMetricHeaderHtml("ターゲット応募構成比")}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                        <tr class="total-row">
+                            <td>【総計】</td>
+                            <td>${core.formatNumber(agg.baseTotal)}</td>
+                            <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
+                            <td></td>
+                            <td>${core.formatNumber(agg.baseTarget)}</td>
+                            <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
+                            <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -5641,6 +6003,11 @@ function initializeCustomStateFromDefaults(data, options) {
 function customSelectedAxes() {
     return [...currentCustomAnalysisState.rowAxes, currentCustomAnalysisState.colAxis].filter(Boolean);
 }
+function customAxisDisplayLabel(axis) {
+    return axis === "TOP画像ファイル名"
+        ? "TOP画像"
+        : String(axis || "");
+}
 function setCustomAxisSelectOptions(select, options, selected, {allowEmpty=false, ownValue=""}={}) {
     if (!select) return;
     const used = new Set(customSelectedAxes());
@@ -5648,7 +6015,7 @@ function setCustomAxisSelectOptions(select, options, selected, {allowEmpty=false
     if (allowEmpty) rows.push('<option value="">（未使用）</option>');
     options.forEach(option => {
         const disabled = used.has(option) && option !== ownValue;
-        rows.push(`<option value="${escapeHtml(option)}" ${option === selected ? "selected" : ""} ${disabled ? "disabled" : ""}>${escapeHtml(option)}</option>`);
+        rows.push(`<option value="${escapeHtml(option)}" ${option === selected ? "selected" : ""} ${disabled ? "disabled" : ""}>${escapeHtml(customAxisDisplayLabel(option))}</option>`);
     });
     select.innerHTML = rows.join("");
 }
@@ -5861,9 +6228,9 @@ function renderCustomResult(result, core) {
         return;
     }
     const ageLabel = result.ageFilterMode === "指定範囲" ? core.targetLabel(result.ageMin,result.ageMax) : "全年齢";
-    if (meta) { meta.textContent = `行軸: ${result.rowAxes.join(" > ")} ／ 列軸: ${result.colAxis} ／ 集計対象年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`; meta.classList.remove("hidden"); }
-    const rowHeaders=result.rowAxes.map((axis,index)=>`<th class="custom-row-axis-col" data-row-axis-index="${index}" title="${escapeHtml(axis)}">${escapeHtml(axis)}</th>`).join("");
-    const headers=result.colLabels.map(label=>`<th title="列軸：${escapeHtml(result.colAxis)}">${escapeHtml(label)}</th>`).join("");
+    if (meta) { meta.textContent = `行軸: ${result.rowAxes.map(customAxisDisplayLabel).join(" > ")} ／ 列軸: ${customAxisDisplayLabel(result.colAxis)} ／ 集計対象年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`; meta.classList.remove("hidden"); }
+    const rowHeaders=result.rowAxes.map((axis,index)=>`<th class="custom-row-axis-col" data-row-axis-index="${index}" title="${escapeHtml(customAxisDisplayLabel(axis))}">${escapeHtml(customAxisDisplayLabel(axis))}</th>`).join("");
+    const headers=result.colLabels.map(label=>`<th title="列軸：${escapeHtml(customAxisDisplayLabel(result.colAxis))}">${escapeHtml(label)}</th>`).join("");
     const rows=result.rowEntries.map((entry,index)=>{const previous=result.rowEntries[index-1];const rowMap=result.matrix.get(entry.key)||new Map();const rowAxisCells=entry.labels.map((label,axisIndex)=>{
         const display=customPivotDisplayLabel(result,index,axisIndex);
         const axis=result.rowAxes[axisIndex]||"";
@@ -5930,6 +6297,8 @@ let currentViewerTargetAge = {
     min: "",
     max: ""
 };
+
+let currentViewerBasicColumnAxis = "age";
 
 let viewerTargetAgeTouched =
     false;
@@ -6316,7 +6685,9 @@ function dataForCurrentViewerPeriod(
                     .min,
             "ターゲット年齢上限":
                 currentViewerTargetAge
-                    .max
+                    .max,
+            "基本表列軸":
+                currentViewerBasicColumnAxis
         }
     };
 }
@@ -7707,12 +8078,20 @@ function initializeViewerPeriod(
     );
 
     currentViewerBucketOverrides = {};
+    currentViewerBasicColumnAxis = "age";
     currentCustomAnalysisState = { initialized:false, userTouched:false, rowAxes:[], colAxis:"", ageMin:"", ageMax:"" };
     currentCustomPivotLayout = { result:null, output:null, widths:[] };
     updateViewerConditionSummaries();
 }
 
 function renderReport(data) {
+    const hoverPreview =
+        document.getElementById(
+            "customTopImageHoverPreview"
+        );
+    hoverPreview?.classList.remove("visible");
+    hoverPreview?.querySelector("img")?.removeAttribute("src");
+
     const renderStartedAt =
         performance.now();
 
@@ -7733,6 +8112,17 @@ function renderReport(data) {
         performance.now();
 
     const result = core.aggregateViewer(runtimeData);
+
+    if (
+        result.basicColumnAxis?.key &&
+        result.basicColumnAxis.key !== currentViewerBasicColumnAxis
+    ) {
+        currentViewerBasicColumnAxis = result.basicColumnAxis.key;
+    }
+
+    renderBasicColumnAxisControl(
+        result.basicColumnAxis
+    );
 
     const aggregateMs =
         performance.now() -

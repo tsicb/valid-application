@@ -1019,18 +1019,119 @@ function buildImageMap(dataset) {
         return definitions;
     }
 
-    function buildBasicCrossTables(context) {
+    function aggregateCrossByColumnAxis(
+        records,
+        categoryFn,
+        context,
+        config,
+        basicColumnState
+    ) {
+        const columnLabels = basicColumnState.columnLabels || [];
+        const groups = new Map();
+
+        records.forEach(record => {
+            let rowCat = categoryFn(record);
+
+            if (rowCat === null || rowCat === undefined) {
+                rowCat = category("（未設定）");
+            } else if (typeof rowCat !== "object") {
+                rowCat = category(rowCat);
+            }
+
+            const rowLabel = s(rowCat.label) || "（未設定）";
+
+            if (!groups.has(rowLabel)) {
+                groups.set(rowLabel, {
+                    label: rowLabel,
+                    sortValue:
+                        rowCat.sortValue !== undefined
+                            ? rowCat.sortValue
+                            : null,
+                    columnCounts: Object.fromEntries(
+                        columnLabels.map(label => [label, 0])
+                    ),
+                    total: 0,
+                    target: 0
+                });
+            }
+
+            const group = groups.get(rowLabel);
+            const columnCat = basicColumnAxisCategory(
+                record,
+                basicColumnState,
+                context
+            );
+            const columnLabel = s(columnCat?.label) || "（未設定）";
+
+            if (!Object.prototype.hasOwnProperty.call(group.columnCounts, columnLabel)) {
+                group.columnCounts[columnLabel] = 0;
+            }
+
+            group.columnCounts[columnLabel] += 1;
+            group.total += 1;
+
+            if (record.isTarget) {
+                group.target += 1;
+            }
+        });
+
+        const resultGroups = Array.from(groups.values());
+        sortCrossGroups(resultGroups, config || {});
+
+        const baseTarget = records.reduce(
+            (sum, record) => sum + (record.isTarget ? 1 : 0),
+            0
+        );
+
+        return {
+            columnAxisKey: basicColumnState.key,
+            columnAxisLabel: basicColumnState.label,
+            columnLabels,
+            groups: resultGroups,
+            baseTotal: records.length,
+            baseTarget
+        };
+    }
+
+    function buildBasicCrossTables(context, basicColumnState = null) {
+        const columnState =
+            basicColumnState ||
+            resolveBasicColumnAxis(
+                context,
+                context.settings?.["基本表列軸"] || "age"
+            );
+
         return buildBasicTableDefinitions(context)
             .filter(def => def.records.length > 0)
-            .map(def => ({
-                ...def,
-                aggregate: aggregateCross(
-                    def.records,
-                    def.categoryFn,
-                    context,
-                    def
-                )
-            }));
+            .map(def => {
+                const isDistribution =
+                    columnState.key !== "age" &&
+                    def.id === columnState.selfTableId;
+
+                return {
+                    ...def,
+                    presentation:
+                        isDistribution
+                            ? "distribution"
+                            : "cross",
+                    aggregate:
+                        columnState.key === "age" ||
+                        isDistribution
+                            ? aggregateCross(
+                                def.records,
+                                def.categoryFn,
+                                context,
+                                def
+                            )
+                            : aggregateCrossByColumnAxis(
+                                def.records,
+                                def.categoryFn,
+                                context,
+                                def,
+                                columnState
+                            )
+                };
+            });
     }
 
 
@@ -1752,6 +1853,195 @@ function customAxisValue(record, axis, context) {
     return null;
 }
 
+const BASIC_COLUMN_AXIS_DEFINITIONS = Object.freeze([
+    {
+        key: "age",
+        label: "年代",
+        axis: "",
+        selfTableId: "age",
+        maxColumns: 99
+    },
+    {
+        key: "month",
+        label: "応募年月",
+        axis: "応募年月",
+        selfTableId: "month",
+        maxColumns: 24
+    },
+    {
+        key: "media",
+        label: "応募媒体",
+        axis: "応募媒体",
+        selfTableId: "media",
+        maxColumns: 12
+    },
+    {
+        key: "job-category",
+        label: "職種",
+        axis: "職種",
+        selfTableId: "job-category",
+        maxColumns: 12,
+        requiresMatched: true
+    },
+    {
+        key: "employment",
+        label: "雇用形態",
+        axis: "雇用形態",
+        selfTableId: "employment",
+        maxColumns: 12,
+        requiresMatched: true
+    },
+    {
+        key: "weekday",
+        label: "応募曜日",
+        axis: "応募曜日",
+        selfTableId: "weekday",
+        maxColumns: 8,
+        completeLabels: ["月", "火", "水", "木", "金", "土", "日"]
+    }
+]);
+
+function basicColumnAxisCategory(record, definition, context) {
+    if (definition.key === "age") {
+        const label = record.ageBucket || "（不明）";
+        return category(
+            label,
+            fixedSortValue(label, context.ageCols)
+        );
+    }
+
+    if (
+        definition.requiresMatched &&
+        !record.matched
+    ) {
+        return category(
+            "（求人未突合）",
+            999999999998
+        );
+    }
+
+    return (
+        customAxisValue(
+            record,
+            definition.axis,
+            context
+        ) ||
+        category("（未設定）")
+    );
+}
+
+function collectBasicColumnLabels(context, definition) {
+    if (definition.key === "age") {
+        return [...context.ageCols];
+    }
+
+    const labels = [];
+    const metaMap = new Map();
+    const totalMap = new Map();
+
+    context.recordsAll.forEach(record => {
+        const cat = basicColumnAxisCategory(
+            record,
+            definition,
+            context
+        );
+        const label = s(cat?.label) || "（未設定）";
+
+        if (!metaMap.has(label)) {
+            labels.push(label);
+            metaMap.set(label, cat || {});
+        }
+
+        totalMap.set(
+            label,
+            (totalMap.get(label) || 0) + 1
+        );
+    });
+
+    if (Array.isArray(definition.completeLabels)) {
+        const extras = labels.filter(
+            label => !definition.completeLabels.includes(label)
+        );
+
+        sortCustomLabels(extras, metaMap, totalMap);
+
+        return [
+            ...definition.completeLabels,
+            ...extras
+        ];
+    }
+
+    const unmatchedIndex = labels.indexOf("（求人未突合）");
+    const unmatchedLabel =
+        unmatchedIndex >= 0
+            ? labels.splice(unmatchedIndex, 1)[0]
+            : "";
+
+    sortCustomLabels(labels, metaMap, totalMap);
+
+    if (unmatchedLabel) {
+        labels.push(unmatchedLabel);
+    }
+
+    return labels;
+}
+
+function basicColumnAxisOptions(context) {
+    return BASIC_COLUMN_AXIS_DEFINITIONS.map(definition => {
+        const columnLabels = collectBasicColumnLabels(
+            context,
+            definition
+        );
+        const categoryCount = columnLabels.length;
+        const hasRequiredData =
+            !definition.requiresMatched ||
+            context.recordsMatched.length > 0;
+        const available =
+            definition.key === "age" ||
+            (
+                hasRequiredData &&
+                categoryCount > 0 &&
+                categoryCount <= definition.maxColumns
+            );
+
+        let unavailableReason = "";
+
+        if (!available) {
+            if (!hasRequiredData) {
+                unavailableReason = "求人突合済応募がありません";
+            } else if (categoryCount > definition.maxColumns) {
+                unavailableReason = `${categoryCount}種類あるため基本表では利用できません`;
+            } else {
+                unavailableReason = "利用できるデータがありません";
+            }
+        }
+
+        return {
+            ...definition,
+            columnLabels,
+            categoryCount,
+            available,
+            unavailableReason
+        };
+    });
+}
+
+function resolveBasicColumnAxis(context, requestedKey) {
+    const options = basicColumnAxisOptions(context);
+    const requested =
+        options.find(option => option.key === requestedKey) ||
+        options[0];
+    const selected =
+        requested?.available
+            ? requested
+            : options.find(option => option.key === "age") || options[0];
+
+    return {
+        ...selected,
+        options
+    };
+}
+
 function sortCustomLabels(labels, metaMap, totalMap) {
     labels.sort((a, b) => {
         const am = metaMap.get(a) || {};
@@ -2205,9 +2495,15 @@ function aggregateCustom(context, options = {}) {
                 : 0
         }));
 
+        const basicColumnAxis = resolveBasicColumnAxis(
+            context,
+            context.settings?.["基本表列軸"] || "age"
+        );
+
         return {
             context,
             settings: context.settings,
+            basicColumnAxis,
             totalCount: records.length,
             targetCount,
             targetRate: records.length
@@ -2223,7 +2519,10 @@ function aggregateCustom(context, options = {}) {
             ),
             ageMode: context.ageMode,
             ageRows,
-            basicCrossTables: buildBasicCrossTables(context),
+            basicCrossTables: buildBasicCrossTables(
+                context,
+                basicColumnAxis
+            ),
             noteDetail: aggregateNoteDetail(context),
             indeedTagDetail: aggregateIndeedTags(context),
             topImageDetail: aggregateTopImages(context),
@@ -2260,6 +2559,9 @@ function aggregateCustom(context, options = {}) {
         matchKeywords,
         buildViewerContext,
         aggregateCross,
+        aggregateCrossByColumnAxis,
+        basicColumnAxisOptions,
+        resolveBasicColumnAxis,
         buildBasicCrossTables,
         aggregateNoteDetail,
         aggregateIndeedTags,
