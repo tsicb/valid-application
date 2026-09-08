@@ -1673,6 +1673,237 @@
                 100%;
         }
 
+    
+        /* =========================================================
+           Viewer UI v29
+           Unified local horizontal scrolling + floating scrollbar
+           ========================================================= */
+
+        html,
+        body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .report-app {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .report-main {
+            width:
+                calc(
+                    100% -
+                    var(--viewer-sidebar-width)
+                );
+            max-width:
+                calc(
+                    100% -
+                    var(--viewer-sidebar-width)
+                );
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        .report-app.sidebar-collapsed
+        .report-main {
+            width:
+                calc(
+                    100% -
+                    var(--viewer-sidebar-collapsed-width)
+                );
+            max-width:
+                calc(
+                    100% -
+                    var(--viewer-sidebar-collapsed-width)
+                );
+        }
+
+        .card,
+        .section,
+        .section-head,
+        #noteDetailBody,
+        #indeedTagDetailBody,
+        #topImageDetailBody,
+        #customResult {
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .section {
+            overflow-x: hidden;
+        }
+
+        .table-wrap {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-x: auto;
+            overflow-y: hidden;
+            overscroll-behavior-x: contain;
+        }
+
+        /* Custom analysis keeps natural width only up to the available viewport. */
+        #customResult .table-wrap {
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        /* Native horizontal scrollbar remains at each table bottom. */
+        .table-wrap {
+            scrollbar-width: auto;
+            scrollbar-color:
+                #a9bdc9
+                #edf3f6;
+        }
+
+        .table-wrap::-webkit-scrollbar {
+            height: 11px;
+        }
+
+        .table-wrap::-webkit-scrollbar-track {
+            background:
+                #edf3f6;
+            border-radius:
+                999px;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb {
+            background:
+                #a9bdc9;
+            border:
+                2px solid
+                #edf3f6;
+            border-radius:
+                999px;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb:hover {
+            background:
+                #7f9dad;
+        }
+
+        /* Floating horizontal scrollbar shown only for the active wide table. */
+        .floating-table-scrollbar {
+            position: fixed;
+            z-index: 68;
+            bottom: 8px;
+            left: 0;
+            display: none;
+            height: 21px;
+            padding:
+                4px 7px 3px;
+            box-sizing: border-box;
+            border:
+                1px solid
+                rgba(20,142,204,.18);
+            border-radius:
+                10px;
+            background:
+                rgba(255,255,255,.95);
+            box-shadow:
+                0 8px 24px -14px
+                rgba(15,23,42,.42);
+            backdrop-filter:
+                blur(5px);
+        }
+
+        .floating-table-scrollbar.visible {
+            display: block;
+        }
+
+        .floating-table-scrollbar-viewport {
+            width: 100%;
+            height: 14px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: auto;
+            scrollbar-color:
+                #7f9dad
+                #e8f0f4;
+        }
+
+        .floating-table-scrollbar-viewport::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .floating-table-scrollbar-viewport::-webkit-scrollbar-track {
+            background:
+                #e8f0f4;
+            border-radius:
+                999px;
+        }
+
+        .floating-table-scrollbar-viewport::-webkit-scrollbar-thumb {
+            background:
+                #7f9dad;
+            border:
+                2px solid
+                #e8f0f4;
+            border-radius:
+                999px;
+        }
+
+        .floating-table-scrollbar-spacer {
+            height: 1px;
+            min-height: 1px;
+        }
+
+        /* Edge hints for the currently active wide table. */
+        .floating-table-edge {
+            position: fixed;
+            z-index: 64;
+            display: none;
+            width: 16px;
+            pointer-events: none;
+        }
+
+        .floating-table-edge.visible {
+            display: block;
+        }
+
+        .floating-table-edge.left {
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(13,103,149,.16),
+                    rgba(13,103,149,0)
+                );
+        }
+
+        .floating-table-edge.right {
+            background:
+                linear-gradient(
+                    270deg,
+                    rgba(13,103,149,.16),
+                    rgba(13,103,149,0)
+                );
+        }
+
+        @media (max-width: 720px) {
+            .report-main {
+                width:
+                    calc(
+                        100% -
+                        var(--viewer-sidebar-collapsed-width)
+                    );
+                max-width:
+                    calc(
+                        100% -
+                        var(--viewer-sidebar-collapsed-width)
+                    );
+            }
+
+            .floating-table-scrollbar {
+                bottom: 5px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -2566,6 +2797,13 @@ function setViewerSidebarCollapsed(
             );
         } catch (_) {}
     }
+
+    requestAnimationFrame(
+        () => {
+            scheduleStickyHeaderUpdate();
+            scheduleFloatingTableScrollbarUpdate();
+        }
+    );
 }
 
 function setActiveSidebarTarget(
@@ -2896,6 +3134,593 @@ function prepareTableRowLabels(table){
 function enhanceReportTable(table){
   if(!table)return;prepareTableRowLabels(table);Array.from(table.querySelectorAll("thead th")).forEach(th=>{const header=String(th.childNodes?.[0]?.textContent||th.textContent||"").trim();if(["比率","プレビュー"].includes(header)){th.dataset.sortable="false";return;}th.dataset.sortable="true";if(!th.querySelector(".table-sort-indicator")){const i=document.createElement("span");i.className="table-sort-indicator";i.setAttribute("aria-hidden","true");i.textContent="↕";th.appendChild(i);}if(th.dataset.sortBound!=="1"){th.dataset.sortBound="1";th.setAttribute("aria-sort","none");th.addEventListener("click",()=>sortTableByHeader(table,th));}});table.dataset.sortColumn="";table.dataset.sortState="none";resetTableSortIndicators(table);
 }
+let floatingTableScrollState = {
+    activeWrap: null,
+    syncing: false,
+    bar: null,
+    viewport: null,
+    spacer: null,
+    leftEdge: null,
+    rightEdge: null,
+    raf: 0
+};
+
+function ensureFloatingTableScrollbar() {
+    if (
+        floatingTableScrollState
+            .bar
+    ) {
+        return;
+    }
+
+    const bar =
+        document.createElement(
+            "div"
+        );
+
+    bar.className =
+        "floating-table-scrollbar";
+
+    bar.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    const viewport =
+        document.createElement(
+            "div"
+        );
+
+    viewport.className =
+        "floating-table-scrollbar-viewport";
+
+    const spacer =
+        document.createElement(
+            "div"
+        );
+
+    spacer.className =
+        "floating-table-scrollbar-spacer";
+
+    viewport.appendChild(
+        spacer
+    );
+
+    bar.appendChild(
+        viewport
+    );
+
+    const leftEdge =
+        document.createElement(
+            "div"
+        );
+
+    leftEdge.className =
+        "floating-table-edge left";
+
+    const rightEdge =
+        document.createElement(
+            "div"
+        );
+
+    rightEdge.className =
+        "floating-table-edge right";
+
+    document.body.appendChild(
+        bar
+    );
+
+    document.body.appendChild(
+        leftEdge
+    );
+
+    document.body.appendChild(
+        rightEdge
+    );
+
+    floatingTableScrollState = {
+        ...floatingTableScrollState,
+        bar,
+        viewport,
+        spacer,
+        leftEdge,
+        rightEdge
+    };
+
+    viewport.addEventListener(
+        "scroll",
+        () => {
+            const wrap =
+                floatingTableScrollState
+                    .activeWrap;
+
+            if (
+                !wrap ||
+                floatingTableScrollState
+                    .syncing
+            ) {
+                return;
+            }
+
+            floatingTableScrollState
+                .syncing =
+                true;
+
+            wrap.scrollLeft =
+                viewport.scrollLeft;
+
+            requestAnimationFrame(
+                () => {
+                    floatingTableScrollState
+                        .syncing =
+                        false;
+
+                    updateFloatingTableEdges(
+                        wrap
+                    );
+                }
+            );
+        },
+        {
+            passive: true
+        }
+    );
+}
+
+function isWideTableWrap(
+    wrap
+) {
+    return (
+        wrap &&
+        wrap.scrollWidth >
+            wrap.clientWidth +
+            2
+    );
+}
+
+function visibleWideTableWraps() {
+    return Array.from(
+        document.querySelectorAll(
+            ".table-wrap"
+        )
+    )
+        .filter(
+            wrap => {
+                if (
+                    !isWideTableWrap(
+                        wrap
+                    )
+                ) {
+                    return false;
+                }
+
+                const rect =
+                    wrap.getBoundingClientRect();
+
+                return (
+                    rect.bottom >
+                        0 &&
+                    rect.top <
+                        window.innerHeight
+                );
+            }
+        );
+}
+
+function chooseActiveWideTableWrap() {
+    const candidates =
+        visibleWideTableWraps();
+
+    if (!candidates.length) {
+        return null;
+    }
+
+    const center =
+        window.innerHeight *
+        0.56;
+
+    let best =
+        null;
+
+    let bestScore =
+        Number.POSITIVE_INFINITY;
+
+    candidates.forEach(
+        wrap => {
+            const rect =
+                wrap.getBoundingClientRect();
+
+            let score = 0;
+
+            if (
+                center <
+                rect.top
+            ) {
+                score =
+                    rect.top -
+                    center;
+            } else if (
+                center >
+                rect.bottom
+            ) {
+                score =
+                    center -
+                    rect.bottom;
+            }
+
+            if (
+                score <
+                bestScore
+            ) {
+                best =
+                    wrap;
+
+                bestScore =
+                    score;
+            }
+        }
+    );
+
+    return best;
+}
+
+function nativeTableScrollbarVisible(
+    wrap
+) {
+    if (!wrap) return false;
+
+    const rect =
+        wrap.getBoundingClientRect();
+
+    return (
+        rect.bottom >
+            0 &&
+        rect.bottom <=
+            window.innerHeight -
+            2
+    );
+}
+
+function hideFloatingTableEdges() {
+    floatingTableScrollState
+        .leftEdge
+        ?.classList
+        .remove(
+            "visible"
+        );
+
+    floatingTableScrollState
+        .rightEdge
+        ?.classList
+        .remove(
+            "visible"
+        );
+}
+
+function updateFloatingTableEdges(
+    wrap
+) {
+    const {
+        leftEdge,
+        rightEdge
+    } =
+        floatingTableScrollState;
+
+    if (
+        !wrap ||
+        !leftEdge ||
+        !rightEdge
+    ) {
+        hideFloatingTableEdges();
+        return;
+    }
+
+    const rect =
+        wrap.getBoundingClientRect();
+
+    const visibleTop =
+        Math.max(
+            0,
+            rect.top
+        );
+
+    const visibleBottom =
+        Math.min(
+            window.innerHeight -
+                30,
+            rect.bottom
+        );
+
+    const height =
+        Math.max(
+            0,
+            visibleBottom -
+                visibleTop
+        );
+
+    if (
+        height <
+        24
+    ) {
+        hideFloatingTableEdges();
+        return;
+    }
+
+    const firstCell =
+        wrap.querySelector(
+            "thead th:first-child"
+        );
+
+    const firstWidth =
+        firstCell
+            ?.getBoundingClientRect()
+            ?.width ||
+        0;
+
+    const maxScroll =
+        Math.max(
+            0,
+            wrap.scrollWidth -
+                wrap.clientWidth
+        );
+
+    const hasLeft =
+        wrap.scrollLeft >
+        1;
+
+    const hasRight =
+        wrap.scrollLeft <
+        maxScroll -
+            1;
+
+    leftEdge.classList.toggle(
+        "visible",
+        hasLeft
+    );
+
+    rightEdge.classList.toggle(
+        "visible",
+        hasRight
+    );
+
+    leftEdge.style.top =
+        `${Math.round(
+            visibleTop
+        )}px`;
+
+    leftEdge.style.left =
+        `${Math.round(
+            rect.left +
+            Math.min(
+                firstWidth,
+                rect.width -
+                    16
+            )
+        )}px`;
+
+    leftEdge.style.height =
+        `${Math.round(
+            height
+        )}px`;
+
+    rightEdge.style.top =
+        `${Math.round(
+            visibleTop
+        )}px`;
+
+    rightEdge.style.left =
+        `${Math.round(
+            rect.right -
+            16
+        )}px`;
+
+    rightEdge.style.height =
+        `${Math.round(
+            height
+        )}px`;
+}
+
+function syncFloatingScrollbarFromWrap(
+    wrap
+) {
+    const {
+        bar,
+        viewport,
+        spacer
+    } =
+        floatingTableScrollState;
+
+    if (
+        !bar ||
+        !viewport ||
+        !spacer ||
+        !wrap
+    ) {
+        return;
+    }
+
+    const rect =
+        wrap.getBoundingClientRect();
+
+    const left =
+        Math.max(
+            0,
+            rect.left
+        );
+
+    const right =
+        Math.min(
+            window.innerWidth,
+            rect.right
+        );
+
+    const width =
+        Math.max(
+            0,
+            right -
+            left
+        );
+
+    if (
+        width <
+        80
+    ) {
+        bar.classList.remove(
+            "visible"
+        );
+
+        hideFloatingTableEdges();
+        return;
+    }
+
+    bar.style.left =
+        `${Math.round(
+            left
+        )}px`;
+
+    bar.style.width =
+        `${Math.round(
+            width
+        )}px`;
+
+    spacer.style.width =
+        `${Math.round(
+            wrap.scrollWidth
+        )}px`;
+
+    floatingTableScrollState
+        .syncing =
+        true;
+
+    viewport.scrollLeft =
+        wrap.scrollLeft;
+
+    requestAnimationFrame(
+        () => {
+            floatingTableScrollState
+                .syncing =
+                false;
+        }
+    );
+
+    bar.classList.toggle(
+        "visible",
+        !nativeTableScrollbarVisible(
+            wrap
+        )
+    );
+
+    updateFloatingTableEdges(
+        wrap
+    );
+}
+
+function updateFloatingTableScrollbar() {
+    floatingTableScrollState
+        .raf =
+        0;
+
+    ensureFloatingTableScrollbar();
+
+    const wrap =
+        chooseActiveWideTableWrap();
+
+    floatingTableScrollState
+        .activeWrap =
+        wrap;
+
+    if (!wrap) {
+        floatingTableScrollState
+            .bar
+            ?.classList
+            .remove(
+                "visible"
+            );
+
+        hideFloatingTableEdges();
+        return;
+    }
+
+    syncFloatingScrollbarFromWrap(
+        wrap
+    );
+}
+
+function scheduleFloatingTableScrollbarUpdate() {
+    if (
+        floatingTableScrollState
+            .raf
+    ) {
+        return;
+    }
+
+    floatingTableScrollState
+        .raf =
+        requestAnimationFrame(
+            updateFloatingTableScrollbar
+        );
+}
+
+function installLocalHorizontalScroll(
+    wrap
+) {
+    if (
+        !wrap ||
+        wrap.dataset
+            .horizontalScrollInstalled ===
+            "1"
+    ) {
+        return;
+    }
+
+    wrap.dataset
+        .horizontalScrollInstalled =
+        "1";
+
+    wrap.addEventListener(
+        "scroll",
+        () => {
+            if (
+                floatingTableScrollState
+                    .activeWrap ===
+                wrap &&
+                !floatingTableScrollState
+                    .syncing
+            ) {
+                floatingTableScrollState
+                    .syncing =
+                    true;
+
+                floatingTableScrollState
+                    .viewport
+                    ?.scrollTo({
+                        left:
+                            wrap.scrollLeft,
+                        behavior:
+                            "auto"
+                    });
+
+                requestAnimationFrame(
+                    () => {
+                        floatingTableScrollState
+                            .syncing =
+                            false;
+
+                        updateFloatingTableEdges(
+                            wrap
+                        );
+                    }
+                );
+            }
+
+            scheduleFloatingTableScrollbarUpdate();
+        },
+        {
+            passive: true
+        }
+    );
+}
+
 const stickyTableControllers =
     new Set();
 
@@ -3490,6 +4315,11 @@ function enhanceReportTables(root=document){
     )
         .forEach(
             table => {
+                const wrap =
+                    table.closest(
+                        ".table-wrap"
+                    );
+
                 enhanceReportTable(
                     table
                 );
@@ -3497,8 +4327,16 @@ function enhanceReportTables(root=document){
                 installStickyHeader(
                     table
                 );
+
+                installLocalHorizontalScroll(
+                    wrap
+                );
             }
         );
+
+    requestAnimationFrame(
+        scheduleFloatingTableScrollbarUpdate
+    );
 }
 function ensureRowLabelTooltip(){let t=document.getElementById("rowLabelTooltip");if(t)return t;t=document.createElement("div");t.id="rowLabelTooltip";t.className="row-label-tooltip";t.setAttribute("role","tooltip");document.body.appendChild(t);return t;}
 function positionRowLabelTooltip(t,event){const margin=14,w=t.offsetWidth||240,h=t.offsetHeight||40;let left=event.clientX+12,top=event.clientY+14;if(left+w+margin>innerWidth)left=event.clientX-w-12;if(top+h+margin>innerHeight)top=event.clientY-h-12;t.style.left=`${Math.max(margin,left)}px`;t.style.top=`${Math.max(margin,top)}px`;}
@@ -3508,10 +4346,14 @@ function initializeViewerDesktopUx(){
     initializeRowLabelTooltip();
     initializeBucketControls();
     initializeViewerAnalysisPickers();
+    ensureFloatingTableScrollbar();
 
     window.addEventListener(
         "scroll",
-        scheduleStickyHeaderUpdate,
+        () => {
+            scheduleStickyHeaderUpdate();
+            scheduleFloatingTableScrollbarUpdate();
+        },
         {
             passive:
                 true
@@ -3520,7 +4362,10 @@ function initializeViewerDesktopUx(){
 
     window.addEventListener(
         "resize",
-        scheduleStickyHeaderUpdate,
+        () => {
+            scheduleStickyHeaderUpdate();
+            scheduleFloatingTableScrollbarUpdate();
+        },
         {
             passive:
                 true
