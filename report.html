@@ -1506,6 +1506,173 @@
                 14px;
         }
 
+    
+        /* =========================================================
+           Viewer UI v28.1
+           Dedicated schemas for wide detail tables
+           ========================================================= */
+
+        .detail-table-wrap {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .detail-cross-table {
+            width: var(--detail-table-width);
+            min-width: var(--detail-table-width);
+            max-width: none;
+            table-layout: fixed;
+        }
+
+        .detail-cross-table th,
+        .detail-cross-table td {
+            box-sizing: border-box;
+        }
+
+        .detail-cross-table thead th {
+            padding:
+                8px 7px;
+            white-space:
+                normal;
+            line-height:
+                1.22;
+            vertical-align:
+                middle;
+        }
+
+        .detail-cross-table tbody td {
+            white-space:
+                nowrap;
+        }
+
+        .detail-header {
+            display:
+                inline-flex;
+            max-width:
+                100%;
+            flex-direction:
+                column;
+            align-items:
+                flex-end;
+            justify-content:
+                center;
+            gap:
+                1px;
+            line-height:
+                1.18;
+        }
+
+        .detail-header-main {
+            font-size:
+                10.5px;
+            font-weight:
+                750;
+        }
+
+        .detail-header-sub {
+            color:
+                #6f8292;
+            font-size:
+                9px;
+            font-weight:
+                650;
+        }
+
+        .detail-cross-table th:first-child
+        .detail-header {
+            align-items:
+                flex-start;
+        }
+
+        .detail-cross-table
+        .target-header {
+            align-items:
+                flex-end;
+        }
+
+        /* Detail table schemas */
+        .detail-cross-table col.detail-col-label {
+            width:
+                210px;
+        }
+
+        .detail-cross-table col.detail-col-preview {
+            width:
+                124px;
+        }
+
+        .detail-cross-table col.detail-col-age {
+            width:
+                72px;
+        }
+
+        .detail-cross-table col.detail-col-count {
+            width:
+                105px;
+        }
+
+        .detail-cross-table col.detail-col-rate {
+            width:
+                110px;
+        }
+
+        .detail-cross-table col.detail-col-target {
+            width:
+                112px;
+        }
+
+        .detail-cross-table col.detail-col-target-rate {
+            width:
+                100px;
+        }
+
+        .detail-cross-table col.detail-col-target-share {
+            width:
+                132px;
+        }
+
+        .detail-cross-table col.detail-col-job-count {
+            width:
+                125px;
+        }
+
+        .detail-cross-table col.detail-col-apps-per-job {
+            width:
+                125px;
+        }
+
+        .top-image-detail-table
+        .image-preview {
+            max-width:
+                108px;
+        }
+
+        /* Never squeeze wide detail tables to the viewport.
+           Horizontal scroll is intentional and supported by sticky header/first col. */
+        .indeed-tag-detail-table,
+        .top-image-detail-table {
+            flex:
+                none;
+        }
+
+        /* Sticky clone uses the same detail schema. */
+        .table-sticky-header
+        .detail-cross-table
+        thead th {
+            white-space:
+                normal;
+            line-height:
+                1.22;
+        }
+
+        .table-sticky-header
+        .detail-header,
+        .table-sticky-header
+        .target-header {
+            max-width:
+                100%;
+        }
+
     </style>
 </head>
 <body>
@@ -2820,11 +2987,29 @@ function copyStickyHeaderGeometry(
             headerRect.height
         )}px`;
 
-    cloneTable.style.width =
-        `${Math.max(
+    const sourceWidth =
+        Math.max(
             table.scrollWidth,
-            wrap.scrollWidth
-        )}px`;
+            table.getBoundingClientRect()
+                .width
+        );
+
+    cloneTable.style.width =
+        `${sourceWidth}px`;
+
+    const detailWidth =
+        table.style
+            .getPropertyValue(
+                "--detail-table-width"
+            );
+
+    if (detailWidth) {
+        cloneTable.style
+            .setProperty(
+                "--detail-table-width",
+                detailWidth
+            );
+    }
 
     sourceRows.forEach(
         (sourceRow, rowIndex) => {
@@ -2947,6 +3132,19 @@ function refreshStickyHeaderClone(
 
     cloneTable.innerHTML =
         "";
+
+    const sourceColgroup =
+        table.querySelector(
+            ":scope > colgroup"
+        );
+
+    if (sourceColgroup) {
+        cloneTable.appendChild(
+            sourceColgroup.cloneNode(
+                true
+            )
+        );
+    }
 
     cloneTable.appendChild(
         table.tHead.cloneNode(
@@ -3869,6 +4067,118 @@ function renderNoteDetail(detail, core) {
         );
 }
 
+
+function detailHeaderHtml(
+    main,
+    sub = "",
+    title = ""
+) {
+    const fullTitle =
+        title ||
+        [
+            main,
+            sub
+        ]
+            .filter(Boolean)
+            .join("");
+
+    return `
+        <span
+            class="detail-header"
+            title="${escapeHtml(fullTitle)}"
+        >
+            <span class="detail-header-main">${escapeHtml(main)}</span>
+            ${sub
+                ? `<span class="detail-header-sub">${escapeHtml(sub)}</span>`
+                : ""}
+        </span>
+    `;
+}
+
+function detailTableWidth(
+    type,
+    ageCols
+) {
+    const ageWidth =
+        (Array.isArray(ageCols)
+            ? ageCols.length
+            : 0) *
+        72;
+
+    if (
+        type ===
+        "top-image"
+    ) {
+        return (
+            210 +
+            124 +
+            ageWidth +
+            105 +
+            110 +
+            112 +
+            100 +
+            132 +
+            125 +
+            125
+        );
+    }
+
+    return (
+        210 +
+        ageWidth +
+        105 +
+        110 +
+        112 +
+        100 +
+        132 +
+        125 +
+        125
+    );
+}
+
+function indeedTagDetailColgroupHtml(
+    ageCols
+) {
+    return `
+        <colgroup>
+            <col class="detail-col-label">
+            ${(ageCols || []).map(
+                () =>
+                    '<col class="detail-col-age">'
+            ).join("")}
+            <col class="detail-col-count">
+            <col class="detail-col-rate">
+            <col class="detail-col-target">
+            <col class="detail-col-target-rate">
+            <col class="detail-col-target-share">
+            <col class="detail-col-job-count">
+            <col class="detail-col-apps-per-job">
+        </colgroup>
+    `;
+}
+
+function topImageDetailColgroupHtml(
+    ageCols
+) {
+    return `
+        <colgroup>
+            <col class="detail-col-label">
+            <col class="detail-col-preview">
+            ${(ageCols || []).map(
+                () =>
+                    '<col class="detail-col-age">'
+            ).join("")}
+            <col class="detail-col-count">
+            <col class="detail-col-rate">
+            <col class="detail-col-target">
+            <col class="detail-col-target-rate">
+            <col class="detail-col-target-share">
+            <col class="detail-col-job-count">
+            <col class="detail-col-apps-per-job">
+        </colgroup>
+    `;
+}
+
 function renderIndeedTagDetail(detail, core) {
     const section = document.getElementById("indeedTagDetailSection");
 
@@ -3888,7 +4198,12 @@ function renderIndeedTagDetail(detail, core) {
         `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ 1応募は複数タグへ重複集計`;
 
     const ageHeaders =
-        detail.ageCols.map(age => `<th>${escapeHtml(age)}</th>`).join("");
+        detail.ageCols
+            .map(
+                age =>
+                    `<th>${detailHeaderHtml(age)}</th>`
+            )
+            .join("");
 
     const rows = detail.rows.map(row => {
         const ageCells =
@@ -3911,20 +4226,30 @@ function renderIndeedTagDetail(detail, core) {
         `;
     }).join("");
 
+    const detailWidth =
+        detailTableWidth(
+            "indeed-tag",
+            detail.ageCols
+        );
+
     document.getElementById("indeedTagDetailBody").innerHTML = `
-        <div class="table-wrap">
-            <table class="cross-table">
+        <div class="table-wrap detail-table-wrap">
+            <table
+                class="cross-table detail-cross-table indeed-tag-detail-table"
+                style="--detail-table-width:${detailWidth}px"
+            >
+                ${indeedTagDetailColgroupHtml(detail.ageCols)}
                 <thead>
                     <tr>
-                        <th>求人タグ</th>
+                        <th>${detailHeaderHtml("求人タグ")}</th>
                         ${ageHeaders}
-                        <th>タグ対象応募数</th>
-                        <th>全応募カバー率</th>
+                        <th>${detailHeaderHtml("タグ対象", "応募数", "タグ対象応募数")}</th>
+                        <th>${detailHeaderHtml("全応募", "カバー率", "全応募カバー率")}</th>
                         ${targetMetricHeaderHtml("ターゲット応募数")}
                         ${targetMetricHeaderHtml("ターゲット率")}
                         ${targetMetricHeaderHtml("ターゲット応募カバー率")}
-                        <th>応募あり求人件数</th>
-                        <th>1求人あたり応募数</th>
+                        <th>${detailHeaderHtml("応募あり", "求人件数", "応募あり求人件数")}</th>
+                        <th>${detailHeaderHtml("1求人あたり", "応募数", "1求人あたり応募数")}</th>
                     </tr>
                 </thead>
                 <tbody>${rows}</tbody>
@@ -3952,7 +4277,12 @@ function renderTopImageDetail(detail, core) {
         `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ URL未取得でも数値分析には含みます`;
 
     const ageHeaders =
-        detail.ageCols.map(age => `<th>${escapeHtml(age)}</th>`).join("");
+        detail.ageCols
+            .map(
+                age =>
+                    `<th>${detailHeaderHtml(age)}</th>`
+            )
+            .join("");
 
     const rows = detail.rows.map(row => {
         const ageCells =
@@ -3981,21 +4311,31 @@ function renderTopImageDetail(detail, core) {
         `;
     }).join("");
 
+    const detailWidth =
+        detailTableWidth(
+            "top-image",
+            detail.ageCols
+        );
+
     document.getElementById("topImageDetailBody").innerHTML = `
-        <div class="table-wrap">
-            <table class="cross-table">
+        <div class="table-wrap detail-table-wrap">
+            <table
+                class="cross-table detail-cross-table top-image-detail-table"
+                style="--detail-table-width:${detailWidth}px"
+            >
+                ${topImageDetailColgroupHtml(detail.ageCols)}
                 <thead>
                     <tr>
-                        <th>画像ファイル名</th>
-                        <th>プレビュー</th>
+                        <th>${detailHeaderHtml("画像", "ファイル名", "画像ファイル名")}</th>
+                        <th>${detailHeaderHtml("プレビュー")}</th>
                         ${ageHeaders}
-                        <th>総応募数</th>
-                        <th>応募構成比</th>
+                        <th>${detailHeaderHtml("総応募数")}</th>
+                        <th>${detailHeaderHtml("応募", "構成比", "応募構成比")}</th>
                         ${targetMetricHeaderHtml("ターゲット応募数")}
                         ${targetMetricHeaderHtml("ターゲット率")}
                         ${targetMetricHeaderHtml("ターゲット応募構成比")}
-                        <th>応募あり求人件数</th>
-                        <th>1求人あたり応募数</th>
+                        <th>${detailHeaderHtml("応募あり", "求人件数", "応募あり求人件数")}</th>
+                        <th>${detailHeaderHtml("1求人あたり", "応募数", "1求人あたり応募数")}</th>
                     </tr>
                 </thead>
                 <tbody>${rows}</tbody>
