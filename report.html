@@ -2149,6 +2149,207 @@
             line-height: 1.3;
         }
 
+        /* =========================================================
+           Viewer UI v30.4
+           Month progress / forecast
+           ========================================================= */
+
+        .month-progress-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .month-progress-toggle {
+            display: inline-flex;
+            padding: 4px;
+            border: 1px solid #d6e3ea;
+            border-radius: 999px;
+            background: #f8fbfd;
+            gap: 4px;
+        }
+
+        .month-progress-toggle-btn {
+            border: none;
+            background: transparent;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .month-progress-toggle-btn.active {
+            background: var(--viewer-brand-blue);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(15,103,149,.18);
+        }
+
+        .month-progress-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .month-progress-summary-card {
+            border: 1px solid #e3ebef;
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: #fbfdff;
+        }
+
+        .month-progress-summary-label {
+            color: #64748b;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .month-progress-summary-value {
+            color: #0f172a;
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .month-progress-summary-sub {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .month-progress-chart-wrap {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .month-progress-chart {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .month-progress-axis-label,
+        .month-progress-grid-label {
+            fill: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .month-progress-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+            color: #475569;
+            font-size: 12px;
+        }
+
+        .month-progress-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .month-progress-legend-swatch,
+        .month-progress-legend-line {
+            display: inline-block;
+            flex: 0 0 auto;
+        }
+
+        .month-progress-legend-swatch {
+            width: 14px;
+            height: 10px;
+            border-radius: 3px;
+            background: #0f6795;
+        }
+
+        .month-progress-legend-line {
+            width: 18px;
+            height: 0;
+            border-top: 3px solid #64748b;
+        }
+
+        .month-progress-legend-line.prev2 {
+            border-top-style: solid;
+            border-top-color: #94a3b8;
+        }
+
+        .month-progress-legend-line.lastYearSameMonth {
+            border-top-style: solid;
+            border-top-color: #10b981;
+        }
+
+        .month-progress-legend-line.projection {
+            border-top-style: dashed;
+            border-top-color: #0f6795;
+        }
+
+        .month-progress-empty {
+            padding: 16px;
+            border: 1px dashed #d7e4ea;
+            border-radius: 12px;
+            color: #64748b;
+            background: #fbfdff;
+            font-size: 13px;
+        }
+
+        .month-progress-tooltip {
+            position: fixed;
+            z-index: 10030;
+            min-width: 150px;
+            max-width: 240px;
+            padding: 9px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(15, 103, 149, .18);
+            background: rgba(255,255,255,.985);
+            box-shadow: 0 12px 34px rgba(15, 23, 42, .16);
+            color: #334155;
+            font-size: 11px;
+            line-height: 1.45;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .12s ease, visibility .12s ease;
+        }
+
+        .month-progress-tooltip.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .month-progress-tooltip strong {
+            color: #0f172a;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .month-progress-tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .forecast-row {
+            background: #f6fbff;
+        }
+
+        .forecast-row td {
+            color: #0f3f63;
+            font-size: 12px;
+        }
+
+        .forecast-row td:first-child {
+            font-weight: 700;
+        }
+
+
     </style>
 </head>
 <body>
@@ -2285,6 +2486,24 @@
                 <div id="kpiMatchedRate" class="kpi-value">-</div>
                 <div id="kpiMatched" class="kpi-sub">-</div>
             </div>
+        </section>
+
+        <section id="monthProgressSection" class="card section">
+            <div class="section-head">
+                <div>
+                    <h2>月間応募進捗</h2>
+                    <div id="monthProgressNote" class="section-note"></div>
+                </div>
+                <div class="section-head-actions month-progress-controls">
+                    <button id="progressAgePickerBtn" type="button" class="custom-age-button"><span id="progressAgeSummary" class="custom-age-current">全年齢</span><span aria-hidden="true">›</span></button>
+                    <div class="month-progress-toggle" role="group" aria-label="月間応募進捗の表示切替">
+                        <button id="monthProgressModeCumulative" type="button" class="month-progress-toggle-btn active" data-progress-mode="cumulative">累積</button>
+                        <button id="monthProgressModeDaily" type="button" class="month-progress-toggle-btn" data-progress-mode="daily">日別</button>
+                    </div>
+                </div>
+            </div>
+            <div id="monthProgressSummary" class="month-progress-summary"></div>
+            <div id="monthProgressBody"></div>
         </section>
 
         <section id="ageSection" class="card section">
@@ -2779,7 +2998,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.08-viewer-ui-v30.3-image-ux-basic-column-axis";
+    "2026.09.08-viewer-ui-v30.4-progress-forecast";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -3388,6 +3607,12 @@ function refreshDetailSidebarNavigation() {
     if (!nav || !group) return;
 
     const candidates = [
+        {
+            id:
+                "monthProgressSection",
+            label:
+                "進捗"
+        },
         {
             id:
                 "noteDetailSection",
@@ -5384,6 +5609,15 @@ function targetMetricHeaderHtml(label) {
     return `<th><span class="target-header"><span class="target-header-main">${escapeHtml(label)}</span><span class="target-header-age">${escapeHtml(currentViewerTargetDisplayLabel)}</span></span></th>`;
 }
 
+function formatCountMaybeDecimal(value, core) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "—";
+    if (Math.abs(number - Math.round(number)) < 0.0000001) {
+        return core.formatNumber(Math.round(number));
+    }
+    return number.toLocaleString("ja-JP", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
 function basicCrossColumnWidth(agg) {
     const widths = {
         "month": 92,
@@ -5444,10 +5678,10 @@ function renderCrossTable(table, core) {
         const columnCells = columnLabels
             .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
             .join("");
-
-        return `
-            <tr>
-                <td>${escapeHtml(group.label)}</td>
+        const rowKey = `${table.id}:${group.sortValue ?? group.label}`;
+        const baseRow = `
+            <tr data-row-key="${escapeHtml(rowKey)}">
+                <td data-sort-value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</td>
                 ${columnCells}
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
@@ -5456,6 +5690,25 @@ function renderCrossTable(table, core) {
                 <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
             </tr>
         `;
+
+        if (!(table.id === "month" && agg.forecast && Number(agg.forecast.attachedSortValue) === Number(group.sortValue))) {
+            return baseRow;
+        }
+
+        const forecastCells = columnLabels
+            .map(label => `<td>${formatCountMaybeDecimal(agg.forecast.counts?.[label], core)}</td>`)
+            .join("");
+
+        return `${baseRow}
+            <tr class="forecast-row" data-attached-to="${escapeHtml(rowKey)}">
+                <td data-sort-value="${escapeHtml(agg.forecast.label)}" title="期間内の最新月ペースから単純換算した予測値です">${escapeHtml(agg.forecast.label)}</td>
+                ${forecastCells}
+                <td>${formatCountMaybeDecimal(agg.forecast.total, core)}</td>
+                <td>—</td>
+                <td>${formatCountMaybeDecimal(agg.forecast.target, core)}</td>
+                <td>—</td>
+                <td>—</td>
+            </tr>`;
     }).join("");
 
     const totalColumnCells = columnLabels
@@ -5515,10 +5768,10 @@ function renderBasicDistributionTable(table, core) {
             agg.baseTotal
                 ? group.total / agg.baseTotal
                 : 0;
-
-        return `
-            <tr>
-                <td>${escapeHtml(group.label)}</td>
+        const rowKey = `${table.id}:${group.sortValue ?? group.label}`;
+        const baseRow = `
+            <tr data-row-key="${escapeHtml(rowKey)}">
+                <td data-sort-value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</td>
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(share)}</td>
                 <td class="distribution-bar-cell">
@@ -5529,6 +5782,21 @@ function renderBasicDistributionTable(table, core) {
                 <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
             </tr>
         `;
+
+        if (!(table.id === "month" && agg.forecast && Number(agg.forecast.attachedSortValue) === Number(group.sortValue))) {
+            return baseRow;
+        }
+
+        return `${baseRow}
+            <tr class="forecast-row" data-attached-to="${escapeHtml(rowKey)}">
+                <td data-sort-value="${escapeHtml(agg.forecast.label)}" title="期間内の最新月ペースから単純換算した予測値です">${escapeHtml(agg.forecast.label)}</td>
+                <td>${formatCountMaybeDecimal(agg.forecast.total, core)}</td>
+                <td>—</td>
+                <td></td>
+                <td>${formatCountMaybeDecimal(agg.forecast.target, core)}</td>
+                <td>—</td>
+                <td>—</td>
+            </tr>`;
     }).join("");
 
     return `
@@ -5577,20 +5845,30 @@ function renderBasicDistributionTable(table, core) {
 
 
 function renderStandaloneCross(agg, core, firstHeader) {
-    const ageCols = agg.ageCols;
-    const totalAge = Object.fromEntries(
-        ageCols.map(age => [age, 0])
+    const columnLabels =
+        Array.isArray(agg.columnLabels)
+            ? agg.columnLabels
+            : (agg.ageCols || []);
+    const isAgeAxis =
+        !Array.isArray(agg.columnLabels);
+    const columnAxisLabel =
+        isAgeAxis
+            ? "年齢"
+            : (agg.columnAxisLabel || "列");
+    const totalColumns = Object.fromEntries(
+        columnLabels.map(label => [label, 0])
     );
 
     agg.groups.forEach(group => {
-        ageCols.forEach(age => {
-            totalAge[age] += group.ageCounts[age] || 0;
+        columnLabels.forEach(label => {
+            const counts = isAgeAxis ? group.ageCounts : group.columnCounts;
+            totalColumns[label] += counts?.[label] || 0;
         });
     });
 
     const headers = [
         `<th>${escapeHtml(firstHeader)}</th>`,
-        ...ageCols.map(age => `<th>${escapeHtml(age)}</th>`),
+        ...columnLabels.map(label => `<th>${escapeHtml(label)}</th>`),
         "<th>総応募数</th>",
         "<th>応募構成比</th>",
         targetMetricHeaderHtml("ターゲット応募数"),
@@ -5599,14 +5877,15 @@ function renderStandaloneCross(agg, core, firstHeader) {
     ].join("");
 
     const rows = agg.groups.map(group => {
-        const ageCells = ageCols
-            .map(age => `<td>${core.formatNumber(group.ageCounts[age] || 0)}</td>`)
+        const counts = isAgeAxis ? group.ageCounts : group.columnCounts;
+        const columnCells = columnLabels
+            .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
             .join("");
 
         return `
             <tr>
                 <td>${escapeHtml(group.label)}</td>
-                ${ageCells}
+                ${columnCells}
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
                 <td>${core.formatNumber(group.target)}</td>
@@ -5616,24 +5895,24 @@ function renderStandaloneCross(agg, core, firstHeader) {
         `;
     }).join("");
 
-    const totalAgeCells = ageCols
-        .map(age => `<td>${core.formatNumber(totalAge[age] || 0)}</td>`)
+    const totalColumnCells = columnLabels
+        .map(label => `<td>${core.formatNumber(totalColumns[label] || 0)}</td>`)
         .join("");
 
-    const compositionCells = ageCols
-        .map(age => `<td>${core.formatPercent(agg.baseTotal ? (totalAge[age] || 0) / agg.baseTotal : 0)}</td>`)
+    const compositionCells = columnLabels
+        .map(label => `<td>${core.formatPercent(agg.baseTotal ? (totalColumns[label] || 0) / agg.baseTotal : 0)}</td>`)
         .join("");
 
     return `
         <div class="table-wrap">
-            <table class="cross-table">
-                ${crossTableColgroupHtml(ageCols)}
+            <table class="cross-table ${isAgeAxis ? "" : "basic-axis-cross-table"}">
+                ${crossTableColgroupHtml(columnLabels, isAgeAxis ? 72 : basicCrossColumnWidth(agg))}
                 <thead><tr>${headers}</tr></thead>
                 <tbody>
                     ${rows}
                     <tr class="total-row">
                         <td>【総計】</td>
-                        ${totalAgeCells}
+                        ${totalColumnCells}
                         <td>${core.formatNumber(agg.baseTotal)}</td>
                         <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
                         <td>${core.formatNumber(agg.baseTarget)}</td>
@@ -5641,7 +5920,7 @@ function renderStandaloneCross(agg, core, firstHeader) {
                         <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
                     </tr>
                     <tr class="composition-row">
-                        <td>年齢構成比</td>
+                        <td>${escapeHtml(columnAxisLabel)}構成比</td>
                         ${compositionCells}
                         <td></td><td></td><td></td><td></td><td></td>
                     </tr>
@@ -5698,11 +5977,11 @@ function detailHeaderHtml(
 
 function detailTableWidth(
     type,
-    ageCols
+    columns
 ) {
     const ageWidth =
-        (Array.isArray(ageCols)
-            ? ageCols.length
+        (Array.isArray(columns)
+            ? columns.length
             : 0) *
         72;
 
@@ -5796,26 +6075,29 @@ function renderIndeedTagDetail(detail, core) {
             : "すべて";
 
     document.getElementById("indeedTagDetailNote").textContent =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ 1応募は複数タグへ重複集計`;
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ 1応募は複数タグへ重複集計${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}`;
 
-    const ageHeaders =
-        detail.ageCols
+    const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
+    const isAgeAxis = !Array.isArray(detail.columnLabels);
+
+    const columnHeaders =
+        columns
             .map(
-                age =>
-                    `<th>${detailHeaderHtml(age)}</th>`
+                label => `<th>${detailHeaderHtml(label)}</th>`
             )
             .join("");
 
     const rows = detail.rows.map(row => {
-        const ageCells =
-            detail.ageCols
-                .map(age => `<td>${core.formatNumber(row.ageCounts[age] || 0)}</td>`)
+        const counts = isAgeAxis ? row.ageCounts : row.columnCounts;
+        const columnCells =
+            columns
+                .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
                 .join("");
 
         return `
             <tr>
                 <td>${escapeHtml(row.label)}</td>
-                ${ageCells}
+                ${columnCells}
                 <td>${core.formatNumber(row.total)}</td>
                 <td>${core.formatPercent(row.coverRate)}</td>
                 <td>${core.formatNumber(row.target)}</td>
@@ -5830,20 +6112,20 @@ function renderIndeedTagDetail(detail, core) {
     const detailWidth =
         detailTableWidth(
             "indeed-tag",
-            detail.ageCols
+            columns
         );
 
     document.getElementById("indeedTagDetailBody").innerHTML = `
         <div class="table-wrap detail-table-wrap">
             <table
-                class="cross-table detail-cross-table indeed-tag-detail-table"
+                class="cross-table detail-cross-table indeed-tag-detail-table ${isAgeAxis ? "" : "basic-axis-cross-table"}"
                 style="--detail-table-width:${detailWidth}px"
             >
-                ${indeedTagDetailColgroupHtml(detail.ageCols)}
+                ${indeedTagDetailColgroupHtml(columns)}
                 <thead>
                     <tr>
                         <th>${detailHeaderHtml("求人タグ")}</th>
-                        ${ageHeaders}
+                        ${columnHeaders}
                         <th>${detailHeaderHtml("タグ対象", "応募数", "タグ対象応募数")}</th>
                         <th>${detailHeaderHtml("全応募", "カバー率", "全応募カバー率")}</th>
                         ${targetMetricHeaderHtml("ターゲット応募数")}
@@ -5875,20 +6157,23 @@ function renderTopImageDetail(detail, core) {
             : "すべて";
 
     document.getElementById("topImageDetailNote").textContent =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ URL未取得でも数値分析には含みます`;
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ URL未取得でも数値分析には含みます${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}`;
 
-    const ageHeaders =
-        detail.ageCols
+    const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
+    const isAgeAxis = !Array.isArray(detail.columnLabels);
+
+    const columnHeaders =
+        columns
             .map(
-                age =>
-                    `<th>${detailHeaderHtml(age)}</th>`
+                label => `<th>${detailHeaderHtml(label)}</th>`
             )
             .join("");
 
     const rows = detail.rows.map(row => {
-        const ageCells =
-            detail.ageCols
-                .map(age => `<td>${core.formatNumber(row.ageCounts[age] || 0)}</td>`)
+        const counts = isAgeAxis ? row.ageCounts : row.columnCounts;
+        const columnCells =
+            columns
+                .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
                 .join("");
 
         const preview =
@@ -5898,9 +6183,9 @@ function renderTopImageDetail(detail, core) {
 
         return `
             <tr>
-                <td>${escapeHtml(row.label)}</td>
-                <td>${preview}</td>
-                ${ageCells}
+                <td data-sort-value="${escapeHtml(row.label)}">${escapeHtml(row.label)}</td>
+                <td data-sort-value="${escapeHtml(row.fileName || row.label || "")}">${preview}</td>
+                ${columnCells}
                 <td>${core.formatNumber(row.total)}</td>
                 <td>${core.formatPercent(row.share)}</td>
                 <td>${core.formatNumber(row.target)}</td>
@@ -5915,21 +6200,21 @@ function renderTopImageDetail(detail, core) {
     const detailWidth =
         detailTableWidth(
             "top-image",
-            detail.ageCols
+            columns
         );
 
     document.getElementById("topImageDetailBody").innerHTML = `
         <div class="table-wrap detail-table-wrap">
             <table
-                class="cross-table detail-cross-table top-image-detail-table"
+                class="cross-table detail-cross-table top-image-detail-table ${isAgeAxis ? "" : "basic-axis-cross-table"}"
                 style="--detail-table-width:${detailWidth}px"
             >
-                ${topImageDetailColgroupHtml(detail.ageCols)}
+                ${topImageDetailColgroupHtml(columns)}
                 <thead>
                     <tr>
                         <th>${detailHeaderHtml("画像", "ファイル名", "画像ファイル名")}</th>
                         <th>${detailHeaderHtml("プレビュー")}</th>
-                        ${ageHeaders}
+                        ${columnHeaders}
                         <th>${detailHeaderHtml("総応募数")}</th>
                         <th>${detailHeaderHtml("応募", "構成比", "応募構成比")}</th>
                         ${targetMetricHeaderHtml("ターゲット応募数")}
@@ -5945,6 +6230,240 @@ function renderTopImageDetail(detail, core) {
     `;
 }
 
+
+function monthProgressLegendHtml(progress) {
+    const compareItems = (progress.comparisons || []).map(series => {
+        const lineClass = series.kind === "prev1" ? "prev1" : series.kind;
+        return `<span class="month-progress-legend-item"><span class="month-progress-legend-line ${escapeHtml(lineClass)}"></span>${escapeHtml(series.label)}</span>`;
+    }).join("");
+
+    return `
+        <div class="month-progress-legend">
+            <span class="month-progress-legend-item"><span class="month-progress-legend-swatch"></span>${escapeHtml(progress.latestMonthLabel || "最新月")}</span>
+            ${compareItems}
+            ${progress.current?.projectedTotal !== null && progress.current?.projectedTotal !== undefined ? `<span class="month-progress-legend-item"><span class="month-progress-legend-line projection"></span>着地予測</span>` : ""}
+        </div>
+    `;
+}
+
+function monthProgressTooltipElement() {
+    let element = document.getElementById("monthProgressTooltip");
+    if (element) return element;
+    element = document.createElement("div");
+    element.id = "monthProgressTooltip";
+    element.className = "month-progress-tooltip";
+    document.body.appendChild(element);
+    return element;
+}
+
+function updateMonthProgressModeButtons() {
+    document.querySelectorAll("[data-progress-mode]").forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.progressMode === currentViewerMonthProgressMode
+        );
+    });
+}
+
+function renderMonthProgressSection(progress, core) {
+    const section = document.getElementById("monthProgressSection");
+    const note = document.getElementById("monthProgressNote");
+    const summary = document.getElementById("monthProgressSummary");
+    const body = document.getElementById("monthProgressBody");
+
+    updateMonthProgressModeButtons();
+    updateViewerConditionSummaries();
+
+    if (!progress?.visible) {
+        section?.classList.add("hidden");
+        if (summary) summary.innerHTML = "";
+        if (body) body.innerHTML = "";
+        return;
+    }
+
+    section?.classList.remove("hidden");
+
+    if (note) {
+        note.textContent = `集計対象年齢：${progress.ageFilterLabel || "全年齢"} ／ 最新データ：${formatDateLabel(progress.summary?.latestDataDate)} ／ 期間内の最新月：${progress.latestMonthLabel}`;
+    }
+
+    const currentActual = Number(progress.summary?.currentActual || 0);
+    const prevSameDay = progress.summary?.previousMonthSameDay;
+    const lastYearSameDay = progress.summary?.lastYearSameDay;
+
+    function diffLabel(base) {
+        const baseNumber = Number(base);
+        if (!Number.isFinite(baseNumber) || baseNumber === 0) return "比較不可";
+        const diff = ((currentActual - baseNumber) / baseNumber) * 100;
+        const sign = diff > 0 ? "+" : "";
+        return `${sign}${diff.toFixed(1)}%`;
+    }
+
+    if (summary) {
+        summary.innerHTML = `
+            <div class="month-progress-summary-card">
+                <div class="month-progress-summary-label">${escapeHtml(progress.latestMonthLabel)} 実績</div>
+                <div class="month-progress-summary-value">${core.formatNumber(currentActual)}件</div>
+                <div class="month-progress-summary-sub">最新日 ${progress.latestObservedDay}日まで</div>
+            </div>
+            <div class="month-progress-summary-card">
+                <div class="month-progress-summary-label">${escapeHtml(progress.summary?.previousMonthLabel || "前月")} 同日時点</div>
+                <div class="month-progress-summary-value">${prevSameDay === null || prevSameDay === undefined ? "—" : core.formatNumber(prevSameDay)}件</div>
+                <div class="month-progress-summary-sub">差分 ${prevSameDay === null || prevSameDay === undefined ? "—" : diffLabel(prevSameDay)}</div>
+            </div>
+            <div class="month-progress-summary-card">
+                <div class="month-progress-summary-label">${escapeHtml(progress.summary?.lastYearLabel || "前年同月")} 同日時点</div>
+                <div class="month-progress-summary-value">${lastYearSameDay === null || lastYearSameDay === undefined ? "—" : core.formatNumber(lastYearSameDay)}件</div>
+                <div class="month-progress-summary-sub">差分 ${lastYearSameDay === null || lastYearSameDay === undefined ? "—" : diffLabel(lastYearSameDay)}</div>
+            </div>
+            <div class="month-progress-summary-card">
+                <div class="month-progress-summary-label">${escapeHtml(progress.latestMonthLabel)} 着地予測</div>
+                <div class="month-progress-summary-value">${progress.current?.projectedTotal === null || progress.current?.projectedTotal === undefined ? "—" : formatCountMaybeDecimal(progress.current.projectedTotal, core)}件</div>
+                <div class="month-progress-summary-sub">選択期間内の最新月ペースから単純換算</div>
+            </div>
+        `;
+    }
+
+    if (body) {
+        body.innerHTML = buildMonthProgressChartHtml(progress, core);
+        bindMonthProgressTooltip(body, progress, core);
+    }
+}
+
+function buildMonthProgressChartHtml(progress, core) {
+    const mode = currentViewerMonthProgressMode === "daily" ? "daily" : "cumulative";
+    const maxValueCandidates = [];
+    const currentSeries = progress.current || {};
+    const currentValues = mode === "daily" ? (currentSeries.daily || []) : (currentSeries.projectedCumulative || currentSeries.cumulative || []);
+    currentValues.forEach(value => { if (value !== null && value !== undefined) maxValueCandidates.push(Number(value)); });
+    (progress.comparisons || []).forEach(series => {
+        const values = mode === "daily" ? (series.daily || []) : (series.cumulative || []);
+        values.forEach(value => { if (value !== null && value !== undefined) maxValueCandidates.push(Number(value)); });
+    });
+    const maxValue = Math.max(1, ...maxValueCandidates);
+    const topValue = maxValue * 1.1;
+    const viewBoxWidth = 960;
+    const viewBoxHeight = 360;
+    const padding = { top: 20, right: 18, bottom: 44, left: 52 };
+    const plotWidth = viewBoxWidth - padding.left - padding.right;
+    const plotHeight = viewBoxHeight - padding.top - padding.bottom;
+    const stepX = plotWidth / 31;
+    const baselineY = padding.top + plotHeight;
+    const svgParts = [];
+
+    for (let i = 0; i <= 4; i += 1) {
+        const value = topValue * (i / 4);
+        const y = baselineY - (plotHeight * (i / 4));
+        svgParts.push(`<line x1="${padding.left}" y1="${y}" x2="${padding.left + plotWidth}" y2="${y}" stroke="#e6eef2" stroke-width="1"></line>`);
+        svgParts.push(`<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" class="month-progress-grid-label">${escapeHtml(formatCountMaybeDecimal(value, core))}</text>`);
+    }
+
+    const visibleTicks = [1,5,10,15,20,25,31];
+    visibleTicks.forEach(day => {
+        const x = padding.left + stepX * (day - 0.5);
+        svgParts.push(`<text x="${x}" y="${viewBoxHeight - 14}" text-anchor="middle" class="month-progress-axis-label">${day}</text>`);
+    });
+
+    const barColor = "#0f6795";
+    const lineColors = { prev1: "#475569", prev2: "#94a3b8", lastYearSameMonth: "#10b981" };
+    const currentActualValues = mode === "daily" ? (currentSeries.daily || []) : (currentSeries.cumulative || []);
+
+    currentActualValues.forEach((value, index) => {
+        if (value === null || value === undefined) return;
+        const height = Math.max(0, Number(value) / topValue * plotHeight);
+        const x = padding.left + stepX * index + stepX * 0.16;
+        const y = baselineY - height;
+        svgParts.push(`<rect x="${x}" y="${y}" width="${stepX * 0.68}" height="${height}" rx="3" fill="${barColor}" fill-opacity="0.92" data-progress-day="${index + 1}"></rect>`);
+    });
+
+    if (mode === "cumulative" && Array.isArray(currentSeries.projectedCumulative) && currentSeries.projectedTotal !== null && currentSeries.projectedTotal !== undefined) {
+        let path = "";
+        currentSeries.projectedCumulative.forEach((value, index) => {
+            if (value === null || value === undefined) return;
+            const x = padding.left + stepX * index + stepX * 0.5;
+            const y = baselineY - (Number(value) / topValue * plotHeight);
+            path += path ? ` L ${x} ${y}` : `M ${x} ${y}`;
+        });
+        if (path) {
+            svgParts.push(`<path d="${path}" fill="none" stroke="${barColor}" stroke-width="2.5" stroke-dasharray="6 5"></path>`);
+        }
+    }
+
+    (progress.comparisons || []).forEach(series => {
+        const values = mode === "daily" ? (series.daily || []) : (series.cumulative || []);
+        let path = "";
+        values.forEach((value, index) => {
+            if (value === null || value === undefined) return;
+            const x = padding.left + stepX * index + stepX * 0.5;
+            const y = baselineY - (Number(value) / topValue * plotHeight);
+            path += path ? ` L ${x} ${y}` : `M ${x} ${y}`;
+        });
+        if (path) {
+            svgParts.push(`<path d="${path}" fill="none" stroke="${lineColors[series.kind] || "#64748b"}" stroke-width="2.5"></path>`);
+        }
+    });
+
+    svgParts.push(`<line x1="${padding.left}" y1="${baselineY}" x2="${padding.left + plotWidth}" y2="${baselineY}" stroke="#cfdbe3" stroke-width="1.2"></line>`);
+
+    const overlayRects = Array.from({ length: 31 }, (_, index) => {
+        const x = padding.left + stepX * index;
+        return `<rect x="${x}" y="${padding.top}" width="${stepX}" height="${plotHeight}" fill="transparent" data-progress-hit="${index + 1}"></rect>`;
+    }).join("");
+
+    return `
+        <div class="month-progress-chart-wrap" data-progress-mode="${escapeHtml(mode)}">
+            <svg class="month-progress-chart" viewBox="0 0 ${viewBoxWidth} ${viewBoxHeight}" aria-label="月間応募進捗グラフ" role="img">
+                ${svgParts.join("")}
+                ${overlayRects}
+            </svg>
+        </div>
+        ${monthProgressLegendHtml(progress)}
+    `;
+}
+
+function bindMonthProgressTooltip(root, progress, core) {
+    const tooltip = monthProgressTooltipElement();
+    const hits = root.querySelectorAll("[data-progress-hit]");
+    const mode = currentViewerMonthProgressMode === "daily" ? "daily" : "cumulative";
+
+    function hideTooltip() {
+        tooltip.classList.remove("visible");
+    }
+
+    function moveTooltip(event) {
+        const margin = 18;
+        const width = tooltip.offsetWidth || 180;
+        const height = tooltip.offsetHeight || 90;
+        let left = event.clientX + 16;
+        let top = event.clientY + 16;
+        if (left + width + margin > window.innerWidth) left = event.clientX - width - 16;
+        if (top + height + margin > window.innerHeight) top = event.clientY - height - 16;
+        tooltip.style.left = `${Math.max(margin, left)}px`;
+        tooltip.style.top = `${Math.max(margin, top)}px`;
+    }
+
+    hits.forEach(hit => {
+        hit.addEventListener("mouseenter", event => {
+            const day = Number(hit.dataset.progressHit);
+            const rows = [];
+            const currentActual = mode === "daily" ? progress.current?.daily?.[day - 1] : progress.current?.cumulative?.[day - 1];
+            if (currentActual !== null && currentActual !== undefined) rows.push({ label: `${progress.latestMonthLabel} 実績`, value: currentActual });
+            if (mode === "cumulative") {
+                const projected = progress.current?.projectedCumulative?.[day - 1];
+                if (projected !== null && projected !== undefined && day > (progress.latestObservedDay || 0)) rows.push({ label: `${progress.latestMonthLabel} 予測`, value: projected });
+            }
+            (progress.comparisons || []).forEach(series => {
+                const value = mode === "daily" ? series.daily?.[day - 1] : series.cumulative?.[day - 1];
+                if (value !== null && value !== undefined) rows.push({ label: series.label, value });
+            });
+            tooltip.innerHTML = `<strong>${day}日</strong>${rows.map(row => `<div class="month-progress-tooltip-row"><span>${escapeHtml(row.label)}</span><span>${escapeHtml(formatCountMaybeDecimal(row.value, core))}件</span></div>`).join("")}`;
+            tooltip.classList.add("visible");
+            moveTooltip(event);
+        });
+        hit.addEventListener("mousemove", moveTooltip);
+        hit.addEventListener("mouseleave", hideTooltip);
+    });
+}
 let currentCustomAnalysisState = {
     initialized: false,
     userTouched: false,
@@ -6235,7 +6754,7 @@ function renderCustomResult(result, core) {
         const display=customPivotDisplayLabel(result,index,axisIndex);
         const axis=result.rowAxes[axisIndex]||"";
 
-        return `<td class="custom-row-axis-col" data-row-axis-index="${axisIndex}" data-pivot-axis="${escapeHtml(axis)}" data-pivot-value="${escapeHtml(label)}"><span class="custom-pivot-cell-content ${display?"":"pivot-value-suppressed"}" data-pivot-content="1">${customPivotAxisValueHtml(axis,label)}</span></td>`;
+        return `<td class="custom-row-axis-col" data-row-axis-index="${axisIndex}" data-pivot-axis="${escapeHtml(axis)}" data-pivot-value="${escapeHtml(label)}" data-sort-value="${escapeHtml(label)}"><span class="custom-pivot-cell-content ${display?"":"pivot-value-suppressed"}" data-pivot-content="1">${customPivotAxisValueHtml(axis,label)}</span></td>`;
     }).join("");const cells=result.colLabels.map(colLabel=>`<td>${core.formatNumber(rowMap.get(colLabel)||0)}</td>`).join("");return `<tr class="${customPivotGroupClass(entry,previous)}" data-pivot-labels="${escapeHtml(JSON.stringify(entry.labels))}">${rowAxisCells}${cells}<td>${core.formatNumber(result.rowTotals.get(entry.key)||0)}</td></tr>`;}).join("");
     const totalCells = result.colLabels.map(colLabel => `<td>${core.formatNumber(result.colTotals.get(colLabel) || 0)}</td>`).join("");
     output.innerHTML=`<div class="table-wrap"><table class="custom-table"><thead><tr>${rowHeaders}${headers}<th>行合計</th></tr></thead><tbody>${rows}<tr class="total-row"><td colspan="${result.rowAxes.length}">列合計</td>${totalCells}<td>${core.formatNumber(result.applicationCount)}</td></tr></tbody></table></div>`;
@@ -6297,6 +6816,13 @@ let currentViewerTargetAge = {
     min: "",
     max: ""
 };
+
+let currentViewerProgressAge = {
+    min: "",
+    max: ""
+};
+
+let currentViewerMonthProgressMode = "cumulative";
 
 let currentViewerBasicColumnAxis = "age";
 
@@ -6686,6 +7212,14 @@ function dataForCurrentViewerPeriod(
             "ターゲット年齢上限":
                 currentViewerTargetAge
                     .max,
+            "応募進捗年齢下限":
+                currentViewerProgressAge
+                    .min,
+            "応募進捗年齢上限":
+                currentViewerProgressAge
+                    .max,
+            "応募進捗表示モード":
+                currentViewerMonthProgressMode,
             "基本表列軸":
                 currentViewerBasicColumnAxis
         }
@@ -6817,6 +7351,42 @@ function targetAgeSummaryLabel() {
     return `${max}歳以下`;
 }
 
+function progressAgeSummaryLabel() {
+    const min =
+        viewerOptionalNumber(
+            currentViewerProgressAge
+                .min
+        );
+
+    const max =
+        viewerOptionalNumber(
+            currentViewerProgressAge
+                .max
+        );
+
+    if (
+        min === null &&
+        max === null
+    ) {
+        return "全年齢";
+    }
+
+    if (
+        min !== null &&
+        max !== null
+    ) {
+        return `${min}～${max}歳`;
+    }
+
+    if (
+        min !== null
+    ) {
+        return `${min}歳以上`;
+    }
+
+    return `${max}歳以下`;
+}
+
 function updateViewerConditionSummaries() {
     const period =
         document.getElementById(
@@ -6836,6 +7406,16 @@ function updateViewerConditionSummaries() {
     if (age) {
         age.textContent =
             targetAgeSummaryLabel();
+    }
+
+    const progressAge =
+        document.getElementById(
+            "progressAgeSummary"
+        );
+
+    if (progressAge) {
+        progressAge.textContent =
+            progressAgeSummaryLabel();
     }
 }
 
@@ -7517,6 +8097,7 @@ function ageBandIndexForMax(
 
 function agePickerSourceRange(context) {
     if (context === "custom") return { min: currentCustomAnalysisState.ageMin, max: currentCustomAnalysisState.ageMax };
+    if (context === "progress") return { min: currentViewerProgressAge.min, max: currentViewerProgressAge.max };
     return { min: currentViewerTargetAge.min, max: currentViewerTargetAge.max };
 }
 
@@ -7528,6 +8109,10 @@ function configureAgePickerModal(context) {
         if (title) title.textContent = "集計対象年齢を選択";
         if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。カスタム分析の集計対象だけを絞り込みます。";
         if (apply) apply.textContent = "この年齢範囲で集計";
+    } else if (context === "progress") {
+        if (title) title.textContent = "月間応募進捗の集計対象年齢を選択";
+        if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。月間応募進捗グラフだけを絞り込みます。";
+        if (apply) apply.textContent = "この年齢範囲で集計";
     } else {
         if (title) title.textContent = "ターゲット年齢を選択";
         if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。ターゲット応募数・率の定義を変更します。";
@@ -7536,7 +8121,7 @@ function configureAgePickerModal(context) {
 }
 
 function openAgePicker(context = "target") {
-    viewerAgePickerContext = context === "custom" ? "custom" : "target";
+    viewerAgePickerContext = context === "custom" ? "custom" : context === "progress" ? "progress" : "target";
     configureAgePickerModal(viewerAgePickerContext);
     const range = agePickerSourceRange(viewerAgePickerContext);
     let startIndex = ageBandIndexForMin(range.min);
@@ -7558,6 +8143,18 @@ function initializeViewerAnalysisPickers() {
 
     document.getElementById("viewerTargetAgePickerBtn")?.addEventListener("click", () => openAgePicker("target"));
     document.getElementById("customAgePickerBtn")?.addEventListener("click", () => openAgePicker("custom"));
+    document.getElementById("progressAgePickerBtn")?.addEventListener("click", () => openAgePicker("progress"));
+
+    document.querySelectorAll("[data-progress-mode]").forEach(button => {
+        if (button.dataset.progressModeBound === "1") return;
+        button.dataset.progressModeBound = "1";
+        button.addEventListener("click", () => {
+            const mode = button.dataset.progressMode === "daily" ? "daily" : "cumulative";
+            if (mode === currentViewerMonthProgressMode) return;
+            currentViewerMonthProgressMode = mode;
+            if (currentViewerData) renderReport(currentViewerData);
+        });
+    });
 
     document.addEventListener(
         "click",
@@ -7809,6 +8406,11 @@ function initializeViewerAnalysisPickers() {
                     updateCustomAgeSummary();
                     closeViewerModal("viewerTargetAgeModal");
                     scheduleCustomAnalysisRun();
+                } else if (viewerAgePickerContext === "progress") {
+                    currentViewerProgressAge = { min:"", max:"" };
+                    closeViewerModal("viewerTargetAgeModal");
+                    updateViewerConditionSummaries();
+                    renderReport(currentViewerData);
                 } else {
                     currentViewerTargetAge = { min:"", max:"" };
                     viewerTargetAgeTouched = true;
@@ -7998,6 +8600,11 @@ function initializeViewerAnalysisPickers() {
                 closeViewerModal("viewerTargetAgeModal");
                 updateCustomAgeSummary();
                 scheduleCustomAnalysisRun();
+            } else if (viewerAgePickerContext === "progress") {
+                currentViewerProgressAge = { min:startBand.min, max:endBand.max ?? "" };
+                closeViewerModal("viewerTargetAgeModal");
+                updateViewerConditionSummaries();
+                renderReport(currentViewerData);
             } else {
                 currentViewerTargetAge = { min:startBand.min, max:endBand.max ?? "" };
                 viewerTargetAgeTouched = true;
@@ -8073,6 +8680,13 @@ function initializeViewerPeriod(
     viewerTargetAgeTouched =
         false;
 
+    currentViewerProgressAge = {
+        min: "",
+        max: ""
+    };
+
+    currentViewerMonthProgressMode = "cumulative";
+
     syncViewerTargetAgeFromData(
         data
     );
@@ -8091,6 +8705,7 @@ function renderReport(data) {
         );
     hoverPreview?.classList.remove("visible");
     hoverPreview?.querySelector("img")?.removeAttribute("src");
+    document.getElementById("monthProgressTooltip")?.classList.remove("visible");
 
     const renderStartedAt =
         performance.now();
@@ -8181,6 +8796,11 @@ function renderReport(data) {
 
     document.getElementById("kpiMatched").textContent =
         `${core.formatNumber(result.matchedCount)} / ${core.formatNumber(result.totalCount)} 応募`;
+
+    renderMonthProgressSection(
+        result.monthProgress,
+        core
+    );
 
     document.getElementById("ageModeNote").textContent =
         `年齢区分：${result.ageMode}`;

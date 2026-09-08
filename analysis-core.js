@@ -422,17 +422,26 @@ function buildImageMap(dataset) {
             viewerResponse?.datasets?.enterpriseMaster || {}
         );
 
+        const timelineRecords = [];
         const recordsAll = [];
         const recordsMatched = [];
 
         apps.forEach(app => {
             const appDate = parseDate(app["応募日時"]);
+            const age = n(app["年齢"]);
+
+            if (appDate && !Number.isNaN(appDate.getTime())) {
+                timelineRecords.push({
+                    appDate,
+                    age
+                });
+            }
+
             const key = dateKey(appDate);
 
             if (startKey !== null && (key === null || key < startKey)) return;
             if (endKey !== null && (key === null || key > endKey)) return;
 
-            const age = n(app["年齢"]);
             const jobRefId = s(app["求人参照ID"]);
             const matchedFlag = truthy(app["求人データ突合フラグ"]);
             const job =
@@ -494,6 +503,7 @@ function buildImageMap(dataset) {
             indeedTagLimit,
             topImageLimit,
             enterpriseInfo,
+            timelineRecords,
             recordsAll,
             recordsMatched
         };
@@ -1093,6 +1103,98 @@ function buildImageMap(dataset) {
         };
     }
 
+    function monthLabelFromDate(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+        return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+    }
+
+    function monthKeyFromDate(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function sameMonth(dateA, dateB) {
+        return !!dateA && !!dateB &&
+            dateA.getFullYear() === dateB.getFullYear() &&
+            dateA.getMonth() === dateB.getMonth();
+    }
+
+    function daysInMonth(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return 0;
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    }
+
+    function inDateRange(date, startDate, endDate) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return false;
+        if (startDate && date < startDate) return false;
+        if (endDate && date > endDate) return false;
+        return true;
+    }
+
+    function maxDate(records) {
+        return records.reduce(
+            (latest, record) =>
+                !latest || record.appDate > latest
+                    ? record.appDate
+                    : latest,
+            null
+        );
+    }
+
+    function buildMonthForecastRow(context, aggregate, columnState) {
+        const latestDate = maxDate(context.recordsAll.filter(record => record.appDate));
+
+        if (!latestDate) return null;
+
+        const totalDays = daysInMonth(latestDate);
+        const latestDay = latestDate.getDate();
+
+        if (!totalDays || latestDay >= totalDays) {
+            return null;
+        }
+
+        const selectedStart = parseDate(context.settings?.["集計開始日"]);
+        const observedStartDay =
+            selectedStart && sameMonth(selectedStart, latestDate)
+                ? Math.max(1, selectedStart.getDate())
+                : 1;
+        const observedDayCount = Math.max(1, latestDay - observedStartDay + 1);
+        const scale = totalDays / observedDayCount;
+        const latestSortValue = latestDate.getFullYear() * 100 + (latestDate.getMonth() + 1);
+        const sourceGroup = (aggregate.groups || []).find(group => Number(group.sortValue) === latestSortValue);
+
+        if (!sourceGroup) {
+            return null;
+        }
+
+        const countLabels = Array.isArray(aggregate.columnLabels)
+            ? aggregate.columnLabels
+            : (aggregate.ageCols || []);
+        const sourceCounts = Array.isArray(aggregate.columnLabels)
+            ? (sourceGroup.columnCounts || {})
+            : (sourceGroup.ageCounts || {});
+        const forecastCounts = Object.fromEntries(
+            countLabels.map(label => [
+                label,
+                Number(((sourceCounts[label] || 0) * scale).toFixed(1))
+            ])
+        );
+
+        return {
+            label: `（${monthLabelFromDate(latestDate)}着地予測）`,
+            total: Number((sourceGroup.total * scale).toFixed(1)),
+            target: Number((sourceGroup.target * scale).toFixed(1)),
+            counts: forecastCounts,
+            observedStartDay,
+            latestObservedDay: latestDay,
+            observedDayCount,
+            daysInMonth: totalDays,
+            attachedSortValue: latestSortValue,
+            sortValue: latestSortValue + 0.1,
+            isForecast: true
+        };
+    }
+
     function buildBasicCrossTables(context, basicColumnState = null) {
         const columnState =
             basicColumnState ||
@@ -1108,34 +1210,64 @@ function buildImageMap(dataset) {
                     columnState.key !== "age" &&
                     def.id === columnState.selfTableId;
 
+                let aggregate =
+                    columnState.key === "age" || isDistribution
+                        ? aggregateCross(
+                            def.records,
+                            def.categoryFn,
+                            context,
+                            def
+                        )
+                        : aggregateCrossByColumnAxis(
+                            def.records,
+                            def.categoryFn,
+                            context,
+                            def,
+                            columnState
+                        );
+
+                if (def.id === "month") {
+                    aggregate = {
+                        ...aggregate,
+                        forecast: buildMonthForecastRow(
+                            context,
+                            aggregate,
+                            columnState
+                        )
+                    };
+                }
+
                 return {
                     ...def,
                     presentation:
                         isDistribution
                             ? "distribution"
                             : "cross",
-                    aggregate:
-                        columnState.key === "age" ||
-                        isDistribution
-                            ? aggregateCross(
-                                def.records,
-                                def.categoryFn,
-                                context,
-                                def
-                            )
-                            : aggregateCrossByColumnAxis(
-                                def.records,
-                                def.categoryFn,
-                                context,
-                                def,
-                                columnState
-                            )
+                    aggregate
                 };
             });
     }
 
+    function aggregateSingleValueDetail(records, categoryFn, context, sortConfig, basicColumnState) {
+        if (basicColumnState?.key && basicColumnState.key !== "age") {
+            return aggregateCrossByColumnAxis(
+                records,
+                categoryFn,
+                context,
+                sortConfig,
+                basicColumnState
+            );
+        }
 
-function aggregateNoteDetail(context) {
+        return aggregateCross(
+            records,
+            categoryFn,
+            context,
+            sortConfig
+        );
+    }
+
+function aggregateNoteDetail(context, basicColumnState) {
     const records = context.recordsMatched;
 
     const visible = records.some(
@@ -1153,7 +1285,7 @@ function aggregateNoteDetail(context) {
 
     return {
         visible: true,
-        aggregate: aggregateCross(
+        aggregate: aggregateSingleValueDetail(
             records,
             record =>
                 category(
@@ -1161,7 +1293,8 @@ function aggregateNoteDetail(context) {
                     "（求人備考なし）"
                 ),
             context,
-            { sort: "countDesc" }
+            { sort: "countDesc" },
+            basicColumnState
         )
     };
 }
@@ -1181,8 +1314,11 @@ function accumulateMultiGroup(group, record) {
     if (record.jobRefId) group.jobRefs.add(record.jobRefId);
 }
 
-function aggregateIndeedTags(context) {
-    const ageCols = context.ageCols;
+function aggregateIndeedTags(context, basicColumnState) {
+    const isAgeAxis = !basicColumnState || basicColumnState.key === "age";
+    const columnLabels = isAgeAxis
+        ? [...context.ageCols]
+        : [...(basicColumnState.columnLabels || [])];
     const groups = new Map();
     let realTagExists = false;
 
@@ -1195,7 +1331,10 @@ function aggregateIndeedTags(context) {
                 code,
                 label,
                 special,
-                ageCounts: emptyAgeCounts(ageCols),
+                ageCounts: isAgeAxis ? emptyAgeCounts(context.ageCols) : null,
+                columnCounts: isAgeAxis
+                    ? null
+                    : Object.fromEntries(columnLabels.map(col => [col, 0])),
                 total: 0,
                 target: 0,
                 jobRefs: new Set()
@@ -1217,7 +1356,7 @@ function aggregateIndeedTags(context) {
                 "__NO_TAG__"
             );
 
-            accumulateMultiGroup(noTag, record);
+            accumulateMultiDetailGroup(noTag, record, isAgeAxis, columnLabels, basicColumnState, context);
             return;
         }
 
@@ -1232,13 +1371,8 @@ function aggregateIndeedTags(context) {
                 context.tagMaster[code] ||
                 `${code}（名称未登録）`;
 
-            const group = ensureGroup(
-                code,
-                label,
-                ""
-            );
-
-            accumulateMultiGroup(group, record);
+            const group = ensureGroup(code, label, "");
+            accumulateMultiDetailGroup(group, record, isAgeAxis, columnLabels, basicColumnState, context);
         });
     });
 
@@ -1282,13 +1416,17 @@ function aggregateIndeedTags(context) {
 
     return {
         visible: true,
-        ageCols,
+        ageCols: isAgeAxis ? context.ageCols : undefined,
+        columnLabels: isAgeAxis ? undefined : columnLabels,
+        columnAxisKey: isAgeAxis ? "age" : basicColumnState.key,
+        columnAxisLabel: isAgeAxis ? "年齢" : basicColumnState.label,
         baseTotal,
         baseTarget,
         displayLimit: context.indeedTagLimit,
         rows: realGroups.map(group => ({
             label: group.label,
-            ageCounts: group.ageCounts,
+            ageCounts: group.ageCounts || undefined,
+            columnCounts: group.columnCounts || undefined,
             total: group.total,
             coverRate: baseTotal ? group.total / baseTotal : 0,
             target: group.target,
@@ -1303,8 +1441,36 @@ function aggregateIndeedTags(context) {
     };
 }
 
-function aggregateTopImages(context) {
-    const ageCols = context.ageCols;
+function accumulateMultiDetailGroup(group, record, isAgeAxis, columnLabels, basicColumnState, context) {
+    group.total += 1;
+
+    if (isAgeAxis) {
+        group.ageCounts[record.ageBucket] =
+            (group.ageCounts[record.ageBucket] || 0) + 1;
+    } else {
+        const columnCat = basicColumnAxisCategory(
+            record,
+            basicColumnState,
+            context
+        );
+        const columnLabel = s(columnCat?.label) || "（未設定）";
+
+        if (!Object.prototype.hasOwnProperty.call(group.columnCounts, columnLabel)) {
+            group.columnCounts[columnLabel] = 0;
+        }
+
+        group.columnCounts[columnLabel] += 1;
+    }
+
+    if (record.isTarget) group.target += 1;
+    if (record.jobRefId) group.jobRefs.add(record.jobRefId);
+}
+
+function aggregateTopImages(context, basicColumnState) {
+    const isAgeAxis = !basicColumnState || basicColumnState.key === "age";
+    const columnLabels = isAgeAxis
+        ? [...context.ageCols]
+        : [...(basicColumnState.columnLabels || [])];
     const groups = new Map();
     let hasAnyImage = false;
 
@@ -1323,7 +1489,10 @@ function aggregateTopImages(context) {
                 label: fileName || "（TOP画像なし）",
                 fileName,
                 noImage: !fileName,
-                ageCounts: emptyAgeCounts(ageCols),
+                ageCounts: isAgeAxis ? emptyAgeCounts(context.ageCols) : null,
+                columnCounts: isAgeAxis
+                    ? null
+                    : Object.fromEntries(columnLabels.map(col => [col, 0])),
                 total: 0,
                 target: 0,
                 jobRefs: new Set()
@@ -1332,8 +1501,24 @@ function aggregateTopImages(context) {
 
         const group = groups.get(key);
         group.total += 1;
-        group.ageCounts[record.ageBucket] =
-            (group.ageCounts[record.ageBucket] || 0) + 1;
+
+        if (isAgeAxis) {
+            group.ageCounts[record.ageBucket] =
+                (group.ageCounts[record.ageBucket] || 0) + 1;
+        } else {
+            const columnCat = basicColumnAxisCategory(
+                record,
+                basicColumnState,
+                context
+            );
+            const columnLabel = s(columnCat?.label) || "（未設定）";
+
+            if (!Object.prototype.hasOwnProperty.call(group.columnCounts, columnLabel)) {
+                group.columnCounts[columnLabel] = 0;
+            }
+
+            group.columnCounts[columnLabel] += 1;
+        }
 
         if (record.isTarget) group.target += 1;
         if (record.jobRefId) group.jobRefs.add(record.jobRefId);
@@ -1379,7 +1564,10 @@ function aggregateTopImages(context) {
 
     return {
         visible: true,
-        ageCols,
+        ageCols: isAgeAxis ? context.ageCols : undefined,
+        columnLabels: isAgeAxis ? undefined : columnLabels,
+        columnAxisKey: isAgeAxis ? "age" : basicColumnState.key,
+        columnAxisLabel: isAgeAxis ? "年齢" : basicColumnState.label,
         baseTotal,
         baseTarget,
         displayLimit: context.topImageLimit,
@@ -1390,7 +1578,8 @@ function aggregateTopImages(context) {
                 group.fileName
                     ? (context.imageMap[group.fileName] || "")
                     : "",
-            ageCounts: group.ageCounts,
+            ageCounts: group.ageCounts || undefined,
+            columnCounts: group.columnCounts || undefined,
             total: group.total,
             share: baseTotal ? group.total / baseTotal : 0,
             target: group.target,
@@ -1402,6 +1591,161 @@ function aggregateTopImages(context) {
                     ? group.total / group.jobRefs.size
                     : 0
         }))
+    };
+}
+
+function buildMonthProgress(context) {
+    const minAge = context.settings?.["応募進捗年齢下限"] ?? "";
+    const maxAge = context.settings?.["応募進捗年齢上限"] ?? "";
+    const displayMode = s(context.settings?.["応募進捗表示モード"]) || "cumulative";
+    const ageFilterLabel = targetLabel(minAge, maxAge);
+    const startDate = parseDate(context.settings?.["集計開始日"]);
+    const endDate = parseDate(context.settings?.["集計終了日"]);
+    const filteredTimeline = (context.timelineRecords || []).filter(record =>
+        isTargetAge(record.age, minAge, maxAge)
+    );
+    const periodRecords = filteredTimeline.filter(record =>
+        inDateRange(record.appDate, startDate, endDate)
+    );
+
+    if (!periodRecords.length) {
+        return {
+            visible: false,
+            ageFilterLabel,
+            displayMode
+        };
+    }
+
+    const latestDate = maxDate(periodRecords);
+    const latestMonthKey = monthKeyFromDate(latestDate);
+    const latestMonthLabel = monthLabelFromDate(latestDate);
+    const totalDays = daysInMonth(latestDate);
+    const latestObservedDay = latestDate.getDate();
+    const observedStartDay =
+        startDate && sameMonth(startDate, latestDate)
+            ? Math.max(1, startDate.getDate())
+            : 1;
+    const observedDayCount = Math.max(1, latestObservedDay - observedStartDay + 1);
+
+    function emptyDaily() {
+        return Array.from({ length: 31 }, () => null);
+    }
+
+    function cumulativeFromDaily(daily) {
+        let sum = 0;
+        return daily.map(value => {
+            if (value === null || value === undefined) return null;
+            sum += Number(value || 0);
+            return sum;
+        });
+    }
+
+    function sameMonthSeries(date) {
+        const key = monthKeyFromDate(date);
+        const monthDayCount = daysInMonth(date);
+        const daily = emptyDaily();
+
+        for (let day = 1; day <= monthDayCount; day += 1) {
+            daily[day - 1] = 0;
+        }
+
+        filteredTimeline.forEach(record => {
+            if (!sameMonth(record.appDate, date)) return;
+            const day = record.appDate.getDate();
+            daily[day - 1] = (daily[day - 1] || 0) + 1;
+        });
+
+        const cumulative = cumulativeFromDaily(daily);
+
+        return {
+            key,
+            label: monthLabelFromDate(date),
+            monthDayCount,
+            daily,
+            cumulative,
+            total: cumulative[monthDayCount - 1] || 0,
+            sameDayTotal: cumulative[Math.min(latestObservedDay, monthDayCount) - 1] || 0
+        };
+    }
+
+    const currentDaily = emptyDaily();
+    for (let day = observedStartDay; day <= latestObservedDay; day += 1) {
+        currentDaily[day - 1] = 0;
+    }
+
+    periodRecords.forEach(record => {
+        if (!sameMonth(record.appDate, latestDate)) return;
+        const day = record.appDate.getDate();
+        if (day < observedStartDay || day > latestObservedDay) return;
+        currentDaily[day - 1] = (currentDaily[day - 1] || 0) + 1;
+    });
+
+    const currentCumulative = cumulativeFromDaily(currentDaily);
+    const currentTotal = currentCumulative[latestObservedDay - 1] || 0;
+    const projectedTotal =
+        latestObservedDay < totalDays
+            ? Number((currentTotal / observedDayCount * totalDays).toFixed(1))
+            : null;
+    const projectedCumulative = [...currentCumulative];
+
+    if (projectedTotal !== null && totalDays > latestObservedDay) {
+        const remainingDays = totalDays - latestObservedDay;
+        for (let day = latestObservedDay + 1; day <= totalDays; day += 1) {
+            const progress = (day - latestObservedDay) / remainingDays;
+            projectedCumulative[day - 1] = Number((currentTotal + (projectedTotal - currentTotal) * progress).toFixed(1));
+        }
+    }
+
+    const comparisonSeeds = [
+        new Date(latestDate.getFullYear(), latestDate.getMonth() - 1, 1),
+        new Date(latestDate.getFullYear(), latestDate.getMonth() - 2, 1),
+        new Date(latestDate.getFullYear() - 1, latestDate.getMonth(), 1)
+    ];
+    const seenKeys = new Set();
+    const comparisons = comparisonSeeds
+        .map(date => sameMonthSeries(date))
+        .filter(series => {
+            if (!series.key || seenKeys.has(series.key)) return false;
+            seenKeys.add(series.key);
+            return true;
+        })
+        .map((series, index) => ({
+            ...series,
+            kind: index === 0 ? "prev1" : index === 1 ? "prev2" : "lastYearSameMonth"
+        }));
+
+    const summary = {
+        currentActual: currentTotal,
+        latestObservedDay,
+        latestDataDate: latestDate,
+        projectedTotal,
+        previousMonthSameDay: comparisons.find(series => series.kind === "prev1")?.sameDayTotal ?? null,
+        previousMonthLabel: comparisons.find(series => series.kind === "prev1")?.label || "",
+        lastYearSameDay: comparisons.find(series => series.kind === "lastYearSameMonth")?.sameDayTotal ?? null,
+        lastYearLabel: comparisons.find(series => series.kind === "lastYearSameMonth")?.label || ""
+    };
+
+    return {
+        visible: true,
+        ageFilterLabel,
+        displayMode,
+        latestMonthKey,
+        latestMonthLabel,
+        latestDate,
+        latestObservedDay,
+        observedStartDay,
+        observedDayCount,
+        daysInMonth: totalDays,
+        current: {
+            label: latestMonthLabel,
+            daily: currentDaily,
+            cumulative: currentCumulative,
+            projectedCumulative,
+            actualTotal: currentTotal,
+            projectedTotal
+        },
+        comparisons,
+        summary
     };
 }
 
@@ -2519,13 +2863,14 @@ function aggregateCustom(context, options = {}) {
             ),
             ageMode: context.ageMode,
             ageRows,
+            monthProgress: buildMonthProgress(context),
             basicCrossTables: buildBasicCrossTables(
                 context,
                 basicColumnAxis
             ),
-            noteDetail: aggregateNoteDetail(context),
-            indeedTagDetail: aggregateIndeedTags(context),
-            topImageDetail: aggregateTopImages(context),
+            noteDetail: aggregateNoteDetail(context, basicColumnAxis),
+            indeedTagDetail: aggregateIndeedTags(context, basicColumnAxis),
+            topImageDetail: aggregateTopImages(context, basicColumnAxis),
             customAxisOptions:
                 customAxisOptions(
                     context,
