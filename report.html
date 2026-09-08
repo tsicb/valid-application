@@ -1174,6 +1174,12 @@
             margin-bottom: 9px;
         }
 
+        .calendar-toolbar-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .calendar-toolbar button {
             width: 34px;
             height: 30px;
@@ -1182,6 +1188,12 @@
             background: #fff;
             color: #526576;
             cursor: pointer;
+            font-weight: 700;
+        }
+
+        .calendar-toolbar button:disabled {
+            opacity: .38;
+            cursor: default;
         }
 
         .calendar-pair {
@@ -1230,6 +1242,24 @@
             color: #cbd5e1;
             cursor: default;
             background: transparent;
+        }
+
+        .period-day.latest-data-day {
+            position: relative;
+            box-shadow: inset 0 0 0 1px rgba(20,142,204,.28);
+        }
+
+        .period-day.latest-data-day::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 2px;
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            transform: translateX(-50%);
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(255,255,255,.85);
         }
 
         .calendar-empty {
@@ -2350,7 +2380,245 @@
         }
 
 
-    </style>
+    
+
+        /* =========================================================
+           Viewer UI v30.6
+           Optional analysis charts
+           ========================================================= */
+        .analysis-chart-toggle-row {
+            margin-top: 10px;
+            padding: 10px 11px;
+            border: 1px solid #dce7ed;
+            border-radius: 11px;
+            background: #f9fcfd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .analysis-chart-toggle-label {
+            color: #233746;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+        .analysis-chart-toggle-note {
+            margin-top: 3px;
+            color: #71808c;
+            font-size: 9.5px;
+            line-height: 1.3;
+        }
+        .analysis-chart-toggle {
+            position: relative;
+            width: 64px;
+            height: 30px;
+            flex: 0 0 64px;
+            padding: 0;
+            border: 1px solid #cfdce3;
+            border-radius: 999px;
+            background: #edf3f6;
+            cursor: pointer;
+            transition: background .15s ease, border-color .15s ease;
+        }
+        .analysis-chart-toggle-state {
+            position: absolute;
+            left: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #687985;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .04em;
+        }
+        .analysis-chart-toggle-knob {
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(15,23,42,.16);
+            transition: transform .15s ease;
+        }
+        .analysis-chart-toggle[aria-checked="true"] {
+            border-color: var(--viewer-brand-blue);
+            background: var(--viewer-brand-blue);
+        }
+        .analysis-chart-toggle[aria-checked="true"] .analysis-chart-toggle-state {
+            left: 9px;
+            color: #fff;
+        }
+        .analysis-chart-toggle[aria-checked="true"] .analysis-chart-toggle-knob {
+            transform: translateX(33px);
+        }
+
+        .analysis-chart-panel {
+            margin: 4px 0 16px;
+            min-height: 180px;
+        }
+        .analysis-chart-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(260px, .9fr);
+            gap: 12px;
+        }
+        .analysis-chart-card {
+            min-width: 0;
+            border: 1px solid #e0e9ee;
+            border-radius: 12px;
+            background: #fbfdfe;
+            padding: 12px 13px;
+        }
+        .analysis-chart-title {
+            color: #263b49;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+        .analysis-chart-subtitle {
+            margin-top: 3px;
+            color: #758491;
+            font-size: 9.5px;
+            line-height: 1.35;
+        }
+        .analysis-chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+            color: #667783;
+            font-size: 9.5px;
+        }
+        .analysis-chart-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .analysis-chart-legend-swatch {
+            width: 10px;
+            height: 8px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+        .analysis-chart-legend-swatch.target { background: var(--viewer-brand-blue); }
+        .analysis-chart-legend-swatch.other { background: #d5e0e6; }
+        .analysis-chart-legend-swatch.total-line { background: #71808c; height: 3px; }
+        .analysis-chart-legend-swatch.target-line { background: var(--viewer-brand-blue); height: 3px; }
+
+        .analysis-hbar-list {
+            display: grid;
+            gap: 7px;
+            margin-top: 12px;
+        }
+        .analysis-hbar-row {
+            display: grid;
+            grid-template-columns: minmax(90px, 150px) minmax(100px, 1fr) 54px;
+            align-items: center;
+            gap: 8px;
+        }
+        .analysis-hbar-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #425664;
+            font-size: 10px;
+            font-weight: 650;
+        }
+        .analysis-hbar-track {
+            height: 12px;
+            display: flex;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #edf2f5;
+        }
+        .analysis-hbar-target { background: var(--viewer-brand-blue); }
+        .analysis-hbar-other { background: #d5e0e6; }
+        .analysis-hbar-value {
+            color: #526673;
+            font-size: 10px;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+        .analysis-rate-list {
+            display: grid;
+            gap: 7px;
+            margin-top: 12px;
+        }
+        .analysis-rate-row {
+            display: grid;
+            grid-template-columns: minmax(90px, 130px) minmax(90px, 1fr) 46px;
+            align-items: center;
+            gap: 7px;
+        }
+        .analysis-rate-track {
+            position: relative;
+            height: 6px;
+            border-radius: 999px;
+            background: #e7eef2;
+        }
+        .analysis-rate-fill {
+            position: absolute;
+            inset: 0 auto 0 0;
+            border-radius: inherit;
+            background: var(--viewer-brand-blue);
+        }
+        .analysis-rate-dot {
+            position: absolute;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            margin-left: -5px;
+            transform: translateY(-50%);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: var(--viewer-brand-blue);
+            box-shadow: 0 1px 4px rgba(15,103,149,.25);
+        }
+        .analysis-chart-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            margin-top: 8px;
+            padding-bottom: 3px;
+        }
+        .analysis-chart-svg {
+            display: block;
+            height: 230px;
+            min-width: 100%;
+        }
+        .analysis-chart-svg .grid-line { stroke: #e6eef2; stroke-width: 1; }
+        .analysis-chart-svg .axis-line { stroke: #cad7de; stroke-width: 1; }
+        .analysis-chart-svg .axis-text { fill: #6b7c88; font-size: 9px; font-weight: 600; }
+        .analysis-chart-svg .bar-target { fill: #0f6795; }
+        .analysis-chart-svg .bar-other { fill: #d5e0e6; }
+        .analysis-chart-svg .line-total { fill: none; stroke: #71808c; stroke-width: 2.3; }
+        .analysis-chart-svg .line-target { fill: none; stroke: #0f6795; stroke-width: 2.5; }
+        .analysis-chart-svg .line-rate { fill: none; stroke: #0f6795; stroke-width: 2.3; }
+        .analysis-chart-svg .point-total { fill: #71808c; }
+        .analysis-chart-svg .point-target,
+        .analysis-chart-svg .point-rate { fill: #0f6795; stroke: #fff; stroke-width: 1.5; }
+        .analysis-chart-loading {
+            min-height: 178px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #dce7ed;
+            border-radius: 12px;
+            color: #7b8b96;
+            background: #fbfdfe;
+            font-size: 11px;
+        }
+        .analysis-chart-footnote {
+            margin-top: 8px;
+            color: #80909b;
+            font-size: 9.5px;
+            line-height: 1.35;
+        }
+        @media (max-width: 980px) {
+            .analysis-chart-grid { grid-template-columns: 1fr; }
+        }
+
+</style>
 </head>
 <body>
     <div id="loadingView" class="loading">
@@ -2419,6 +2687,16 @@
                         <label for="viewerBasicColumnAxisSelect">基本表の列</label>
                         <select id="viewerBasicColumnAxisSelect" aria-label="基本表の列"></select>
                         <div id="viewerBasicColumnAxisNote" class="basic-column-axis-note">各分析表を年代別に比較します。</div>
+                    </div>
+                    <div class="analysis-chart-toggle-row">
+                        <div>
+                            <div class="analysis-chart-toggle-label">グラフ表示</div>
+                            <div class="analysis-chart-toggle-note">各表の量とターゲット率を可視化</div>
+                        </div>
+                        <button id="viewerAnalysisChartToggle" type="button" class="analysis-chart-toggle" role="switch" aria-checked="false" title="各分析表のグラフを表示">
+                            <span class="analysis-chart-toggle-state">OFF</span>
+                            <span class="analysis-chart-toggle-knob" aria-hidden="true"></span>
+                        </button>
                     </div>
                     <nav id="analysisNav" class="analysis-nav" aria-label="基本分析"></nav>
                 </section>
@@ -2998,7 +3276,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.08-viewer-ui-v30.4-progress-forecast";
+    "2026.09.09-viewer-ui-v30.6-analysis-charts";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -3198,6 +3476,32 @@ function initializeBasicColumnAxisControl() {
             }
         }
     );
+}
+
+function updateAnalysisChartToggleUi() {
+    const button = document.getElementById("viewerAnalysisChartToggle");
+    if (!button) return;
+    button.setAttribute(
+        "aria-checked",
+        currentViewerAnalysisChartsEnabled ? "true" : "false"
+    );
+    const state = button.querySelector(".analysis-chart-toggle-state");
+    if (state) state.textContent = currentViewerAnalysisChartsEnabled ? "ON" : "OFF";
+    button.title = currentViewerAnalysisChartsEnabled
+        ? "各分析表のグラフを非表示"
+        : "各分析表のグラフを表示";
+}
+
+function initializeAnalysisChartToggle() {
+    const button = document.getElementById("viewerAnalysisChartToggle");
+    if (!button || button.dataset.bound === "1") return;
+    button.dataset.bound = "1";
+    button.addEventListener("click", () => {
+        currentViewerAnalysisChartsEnabled = !currentViewerAnalysisChartsEnabled;
+        updateAnalysisChartToggleUi();
+        if (currentViewerData) renderReport(currentViewerData);
+    });
+    updateAnalysisChartToggleUi();
 }
 
 function viewerBasicShortLabel(
@@ -3692,6 +3996,7 @@ function sortTableByHeader(table,th){
   const rows=Array.from(tbody.rows),fixed=rows.filter(r=>r.classList.contains("total-row")||r.classList.contains("composition-row")),normal=rows.filter(r=>!fixed.includes(r));
   if(next==="none"){normal.sort((a,b)=>Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0));table.dataset.sortColumn="";table.dataset.sortState="none";}else{normal.sort((a,b)=>compareTableCells(a.cells[col],b.cells[col],next));table.dataset.sortColumn=String(col);table.dataset.sortState=next;}
   [...normal,...fixed.sort((a,b)=>Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0))].forEach(r=>tbody.appendChild(r));resetTableSortIndicators(table,th,next);
+  refreshAnalysisChartForSortedTable(table);
   if(table.classList.contains("custom-table")){refreshCustomPivotHierarchyDisplay(table);requestAnimationFrame(()=>{stickyTableControllers.forEach(controller=>{if(controller.table===table)refreshStickyHeaderClone(controller);});scheduleStickyHeaderUpdate();});}
 }
 function prepareTableRowLabels(table){
@@ -5216,6 +5521,7 @@ function initializeViewerDesktopUx(){
     initializeViewerSidebar();
     initializeRowLabelTooltip();
     initializeBasicColumnAxisControl();
+    initializeAnalysisChartToggle();
     initializeCustomTopImageHoverPreview();
     initializeBucketControls();
     initializeViewerAnalysisPickers();
@@ -5630,6 +5936,374 @@ function basicCrossColumnWidth(agg) {
     return widths[agg?.columnAxisKey] || 104;
 }
 
+
+const ANALYSIS_CHART_LINE_IDS = new Set([
+    "month"
+]);
+
+const ANALYSIS_CHART_VERTICAL_IDS = new Set([
+    "month-day",
+    "weekday",
+    "hour",
+    "hourly-salary",
+    "daily-salary",
+    "monthly-salary",
+    "annual-salary",
+    "text-length",
+    "image-count",
+    "indeed-tag-count"
+]);
+
+let analysisChartObserver = null;
+
+function analysisChartKind(tableId) {
+    if (ANALYSIS_CHART_LINE_IDS.has(tableId)) return "line";
+    if (ANALYSIS_CHART_VERTICAL_IDS.has(tableId)) return "vertical";
+    return "horizontal";
+}
+
+function analysisChartRowsFromGroups(groups) {
+    return (Array.isArray(groups) ? groups : [])
+        .map(group => ({
+            label: String(group?.label || "（未設定）"),
+            total: Math.max(0, Number(group?.total || 0)),
+            target: Math.max(0, Number(group?.target || 0))
+        }))
+        .filter(row => row.total > 0);
+}
+
+function analysisChartRowsFromDetailRows(rows) {
+    return (Array.isArray(rows) ? rows : [])
+        .map(row => ({
+            label: String(row?.label || "（未設定）"),
+            total: Math.max(0, Number(row?.total || 0)),
+            target: Math.max(0, Number(row?.target || 0))
+        }))
+        .filter(row => row.total > 0);
+}
+
+function analysisChartPanelHtml(tableId, label, rows, options = {}) {
+    if (!currentViewerAnalysisChartsEnabled) return "";
+
+    const config = {
+        tableId,
+        label,
+        kind: options.kind || analysisChartKind(tableId),
+        rows: (Array.isArray(rows) ? rows : []).map(row => ({
+            label: String(row?.label || "（未設定）"),
+            total: Math.max(0, Number(row?.total || 0)),
+            target: Math.max(0, Math.min(Number(row?.target || 0), Number(row?.total || 0)))
+        }))
+    };
+
+    if (!config.rows.length) return "";
+
+    return `
+        <div
+            class="analysis-chart-panel"
+            data-analysis-chart-panel="1"
+            data-chart-config="${escapeHtml(encodeURIComponent(JSON.stringify(config)))}"
+        >
+            <div class="analysis-chart-loading">グラフを準備しています...</div>
+        </div>
+    `;
+}
+
+function analysisChartShortLabel(value, maxLength = 12) {
+    const text = String(value || "");
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, Math.max(1, maxLength - 1))}…`;
+}
+
+function analysisChartNiceScale(maxValue, ticks = 4) {
+    const max = Math.max(1, Number(maxValue || 0));
+    const rawStep = max / Math.max(1, ticks);
+    const power = 10 ** Math.floor(Math.log10(rawStep));
+    const normalized = rawStep / power;
+    let nice = 1;
+    if (normalized > 5) nice = 10;
+    else if (normalized > 2) nice = 5;
+    else if (normalized > 1) nice = 2;
+    const step = Math.max(1, Math.ceil(nice * power));
+    const ceiling = Math.max(step, Math.ceil(max / step) * step);
+    return { step, ceiling };
+}
+
+function analysisChartPrepareRows(config) {
+    const rows = (Array.isArray(config?.rows) ? config.rows : [])
+        .map(row => ({
+            label: String(row.label || "（未設定）"),
+            total: Math.max(0, Number(row.total || 0)),
+            target: Math.max(0, Math.min(Number(row.target || 0), Number(row.total || 0)))
+        }))
+        .filter(row => row.total > 0);
+
+    if (config.kind !== "horizontal" || rows.length <= 12) {
+        return {
+            rows,
+            summarized: false
+        };
+    }
+
+    const kept = rows.slice(0, 11);
+    const rest = rows.slice(11);
+    const other = rest.reduce(
+        (acc, row) => {
+            acc.total += row.total;
+            acc.target += row.target;
+            return acc;
+        },
+        { label: "その他", total: 0, target: 0 }
+    );
+
+    return {
+        rows: [...kept, other],
+        summarized: true,
+        summarizedCount: rest.length
+    };
+}
+
+function analysisChartLegendHtml(isLine = false) {
+    return `
+        <div class="analysis-chart-legend">
+            <span class="analysis-chart-legend-item"><span class="analysis-chart-legend-swatch ${isLine ? "target-line" : "target"}"></span>ターゲット応募</span>
+            <span class="analysis-chart-legend-item"><span class="analysis-chart-legend-swatch ${isLine ? "total-line" : "other"}"></span>${isLine ? "総応募" : "その他応募"}</span>
+        </div>
+    `;
+}
+
+function buildAnalysisHorizontalCharts(rows, summarized) {
+    const maxTotal = Math.max(1, ...rows.map(row => row.total));
+
+    const volumeRows = rows.map(row => {
+        const targetPct = Math.max(0, Math.min(100, row.target / maxTotal * 100));
+        const otherPct = Math.max(0, Math.min(100 - targetPct, (row.total - row.target) / maxTotal * 100));
+        return `
+            <div class="analysis-hbar-row" title="${escapeHtml(row.label)}：総応募 ${row.total.toLocaleString("ja-JP")}件 ／ ターゲット応募 ${row.target.toLocaleString("ja-JP")}件">
+                <div class="analysis-hbar-label" title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</div>
+                <div class="analysis-hbar-track">
+                    <span class="analysis-hbar-target" style="width:${targetPct}%"></span>
+                    <span class="analysis-hbar-other" style="width:${otherPct}%"></span>
+                </div>
+                <div class="analysis-hbar-value">${row.total.toLocaleString("ja-JP")}件</div>
+            </div>
+        `;
+    }).join("");
+
+    const rateRows = rows.map(row => {
+        const rate = row.total ? row.target / row.total * 100 : 0;
+        return `
+            <div class="analysis-rate-row" title="${escapeHtml(row.label)}：ターゲット率 ${rate.toFixed(1)}%">
+                <div class="analysis-hbar-label" title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</div>
+                <div class="analysis-rate-track">
+                    <span class="analysis-rate-fill" style="width:${Math.max(0, Math.min(100, rate))}%"></span>
+                    <span class="analysis-rate-dot" style="left:${Math.max(0, Math.min(100, rate))}%"></span>
+                </div>
+                <div class="analysis-hbar-value">${rate.toFixed(1)}%</div>
+            </div>
+        `;
+    }).join("");
+
+    return `
+        <div class="analysis-chart-grid">
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">応募量（ターゲット／その他）</div>
+                <div class="analysis-chart-subtitle">棒全体が総応募数。内訳でターゲット応募を確認できます。</div>
+                ${analysisChartLegendHtml(false)}
+                <div class="analysis-hbar-list">${volumeRows}</div>
+            </div>
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">ターゲット応募率</div>
+                <div class="analysis-chart-subtitle">応募数の多さとは別に、各区分のターゲット率を比較します。</div>
+                <div class="analysis-rate-list">${rateRows}</div>
+            </div>
+        </div>
+        ${summarized ? '<div class="analysis-chart-footnote">カテゴリ数が多いため、グラフは先頭11区分＋その他に集約しています。表では全区分を確認できます。</div>' : ""}
+    `;
+}
+
+function buildAnalysisOrderedSvg(rows, mode) {
+    const width = Math.max(560, rows.length * 54 + 74);
+    const height = 230;
+    const pad = { top: 16, right: 16, bottom: 54, left: 46 };
+    const plotWidth = width - pad.left - pad.right;
+    const plotHeight = height - pad.top - pad.bottom;
+    const maxValue = mode === "rate"
+        ? 100
+        : Math.max(1, ...rows.map(row => row.total));
+    const scale = mode === "rate"
+        ? { ceiling: 100, step: 25 }
+        : analysisChartNiceScale(maxValue, 4);
+    const stepX = plotWidth / Math.max(1, rows.length);
+    const baseline = pad.top + plotHeight;
+    const parts = [];
+
+    for (let value = 0; value <= scale.ceiling + .0001; value += scale.step) {
+        const y = baseline - (value / scale.ceiling) * plotHeight;
+        parts.push(`<line class="grid-line" x1="${pad.left}" y1="${y}" x2="${pad.left + plotWidth}" y2="${y}"></line>`);
+        parts.push(`<text class="axis-text" x="${pad.left - 7}" y="${y + 3}" text-anchor="end">${mode === "rate" ? `${Math.round(value)}%` : Math.round(value).toLocaleString("ja-JP")}</text>`);
+    }
+
+    if (mode === "bars") {
+        const barWidth = Math.max(10, Math.min(30, stepX * .58));
+        rows.forEach((row, index) => {
+            const x = pad.left + stepX * index + (stepX - barWidth) / 2;
+            const targetHeight = row.target / scale.ceiling * plotHeight;
+            const otherHeight = Math.max(0, row.total - row.target) / scale.ceiling * plotHeight;
+            const targetY = baseline - targetHeight;
+            const otherY = targetY - otherHeight;
+            const title = `${row.label}：総応募 ${row.total.toLocaleString("ja-JP")}件 ／ ターゲット ${row.target.toLocaleString("ja-JP")}件`;
+            parts.push(`<rect class="bar-target" x="${x}" y="${targetY}" width="${barWidth}" height="${targetHeight}"><title>${escapeHtml(title)}</title></rect>`);
+            parts.push(`<rect class="bar-other" x="${x}" y="${otherY}" width="${barWidth}" height="${otherHeight}"><title>${escapeHtml(title)}</title></rect>`);
+        });
+    } else if (mode === "lines") {
+        const totalPoints = [];
+        const targetPoints = [];
+        rows.forEach((row, index) => {
+            const x = pad.left + stepX * index + stepX / 2;
+            const totalY = baseline - row.total / scale.ceiling * plotHeight;
+            const targetY = baseline - row.target / scale.ceiling * plotHeight;
+            totalPoints.push(`${x},${totalY}`);
+            targetPoints.push(`${x},${targetY}`);
+            parts.push(`<circle class="point-total" cx="${x}" cy="${totalY}" r="3"><title>${escapeHtml(`${row.label}：総応募 ${row.total.toLocaleString("ja-JP")}件`)}</title></circle>`);
+            parts.push(`<circle class="point-target" cx="${x}" cy="${targetY}" r="3.5"><title>${escapeHtml(`${row.label}：ターゲット ${row.target.toLocaleString("ja-JP")}件`)}</title></circle>`);
+        });
+        if (totalPoints.length) parts.unshift(`<polyline class="line-total" points="${totalPoints.join(" ")}"></polyline><polyline class="line-target" points="${targetPoints.join(" ")}"></polyline>`);
+    } else if (mode === "rate") {
+        const points = [];
+        rows.forEach((row, index) => {
+            const rate = row.total ? row.target / row.total * 100 : 0;
+            const x = pad.left + stepX * index + stepX / 2;
+            const y = baseline - rate / 100 * plotHeight;
+            points.push(`${x},${y}`);
+            parts.push(`<circle class="point-rate" cx="${x}" cy="${y}" r="3.5"><title>${escapeHtml(`${row.label}：${rate.toFixed(1)}%`)}</title></circle>`);
+        });
+        if (points.length) parts.unshift(`<polyline class="line-rate" points="${points.join(" ")}"></polyline>`);
+    }
+
+    rows.forEach((row, index) => {
+        const x = pad.left + stepX * index + stepX / 2;
+        const label = analysisChartShortLabel(row.label, 10);
+        const rotate = rows.length > 8 || String(row.label).length > 6;
+        if (rotate) {
+            parts.push(`<text class="axis-text" x="${x}" y="${baseline + 14}" text-anchor="end" transform="rotate(-38 ${x} ${baseline + 14})"><title>${escapeHtml(row.label)}</title>${escapeHtml(label)}</text>`);
+        } else {
+            parts.push(`<text class="axis-text" x="${x}" y="${baseline + 17}" text-anchor="middle"><title>${escapeHtml(row.label)}</title>${escapeHtml(label)}</text>`);
+        }
+    });
+
+    parts.push(`<line class="axis-line" x1="${pad.left}" y1="${baseline}" x2="${pad.left + plotWidth}" y2="${baseline}"></line>`);
+
+    return `<svg class="analysis-chart-svg" viewBox="0 0 ${width} ${height}" style="width:${width}px" role="img">${parts.join("")}</svg>`;
+}
+
+function buildAnalysisOrderedCharts(rows, kind) {
+    const leftMode = kind === "line" ? "lines" : "bars";
+    const leftTitle = kind === "line"
+        ? "応募数の推移"
+        : "応募量（ターゲット／その他）";
+    const leftSub = kind === "line"
+        ? "総応募とターゲット応募の推移を同じ軸で比較します。"
+        : "順序を保ったまま、総応募数とターゲット応募の内訳を比較します。";
+
+    return `
+        <div class="analysis-chart-grid">
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">${leftTitle}</div>
+                <div class="analysis-chart-subtitle">${leftSub}</div>
+                ${analysisChartLegendHtml(kind === "line")}
+                <div class="analysis-chart-scroll">${buildAnalysisOrderedSvg(rows, leftMode)}</div>
+            </div>
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">ターゲット応募率${kind === "line" ? "の推移" : ""}</div>
+                <div class="analysis-chart-subtitle">応募量とは別に、各区分のターゲット率を確認します。</div>
+                <div class="analysis-chart-scroll">${buildAnalysisOrderedSvg(rows, "rate")}</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderAnalysisChartPanel(panel) {
+    if (!panel || panel.dataset.chartRendered === "1") return;
+    let config = null;
+    try {
+        config = JSON.parse(decodeURIComponent(panel.dataset.chartConfig || ""));
+    } catch (error) {
+        panel.innerHTML = '<div class="analysis-chart-loading">グラフを表示できませんでした。</div>';
+        panel.dataset.chartRendered = "1";
+        return;
+    }
+
+    const prepared = analysisChartPrepareRows(config);
+    if (!prepared.rows.length) {
+        panel.innerHTML = '<div class="analysis-chart-loading">グラフ化できるデータがありません。</div>';
+        panel.dataset.chartRendered = "1";
+        return;
+    }
+
+    panel.innerHTML = config.kind === "horizontal"
+        ? buildAnalysisHorizontalCharts(prepared.rows, prepared.summarized)
+        : buildAnalysisOrderedCharts(prepared.rows, config.kind);
+    panel.dataset.chartRendered = "1";
+    scheduleViewerLayoutRefresh({ full: true });
+}
+
+function initializeAnalysisChartPanels(root = document) {
+    if (!currentViewerAnalysisChartsEnabled) return;
+    const panels = Array.from(root?.querySelectorAll?.('[data-analysis-chart-panel="1"]') || []);
+    if (!panels.length) return;
+
+    if (!("IntersectionObserver" in window)) {
+        panels.forEach(renderAnalysisChartPanel);
+        return;
+    }
+
+    if (analysisChartObserver) analysisChartObserver.disconnect();
+    analysisChartObserver = new IntersectionObserver(
+        entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting && entry.intersectionRatio <= 0) return;
+                renderAnalysisChartPanel(entry.target);
+                analysisChartObserver?.unobserve(entry.target);
+            });
+        },
+        { rootMargin: "280px 0px 280px 0px", threshold: 0.01 }
+    );
+
+    panels.forEach(panel => analysisChartObserver.observe(panel));
+}
+
+function refreshAnalysisChartForSortedTable(table) {
+    if (!currentViewerAnalysisChartsEnabled || !table) return;
+    const section = table.closest("section.card.section");
+    const panel = section?.querySelector('[data-analysis-chart-panel="1"]');
+    if (!panel) return;
+
+    let config = null;
+    try {
+        config = JSON.parse(decodeURIComponent(panel.dataset.chartConfig || ""));
+    } catch (error) {
+        return;
+    }
+
+    if (config.kind !== "horizontal") return;
+
+    const rows = Array.from(table.tBodies?.[0]?.rows || [])
+        .filter(row => row.dataset.chartLabel && row.dataset.chartTotal)
+        .map(row => ({
+            label: row.dataset.chartLabel,
+            total: Number(row.dataset.chartTotal || 0),
+            target: Number(row.dataset.chartTarget || 0)
+        }))
+        .filter(row => row.total > 0);
+
+    if (!rows.length) return;
+    config.rows = rows;
+    panel.dataset.chartConfig = encodeURIComponent(JSON.stringify(config));
+    panel.dataset.chartRendered = "";
+    renderAnalysisChartPanel(panel);
+}
+
 function renderCrossTable(table, core) {
     if (table.presentation === "distribution") {
         return renderBasicDistributionTable(table, core);
@@ -5680,7 +6354,7 @@ function renderCrossTable(table, core) {
             .join("");
         const rowKey = `${table.id}:${group.sortValue ?? group.label}`;
         const baseRow = `
-            <tr data-row-key="${escapeHtml(rowKey)}">
+            <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}">
                 <td data-sort-value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</td>
                 ${columnCells}
                 <td>${core.formatNumber(group.total)}</td>
@@ -5732,6 +6406,7 @@ function renderCrossTable(table, core) {
                     ${bucketControlHtml(table.id)}
                 </div>
             </div>
+            ${analysisChartPanelHtml(table.id, table.label, analysisChartRowsFromGroups(agg.groups))}
             <div class="table-wrap">
                 <table class="cross-table ${isAgeAxis ? "" : "basic-axis-cross-table"}">
                     ${crossTableColgroupHtml(columnLabels, isAgeAxis ? 72 : basicCrossColumnWidth(agg))}
@@ -5770,7 +6445,7 @@ function renderBasicDistributionTable(table, core) {
                 : 0;
         const rowKey = `${table.id}:${group.sortValue ?? group.label}`;
         const baseRow = `
-            <tr data-row-key="${escapeHtml(rowKey)}">
+            <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}">
                 <td data-sort-value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</td>
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(share)}</td>
@@ -5812,6 +6487,7 @@ function renderBasicDistributionTable(table, core) {
                     ${bucketControlHtml(table.id)}
                 </div>
             </div>
+            ${analysisChartPanelHtml(table.id, table.label, analysisChartRowsFromGroups(agg.groups))}
             <div class="table-wrap">
                 <table class="basic-distribution-table">
                     <thead>
@@ -5883,7 +6559,7 @@ function renderStandaloneCross(agg, core, firstHeader) {
             .join("");
 
         return `
-            <tr>
+            <tr data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}">
                 <td>${escapeHtml(group.label)}</td>
                 ${columnCells}
                 <td>${core.formatNumber(group.total)}</td>
@@ -5940,6 +6616,12 @@ function renderNoteDetail(detail, core) {
 
     section.classList.remove("hidden");
     document.getElementById("noteDetailBody").innerHTML =
+        analysisChartPanelHtml(
+            "note-detail",
+            "求人備考1行目別応募傾向",
+            analysisChartRowsFromGroups(detail.aggregate.groups),
+            { kind: "horizontal" }
+        ) +
         renderStandaloneCross(
             detail.aggregate,
             core,
@@ -6095,7 +6777,7 @@ function renderIndeedTagDetail(detail, core) {
                 .join("");
 
         return `
-            <tr>
+            <tr data-chart-label="${escapeHtml(row.label)}" data-chart-total="${row.total}" data-chart-target="${row.target}">
                 <td>${escapeHtml(row.label)}</td>
                 ${columnCells}
                 <td>${core.formatNumber(row.total)}</td>
@@ -6116,6 +6798,12 @@ function renderIndeedTagDetail(detail, core) {
         );
 
     document.getElementById("indeedTagDetailBody").innerHTML = `
+        ${analysisChartPanelHtml(
+            "indeed-tag-detail",
+            "Indeed求人タグ別応募傾向",
+            analysisChartRowsFromDetailRows(detail.rows),
+            { kind: "horizontal" }
+        )}
         <div class="table-wrap detail-table-wrap">
             <table
                 class="cross-table detail-cross-table indeed-tag-detail-table ${isAgeAxis ? "" : "basic-axis-cross-table"}"
@@ -6182,7 +6870,7 @@ function renderTopImageDetail(detail, core) {
                 : `<div class="image-missing">${row.fileName ? "URL未取得" : "TOP画像なし"}</div>`;
 
         return `
-            <tr>
+            <tr data-chart-label="${escapeHtml(row.label)}" data-chart-total="${row.total}" data-chart-target="${row.target}">
                 <td data-sort-value="${escapeHtml(row.label)}">${escapeHtml(row.label)}</td>
                 <td data-sort-value="${escapeHtml(row.fileName || row.label || "")}">${preview}</td>
                 ${columnCells}
@@ -6204,6 +6892,12 @@ function renderTopImageDetail(detail, core) {
         );
 
     document.getElementById("topImageDetailBody").innerHTML = `
+        ${analysisChartPanelHtml(
+            "top-image-detail",
+            "TOP画像別応募傾向",
+            analysisChartRowsFromDetailRows(detail.rows),
+            { kind: "horizontal" }
+        )}
         <div class="table-wrap detail-table-wrap">
             <table
                 class="cross-table detail-cross-table top-image-detail-table ${isAgeAxis ? "" : "basic-axis-cross-table"}"
@@ -6300,34 +6994,80 @@ function renderMonthProgressSection(progress, core) {
     }
 
     if (summary) {
-        summary.innerHTML = `
-            <div class="month-progress-summary-card">
-                <div class="month-progress-summary-label">${escapeHtml(progress.latestMonthLabel)} 実績</div>
-                <div class="month-progress-summary-value">${core.formatNumber(currentActual)}件</div>
-                <div class="month-progress-summary-sub">最新日 ${progress.latestObservedDay}日まで</div>
-            </div>
-            <div class="month-progress-summary-card">
-                <div class="month-progress-summary-label">${escapeHtml(progress.summary?.previousMonthLabel || "前月")} 同日時点</div>
-                <div class="month-progress-summary-value">${prevSameDay === null || prevSameDay === undefined ? "—" : core.formatNumber(prevSameDay)}件</div>
-                <div class="month-progress-summary-sub">差分 ${prevSameDay === null || prevSameDay === undefined ? "—" : diffLabel(prevSameDay)}</div>
-            </div>
-            <div class="month-progress-summary-card">
-                <div class="month-progress-summary-label">${escapeHtml(progress.summary?.lastYearLabel || "前年同月")} 同日時点</div>
-                <div class="month-progress-summary-value">${lastYearSameDay === null || lastYearSameDay === undefined ? "—" : core.formatNumber(lastYearSameDay)}件</div>
-                <div class="month-progress-summary-sub">差分 ${lastYearSameDay === null || lastYearSameDay === undefined ? "—" : diffLabel(lastYearSameDay)}</div>
-            </div>
+        const comparisonKinds = new Set((progress.comparisons || []).map(series => series.kind));
+        const cards = [
+            `
+                <div class="month-progress-summary-card">
+                    <div class="month-progress-summary-label">${escapeHtml(progress.latestMonthLabel)} 実績</div>
+                    <div class="month-progress-summary-value">${core.formatNumber(currentActual)}件</div>
+                    <div class="month-progress-summary-sub">最新日 ${progress.latestObservedDay}日まで</div>
+                </div>
+            `
+        ];
+
+        if (comparisonKinds.has("prev1")) {
+            cards.push(`
+                <div class="month-progress-summary-card">
+                    <div class="month-progress-summary-label">${escapeHtml(progress.summary?.previousMonthLabel || "前月")} 同日時点</div>
+                    <div class="month-progress-summary-value">${prevSameDay === null || prevSameDay === undefined ? "—" : core.formatNumber(prevSameDay)}件</div>
+                    <div class="month-progress-summary-sub">差分 ${prevSameDay === null || prevSameDay === undefined ? "—" : diffLabel(prevSameDay)}</div>
+                </div>
+            `);
+        }
+
+        if (comparisonKinds.has("lastYearSameMonth")) {
+            cards.push(`
+                <div class="month-progress-summary-card">
+                    <div class="month-progress-summary-label">${escapeHtml(progress.summary?.lastYearLabel || "前年同月")} 同日時点</div>
+                    <div class="month-progress-summary-value">${lastYearSameDay === null || lastYearSameDay === undefined ? "—" : core.formatNumber(lastYearSameDay)}件</div>
+                    <div class="month-progress-summary-sub">差分 ${lastYearSameDay === null || lastYearSameDay === undefined ? "—" : diffLabel(lastYearSameDay)}</div>
+                </div>
+            `);
+        }
+
+        cards.push(`
             <div class="month-progress-summary-card">
                 <div class="month-progress-summary-label">${escapeHtml(progress.latestMonthLabel)} 着地予測</div>
                 <div class="month-progress-summary-value">${progress.current?.projectedTotal === null || progress.current?.projectedTotal === undefined ? "—" : formatCountMaybeDecimal(progress.current.projectedTotal, core)}件</div>
                 <div class="month-progress-summary-sub">選択期間内の最新月ペースから単純換算</div>
             </div>
-        `;
+        `);
+
+        summary.innerHTML = cards.join("");
     }
 
     if (body) {
         body.innerHTML = buildMonthProgressChartHtml(progress, core);
         bindMonthProgressTooltip(body, progress, core);
     }
+}
+
+
+function niceIntegerAxis(maxValue, targetIntervals = 4) {
+    const max = Math.max(1, Number(maxValue) || 1);
+    const rawStep = max / Math.max(1, targetIntervals);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const normalized = rawStep / magnitude;
+    let niceNormalized = 1;
+
+    if (normalized <= 1.5) niceNormalized = 1;
+    else if (normalized <= 2.25) niceNormalized = 2;
+    else if (normalized <= 3.5) niceNormalized = 2.5;
+    else if (normalized <= 7.5) niceNormalized = 5;
+    else niceNormalized = 10;
+
+    let step = Math.max(1, Math.round(niceNormalized * magnitude));
+    if (niceNormalized === 2.5 && magnitude >= 1) {
+        step = Math.max(1, Math.round(2.5 * magnitude));
+    }
+
+    const top = Math.max(step, Math.ceil(max / step) * step);
+    const ticks = [];
+    for (let value = 0; value <= top + step * 0.001; value += step) {
+        ticks.push(Math.round(value));
+    }
+
+    return { step, top, ticks };
 }
 
 function buildMonthProgressChartHtml(progress, core) {
@@ -6341,7 +7081,8 @@ function buildMonthProgressChartHtml(progress, core) {
         values.forEach(value => { if (value !== null && value !== undefined) maxValueCandidates.push(Number(value)); });
     });
     const maxValue = Math.max(1, ...maxValueCandidates);
-    const topValue = maxValue * 1.1;
+    const axis = niceIntegerAxis(maxValue, 4);
+    const topValue = axis.top;
     const viewBoxWidth = 960;
     const viewBoxHeight = 360;
     const padding = { top: 20, right: 18, bottom: 44, left: 52 };
@@ -6351,12 +7092,11 @@ function buildMonthProgressChartHtml(progress, core) {
     const baselineY = padding.top + plotHeight;
     const svgParts = [];
 
-    for (let i = 0; i <= 4; i += 1) {
-        const value = topValue * (i / 4);
-        const y = baselineY - (plotHeight * (i / 4));
+    axis.ticks.forEach(value => {
+        const y = baselineY - (plotHeight * (value / topValue));
         svgParts.push(`<line x1="${padding.left}" y1="${y}" x2="${padding.left + plotWidth}" y2="${y}" stroke="#e6eef2" stroke-width="1"></line>`);
-        svgParts.push(`<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" class="month-progress-grid-label">${escapeHtml(formatCountMaybeDecimal(value, core))}</text>`);
-    }
+        svgParts.push(`<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" class="month-progress-grid-label">${escapeHtml(core.formatNumber(value))}</text>`);
+    });
 
     const visibleTicks = [1,5,10,15,20,25,31];
     visibleTicks.forEach(day => {
@@ -6823,6 +7563,8 @@ let currentViewerProgressAge = {
 };
 
 let currentViewerMonthProgressMode = "cumulative";
+
+let currentViewerAnalysisChartsEnabled = false;
 
 let currentViewerBasicColumnAxis = "age";
 
@@ -7694,11 +8436,16 @@ function renderCalendarMonth(
                                     .end
                         );
 
+                    const isLatestDataDay =
+                        currentViewerBounds.end &&
+                        dateValue === currentViewerBounds.end;
+
                     return `
                         <button
                             type="button"
-                            class="period-day ${periodValueClass(dateValue, "day")}"
+                            class="period-day ${periodValueClass(dateValue, "day")} ${isLatestDataDay ? "latest-data-day" : ""}"
                             data-period-day="${dateValue}"
+                            ${isLatestDataDay ? 'title="最新データ日" aria-label="最新データ日"' : ""}
                             ${disabled ? "disabled" : ""}
                         >${index + 1}</button>
                     `;
@@ -7754,12 +8501,17 @@ function renderPeriodDayPicker() {
             minMonth;
     }
 
+    const latestPairCursor =
+        maxMonth > minMonth
+            ? addMonthsYmd(maxMonth, -1)
+            : maxMonth;
+
     if (
         cursor >
-        maxMonth
+        latestPairCursor
     ) {
         cursor =
-            maxMonth;
+            latestPairCursor;
     }
 
     viewerPeriodPickerState
@@ -7774,17 +8526,35 @@ function renderPeriodDayPicker() {
 
     body.innerHTML = `
         <div class="calendar-toolbar">
-            <button
-                type="button"
-                data-calendar-nav="-1"
-                ${cursor <= minMonth ? "disabled" : ""}
-            >‹</button>
+            <div class="calendar-toolbar-nav">
+                <button
+                    type="button"
+                    data-calendar-jump="start"
+                    title="最初の月へ"
+                    ${cursor <= minMonth ? "disabled" : ""}
+                >≪</button>
+                <button
+                    type="button"
+                    data-calendar-nav="-1"
+                    title="前の月へ"
+                    ${cursor <= minMonth ? "disabled" : ""}
+                >‹</button>
+            </div>
             <div class="viewer-modal-note">2か月表示</div>
-            <button
-                type="button"
-                data-calendar-nav="1"
-                ${next > maxMonth ? "disabled" : ""}
-            >›</button>
+            <div class="calendar-toolbar-nav">
+                <button
+                    type="button"
+                    data-calendar-nav="1"
+                    title="次の月へ"
+                    ${cursor >= latestPairCursor ? "disabled" : ""}
+                >›</button>
+                <button
+                    type="button"
+                    data-calendar-jump="end"
+                    title="最後の月へ"
+                    ${cursor >= latestPairCursor ? "disabled" : ""}
+                >≫</button>
+            </div>
         </div>
         <div class="calendar-pair">
             ${renderCalendarMonth(cursor)}
@@ -8331,6 +9101,37 @@ function initializeViewerAnalysisPickers() {
                 return;
             }
 
+            const jump =
+                event.target.closest(
+                    "[data-calendar-jump]"
+                );
+
+            if (
+                jump &&
+                !jump.disabled
+            ) {
+                const minMonth =
+                    firstDayOfMonthYmd(
+                        currentViewerBounds.start
+                    );
+                const maxMonth =
+                    firstDayOfMonthYmd(
+                        currentViewerBounds.end
+                    );
+
+                viewerPeriodPickerState.cursorMonth =
+                    jump.dataset.calendarJump === "start"
+                        ? minMonth
+                        : (
+                            maxMonth > minMonth
+                                ? addMonthsYmd(maxMonth, -1)
+                                : maxMonth
+                        );
+
+                renderPeriodPicker();
+                return;
+            }
+
             const nav =
                 event.target.closest(
                     "[data-calendar-nav]"
@@ -8692,6 +9493,8 @@ function initializeViewerPeriod(
     );
 
     currentViewerBucketOverrides = {};
+    currentViewerAnalysisChartsEnabled = false;
+    updateAnalysisChartToggleUi();
     currentViewerBasicColumnAxis = "age";
     currentCustomAnalysisState = { initialized:false, userTouched:false, rowAxes:[], colAxis:"", ageMin:"", ageMax:"" };
     currentCustomPivotLayout = { result:null, output:null, widths:[] };
@@ -8904,6 +9707,7 @@ function renderReport(data) {
     }
 
     refreshDetailSidebarNavigation();
+    initializeAnalysisChartPanels(document.getElementById("reportMain"));
     enhanceReportTables(document.getElementById("reportMain"));
     requestAnimationFrame(refreshViewerSidebarObserver);
 

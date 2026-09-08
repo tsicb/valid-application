@@ -1599,9 +1599,17 @@ function buildMonthProgress(context) {
     const maxAge = context.settings?.["応募進捗年齢上限"] ?? "";
     const displayMode = s(context.settings?.["応募進捗表示モード"]) || "cumulative";
     const ageFilterLabel = targetLabel(minAge, maxAge);
-    const startDate = parseDate(context.settings?.["集計開始日"]);
-    const endDate = parseDate(context.settings?.["集計終了日"]);
-    const filteredTimeline = (context.timelineRecords || []).filter(record =>
+    const selectedStartDate = parseDate(context.settings?.["集計開始日"]);
+    const selectedEndDate = parseDate(context.settings?.["集計終了日"]);
+    const allTimeline = context.timelineRecords || [];
+    const dataStartDate = allTimeline.reduce(
+        (earliest, record) => !earliest || record.appDate < earliest ? record.appDate : earliest,
+        null
+    );
+    const dataEndDate = maxDate(allTimeline);
+    const startDate = selectedStartDate || dataStartDate;
+    const endDate = selectedEndDate || dataEndDate;
+    const filteredTimeline = allTimeline.filter(record =>
         isTargetAge(record.age, minAge, maxAge)
     );
     const periodRecords = filteredTimeline.filter(record =>
@@ -1640,22 +1648,40 @@ function buildMonthProgress(context) {
         });
     }
 
+    function monthOverlapsSelectedPeriod(date) {
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+        if (startDate && monthEnd < startDate) return false;
+        if (endDate && monthStart > endDate) return false;
+        return true;
+    }
+
     function sameMonthSeries(date) {
         const key = monthKeyFromDate(date);
         const monthDayCount = daysInMonth(date);
         const daily = emptyDaily();
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+        const effectiveStart = startDate && startDate > monthStart ? startDate : monthStart;
+        const effectiveEnd = endDate && endDate < monthEnd ? endDate : monthEnd;
+        const firstAllowedDay = Math.max(1, effectiveStart.getDate());
+        const lastAllowedDay = Math.min(monthDayCount, effectiveEnd.getDate());
 
-        for (let day = 1; day <= monthDayCount; day += 1) {
+        for (let day = firstAllowedDay; day <= lastAllowedDay; day += 1) {
             daily[day - 1] = 0;
         }
 
         filteredTimeline.forEach(record => {
             if (!sameMonth(record.appDate, date)) return;
+            if (!inDateRange(record.appDate, startDate, endDate)) return;
             const day = record.appDate.getDate();
             daily[day - 1] = (daily[day - 1] || 0) + 1;
         });
 
         const cumulative = cumulativeFromDaily(daily);
+        const finalValue = cumulative[lastAllowedDay - 1];
+        const sameDayIndex = Math.min(latestObservedDay, monthDayCount) - 1;
+        const sameDayValue = cumulative[sameDayIndex];
 
         return {
             key,
@@ -1663,8 +1689,10 @@ function buildMonthProgress(context) {
             monthDayCount,
             daily,
             cumulative,
-            total: cumulative[monthDayCount - 1] || 0,
-            sameDayTotal: cumulative[Math.min(latestObservedDay, monthDayCount) - 1] || 0
+            total: finalValue === null || finalValue === undefined ? null : finalValue,
+            sameDayTotal: sameDayValue === null || sameDayValue === undefined ? null : sameDayValue,
+            firstAllowedDay,
+            lastAllowedDay
         };
     }
 
@@ -1697,22 +1725,31 @@ function buildMonthProgress(context) {
     }
 
     const comparisonSeeds = [
-        new Date(latestDate.getFullYear(), latestDate.getMonth() - 1, 1),
-        new Date(latestDate.getFullYear(), latestDate.getMonth() - 2, 1),
-        new Date(latestDate.getFullYear() - 1, latestDate.getMonth(), 1)
+        {
+            date: new Date(latestDate.getFullYear(), latestDate.getMonth() - 1, 1),
+            kind: "prev1"
+        },
+        {
+            date: new Date(latestDate.getFullYear(), latestDate.getMonth() - 2, 1),
+            kind: "prev2"
+        },
+        {
+            date: new Date(latestDate.getFullYear() - 1, latestDate.getMonth(), 1),
+            kind: "lastYearSameMonth"
+        }
     ];
     const seenKeys = new Set();
     const comparisons = comparisonSeeds
-        .map(date => sameMonthSeries(date))
+        .filter(seed => monthOverlapsSelectedPeriod(seed.date))
+        .map(seed => ({
+            ...sameMonthSeries(seed.date),
+            kind: seed.kind
+        }))
         .filter(series => {
             if (!series.key || seenKeys.has(series.key)) return false;
             seenKeys.add(series.key);
             return true;
-        })
-        .map((series, index) => ({
-            ...series,
-            kind: index === 0 ? "prev1" : index === 1 ? "prev2" : "lastYearSameMonth"
-        }));
+        });
 
     const summary = {
         currentActual: currentTotal,
