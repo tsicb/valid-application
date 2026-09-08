@@ -1904,6 +1904,31 @@
             }
         }
 
+    
+        /* =========================================================
+           Viewer UI v30
+           Hierarchical sticky custom Pivot
+           ========================================================= */
+        #customResult .custom-table { --custom-pivot-sticky-total:0px; }
+        #customResult .custom-table .custom-row-axis-col { position:sticky; background-clip:padding-box; }
+        #customResult .custom-table thead .custom-row-axis-col { z-index:22; background:#f7fbfd; }
+        #customResult .custom-table tbody .custom-row-axis-col { z-index:10; background:#fff; box-shadow:1px 0 0 #e3ebef; }
+        #customResult .custom-table tbody tr:hover > .custom-row-axis-col { background:var(--viewer-brand-blue-soft)!important; }
+        #customResult .custom-table .pivot-value-suppressed { color:transparent; user-select:none; }
+        #customResult .custom-table tr.custom-group-start-l1 > td { border-top:2px solid #cedde5; }
+        #customResult .custom-table tr.custom-group-start-l2 > td { border-top:1px solid #e0e9ee; }
+        #customResult .custom-table tr.custom-group-start-l3 > td { border-top:1px dashed #e7eef2; }
+        .table-sticky-corner.custom-pivot-corner { display:flex;align-items:stretch;padding:0;overflow:hidden;cursor:default; }
+        .custom-pivot-corner-cell { flex:0 0 auto;display:flex;align-items:center;min-width:0;overflow:hidden;padding:8px 10px;box-sizing:border-box;border-right:1px solid #dce8ee;background:#f3f9fc;color:#475569;font-size:11px;font-weight:800;white-space:nowrap;text-overflow:ellipsis;cursor:pointer; }
+        .custom-pivot-corner-cell:hover { background:#eef8fc;color:var(--viewer-brand-blue-dark); }
+        .custom-pivot-context-bar { position:fixed;z-index:69;display:none;overflow:hidden;box-sizing:border-box;border:1px solid rgba(20,142,204,.16);border-top:0;border-radius:0 0 9px 9px;background:rgba(247,251,253,.985);box-shadow:0 8px 18px -18px rgba(15,23,42,.46);pointer-events:none;max-width:min(520px,40vw); }
+        .custom-pivot-context-bar.visible { display:flex; }
+        .custom-pivot-context-cell { flex:0 0 auto;min-width:0;display:grid;align-content:center;gap:1px;padding:4px 9px 5px;box-sizing:border-box;overflow:hidden;border-right:1px solid #dce8ee;background:rgba(247,251,253,.985); }
+        .custom-pivot-context-cell:last-child { border-right:0; }
+        .custom-pivot-context-axis { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8294a3;font-size:8.5px;font-weight:650;line-height:1.05; }
+        .custom-pivot-context-value { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--viewer-brand-blue-dark);font-size:10.5px;font-weight:750;line-height:1.12; }
+        @media (max-width:900px){ .custom-pivot-context-bar { max-width:44vw; } }
+
     </style>
 </head>
 <body>
@@ -2800,6 +2825,7 @@ function setViewerSidebarCollapsed(
 
     requestAnimationFrame(
         () => {
+            scheduleCustomPivotLayoutRefresh();
             scheduleStickyHeaderUpdate();
             scheduleFloatingTableScrollbarUpdate();
         }
@@ -3127,6 +3153,7 @@ function sortTableByHeader(table,th){
   const rows=Array.from(tbody.rows),fixed=rows.filter(r=>r.classList.contains("total-row")||r.classList.contains("composition-row")),normal=rows.filter(r=>!fixed.includes(r));
   if(next==="none"){normal.sort((a,b)=>Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0));table.dataset.sortColumn="";table.dataset.sortState="none";}else{normal.sort((a,b)=>compareTableCells(a.cells[col],b.cells[col],next));table.dataset.sortColumn=String(col);table.dataset.sortState=next;}
   [...normal,...fixed.sort((a,b)=>Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0))].forEach(r=>tbody.appendChild(r));resetTableSortIndicators(table,th,next);
+  if(table.classList.contains("custom-table")){refreshCustomPivotHierarchyDisplay(table);requestAnimationFrame(()=>{stickyTableControllers.forEach(controller=>{if(controller.table===table)refreshStickyHeaderClone(controller);});scheduleStickyHeaderUpdate();});}
 }
 function prepareTableRowLabels(table){
   const tbody=table.tBodies?.[0];if(!tbody)return;Array.from(tbody.rows).forEach((row,index)=>{row.dataset.originalOrder=String(index);const first=row.cells?.[0];if(!first||first.querySelector(".row-label-text")||first.children.length>0)return;const text=String(first.textContent||"").trim();first.textContent="";const span=document.createElement("span");span.className="row-label-text";span.textContent=text;span.dataset.fullText=text;first.appendChild(span);});
@@ -3446,16 +3473,9 @@ function updateFloatingTableEdges(
         return;
     }
 
-    const firstCell =
-        wrap.querySelector(
-            "thead th:first-child"
-        );
-
-    const firstWidth =
-        firstCell
-            ?.getBoundingClientRect()
-            ?.width ||
-        0;
+    const table=wrap.querySelector("table");
+    let firstWidth=0;
+    if(table?.classList.contains("custom-table")){firstWidth=Array.from(table.querySelectorAll("thead th.custom-row-axis-col")).reduce((sum,cell)=>sum+cell.getBoundingClientRect().width,0);}else{const firstCell=wrap.querySelector("thead th:first-child");firstWidth=firstCell?.getBoundingClientRect()?.width||0;}
 
     const maxScroll =
         Math.max(
@@ -3742,13 +3762,10 @@ function cleanupStickyTableControllers() {
                         controller.wrap
                     )
                 ) {
-                    controller.overlay
-                        ?.remove();
-
-                    stickyTableControllers
-                        .delete(
-                            controller
-                        );
+                    controller.overlay?.remove();
+                    controller.pivotContextBar?.remove();
+                    controller.resizeObserver?.disconnect?.();
+                    stickyTableControllers.delete(controller);
                 }
             }
         );
@@ -3882,63 +3899,18 @@ function copyStickyHeaderGeometry(
         }
     );
 
-    const firstSourceCell =
-        sourceHead.rows?.[0]
-            ?.cells?.[0];
-
-    if (firstSourceCell) {
-        const firstRect =
-            firstSourceCell
-                .getBoundingClientRect();
-
-        corner.style.width =
-            `${firstRect.width}px`;
-
-        corner.style.height =
-            `${headerRect.height}px`;
-
-        corner.innerHTML =
-            firstSourceCell.innerHTML;
-
-        corner.className =
-            "table-sticky-corner";
-
-        if (
-            firstSourceCell
-                .classList
-                .contains(
-                    "sort-desc"
-                )
-        ) {
-            corner.classList.add(
-                "sort-desc"
-            );
-        }
-
-        if (
-            firstSourceCell
-                .classList
-                .contains(
-                    "sort-asc"
-                )
-        ) {
-            corner.classList.add(
-                "sort-asc"
-            );
-        }
-
-        corner.style.cursor =
-            firstSourceCell
-                .dataset
-                .sortable ===
-                "true"
-                ? "pointer"
-                : "default";
-    }
+    const firstSourceRow=sourceHead.rows?.[0];
+    const pivotHeaders=table.classList.contains("custom-table")?Array.from(firstSourceRow?.querySelectorAll("th.custom-row-axis-col")||[]):[];
+    if(pivotHeaders.length){const pivotWidth=pivotHeaders.reduce((sum,cell)=>sum+cell.getBoundingClientRect().width,0);corner.style.width=`${pivotWidth}px`;corner.style.height=`${headerRect.height}px`;corner.className="table-sticky-corner custom-pivot-corner";corner.innerHTML=pivotHeaders.map((cell,index)=>{const rect=cell.getBoundingClientRect();return `<div class="custom-pivot-corner-cell" data-corner-col-index="${index}" style="width:${rect.width}px" title="${escapeHtml(cell.textContent||"")}">${cell.innerHTML}</div>`;}).join("");corner.style.cursor="default";}else{const firstSourceCell=firstSourceRow?.cells?.[0];if(firstSourceCell){const firstRect=firstSourceCell.getBoundingClientRect();corner.style.width=`${firstRect.width}px`;corner.style.height=`${headerRect.height}px`;corner.innerHTML=firstSourceCell.innerHTML;corner.className="table-sticky-corner";if(firstSourceCell.classList.contains("sort-desc"))corner.classList.add("sort-desc");if(firstSourceCell.classList.contains("sort-asc"))corner.classList.add("sort-asc");corner.style.cursor=firstSourceCell.dataset.sortable==="true"?"pointer":"default";}}
 
     track.style.transform =
         `translateX(${-wrap.scrollLeft}px)`;
 }
+
+function ensureCustomPivotContextBar(controller){const table=controller.table;if(!table?.classList?.contains("custom-table"))return null;const count=Number(table.dataset.customRowAxisCount||0);if(count<1)return null;if(controller.pivotContextBar)return controller.pivotContextBar;const bar=document.createElement("div");bar.className="custom-pivot-context-bar";bar.setAttribute("aria-hidden","true");document.body.appendChild(bar);controller.pivotContextBar=bar;return bar;}
+function hideCustomPivotContextBar(controller){controller.pivotContextBar?.classList.remove("visible");}
+function customPivotVisibleDataRow(controller,probeY){const rows=Array.from(controller.table.tBodies?.[0]?.rows||[]).filter(row=>row.dataset.pivotLabels);return rows.find(row=>row.getBoundingClientRect().bottom>probeY)||rows[rows.length-1]||null;}
+function updateCustomPivotContextBar(controller,shouldShow){const bar=ensureCustomPivotContextBar(controller);if(!bar)return;if(!shouldShow){hideCustomPivotContextBar(controller);return;}const {table,wrap,overlay}=controller;const axisHeaders=Array.from(table.tHead?.rows?.[0]?.querySelectorAll("th.custom-row-axis-col")||[]);if(!axisHeaders.length){hideCustomPivotContextBar(controller);return;}const parentCount=Math.max(1,axisHeaders.length-1);const headerHeight=overlay.getBoundingClientRect().height;const contextTop=stickyHeaderTopOffset()+headerHeight;const row=customPivotVisibleDataRow(controller,contextTop+34);if(!row){hideCustomPivotContextBar(controller);return;}let labels=[];try{labels=JSON.parse(row.dataset.pivotLabels||"[]");}catch(_){labels=[];}const parentHeaders=axisHeaders.slice(0,parentCount),widths=parentHeaders.map(h=>h.getBoundingClientRect().width),totalWidth=widths.reduce((s,v)=>s+v,0),wrapRect=wrap.getBoundingClientRect();bar.style.left=`${Math.round(wrapRect.left)}px`;bar.style.top=`${Math.round(contextTop)}px`;bar.style.width=`${Math.round(totalWidth)}px`;bar.innerHTML=parentHeaders.map((header,index)=>`<div class="custom-pivot-context-cell" style="width:${widths[index]}px" title="${escapeHtml(labels[index]||"")}"><span class="custom-pivot-context-axis">${escapeHtml(header.textContent||"")}</span><span class="custom-pivot-context-value">${escapeHtml(labels[index]||"")}</span></div>`).join("");bar.classList.add("visible");}
 
 function refreshStickyHeaderClone(
     controller
@@ -4040,11 +4012,8 @@ function updateStickyHeaderVisibility(
         shouldShow
     );
 
-    if (shouldShow) {
-        copyStickyHeaderGeometry(
-            controller
-        );
-    }
+    if (shouldShow) { copyStickyHeaderGeometry(controller); }
+    updateCustomPivotContextBar(controller,shouldShow);
 }
 
 function updateAllStickyHeaders() {
@@ -4162,13 +4131,9 @@ function installStickyHeader(
         corner
     };
 
-    stickyTableControllers.add(
-        controller
-    );
-
-    refreshStickyHeaderClone(
-        controller
-    );
+    stickyTableControllers.add(controller);
+    ensureCustomPivotContextBar(controller);
+    refreshStickyHeaderClone(controller);
 
     wrap.addEventListener(
         "scroll",
@@ -4239,31 +4204,9 @@ function installStickyHeader(
                 return;
             }
 
-            if (
-                event.target.closest(
-                    ".table-sticky-corner"
-                )
-            ) {
-                const sourceTh =
-                    table.tHead
-                        .rows?.[0]
-                        ?.cells?.[0];
-
-                if (
-                    sourceTh?.dataset
-                        ?.sortable ===
-                    "true"
-                ) {
-                    sourceTh.click();
-
-                    requestAnimationFrame(
-                        () =>
-                            refreshStickyHeaderClone(
-                                controller
-                            )
-                    );
-                }
-            }
+            const pivotCornerCell=event.target.closest(".custom-pivot-corner-cell");
+            if(pivotCornerCell){const cellIndex=Number(pivotCornerCell.dataset.cornerColIndex);const sourceTh=table.tHead.rows?.[0]?.querySelectorAll("th.custom-row-axis-col")?.[cellIndex];if(sourceTh?.dataset?.sortable==="true"){sourceTh.click();requestAnimationFrame(()=>refreshStickyHeaderClone(controller));}return;}
+            if(event.target.closest(".table-sticky-corner")){const sourceTh=table.tHead.rows?.[0]?.cells?.[0];if(sourceTh?.dataset?.sortable==="true"){sourceTh.click();requestAnimationFrame(()=>refreshStickyHeaderClone(controller));}}
         }
     );
 
@@ -4363,13 +4306,11 @@ function initializeViewerDesktopUx(){
     window.addEventListener(
         "resize",
         () => {
+            scheduleCustomPivotLayoutRefresh();
             scheduleStickyHeaderUpdate();
             scheduleFloatingTableScrollbarUpdate();
         },
-        {
-            passive:
-                true
-        }
+        {passive:true}
     );
 }
 
@@ -5286,9 +5227,67 @@ function scheduleCustomAnalysisRun() {
     clearTimeout(customAnalysisTimer);
     customAnalysisTimer = setTimeout(runCustomAnalysisNow, 150);
 }
-function customRowGroupStart(current, previous) {
-    if (!previous) return false;
-    return current?.labels?.[0] !== previous?.labels?.[0];
+let currentCustomPivotLayout = { result:null, output:null, widths:[] };
+let customPivotMeasureCanvas = null;
+let customPivotLayoutRaf = 0;
+function measureCustomPivotText(text,bold=false){
+    if(!customPivotMeasureCanvas) customPivotMeasureCanvas=document.createElement("canvas");
+    const c=customPivotMeasureCanvas.getContext("2d");
+    if(!c) return String(text||"").length*11;
+    c.font=`${bold?700:400} 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif`;
+    return c.measureText(String(text||"")).width;
+}
+function customPivotStickyCap(axisCount){
+    const main=document.getElementById("reportMain");
+    const baseWidth=main?.clientWidth||window.innerWidth||1200;
+    return Math.max(axisCount*90,Math.min(520,Math.floor(baseWidth*0.40)));
+}
+function shrinkCustomPivotWidths(widths,cap,minimum=90){
+    const result=widths.map(v=>Math.max(minimum,v));
+    let total=result.reduce((s,v)=>s+v,0),guard=0;
+    while(total>cap&&guard<12){
+        guard+=1;
+        const flex=result.map((v,i)=>({i,slack:Math.max(0,v-minimum)})).filter(x=>x.slack>0);
+        const totalSlack=flex.reduce((s,x)=>s+x.slack,0); if(!totalSlack) break;
+        const excess=total-cap;
+        flex.forEach(x=>{result[x.i]=Math.max(minimum,result[x.i]-excess*(x.slack/totalSlack));});
+        total=result.reduce((s,v)=>s+v,0);
+    }
+    return result.map(v=>Math.round(v));
+}
+function calculateCustomPivotWidths(result){
+    const count=result?.rowAxes?.length||0;if(!count)return[];
+    const preferred=result.rowAxes.map((axis,index)=>{
+        let width=measureCustomPivotText(axis,true)+34;
+        (result.rowEntries||[]).forEach(entry=>{width=Math.max(width,measureCustomPivotText(entry.labels?.[index]||"")+28);});
+        return Math.max(90,Math.min(220,Math.ceil(width)));
+    });
+    return shrinkCustomPivotWidths(preferred,customPivotStickyCap(count),90);
+}
+function customPivotLeftOffsets(widths){let left=0;return widths.map(w=>{const x=left;left+=w;return x;});}
+function applyCustomPivotStickyGeometry(result,output){
+    const table=output?.querySelector(".custom-table"); if(!table||!result?.rowAxes?.length)return;
+    const widths=calculateCustomPivotWidths(result),offsets=customPivotLeftOffsets(widths),total=widths.reduce((s,v)=>s+v,0);
+    table.dataset.customRowAxisCount=String(widths.length);table.style.setProperty("--custom-pivot-sticky-total",`${total}px`);
+    widths.forEach((width,index)=>{table.querySelectorAll(`[data-row-axis-index="${index}"]`).forEach(cell=>{cell.style.width=`${width}px`;cell.style.minWidth=`${width}px`;cell.style.maxWidth=`${width}px`;cell.style.left=`${offsets[index]}px`;cell.style.position="sticky";cell.style.zIndex=cell.tagName==="TH"?String(28-index):String(16-index);});});
+    currentCustomPivotLayout={result,output,widths};
+    requestAnimationFrame(()=>{stickyTableControllers.forEach(controller=>{if(controller.table===table){refreshStickyHeaderClone(controller);ensureCustomPivotContextBar(controller);}});scheduleFloatingTableScrollbarUpdate();scheduleStickyHeaderUpdate();});
+}
+function refreshCustomPivotStickyGeometry(){const {result,output}=currentCustomPivotLayout;if(!result||!output||!document.body.contains(output))return;applyCustomPivotStickyGeometry(result,output);}
+function scheduleCustomPivotLayoutRefresh(){if(customPivotLayoutRaf)return;customPivotLayoutRaf=requestAnimationFrame(()=>{customPivotLayoutRaf=0;refreshCustomPivotStickyGeometry();});}
+function customPivotDisplayLabel(result,rowIndex,axisIndex){
+    const entry=result.rowEntries?.[rowIndex];if(!entry)return"";const value=entry.labels?.[axisIndex]||"";if(rowIndex===0)return value;const prev=result.rowEntries?.[rowIndex-1];if(!prev)return value;
+    for(let i=0;i<=axisIndex;i++){if(entry.labels?.[i]!==prev.labels?.[i])return value;}return"";
+}
+function customPivotGroupLevel(current,previous){if(!previous)return 0;const len=Math.min(current?.labels?.length||0,previous?.labels?.length||0);for(let i=0;i<len;i++){if(current.labels[i]!==previous.labels[i])return i+1;}return 0;}
+function customPivotGroupClass(current,previous){const level=customPivotGroupLevel(current,previous);return level?`custom-group-start-l${Math.min(level,3)}`:"";}
+function refreshCustomPivotHierarchyDisplay(table){
+    if(!table||table.dataset.customRowAxisCount===undefined)return;
+    const rows=Array.from(table.tBodies?.[0]?.rows||[]).filter(row=>row.dataset.pivotLabels);let previous=null;
+    rows.forEach(row=>{let labels=[];try{labels=JSON.parse(row.dataset.pivotLabels);}catch(_){labels=[];}
+        const cells=Array.from(row.querySelectorAll(".custom-row-axis-col"));cells.forEach((cell,index)=>{const span=cell.querySelector(".row-label-text");if(!span)return;let show=true;if(previous){show=false;for(let i=0;i<=index;i++){if(labels[i]!==previous[i]){show=true;break;}}}span.textContent=show?(labels[index]||""):"";span.classList.toggle("pivot-value-suppressed",!show);});
+        row.classList.remove("custom-group-start-l1","custom-group-start-l2","custom-group-start-l3");if(previous){let level=0;for(let i=0;i<Math.min(labels.length,previous.length);i++){if(labels[i]!==previous[i]){level=i+1;break;}}if(level)row.classList.add(`custom-group-start-l${Math.min(level,3)}`);}previous=labels;
+    });
 }
 function renderCustomResult(result, core) {
     const message = document.getElementById("customMessage");
@@ -5302,17 +5301,12 @@ function renderCustomResult(result, core) {
     }
     const ageLabel = result.ageFilterMode === "指定範囲" ? core.targetLabel(result.ageMin,result.ageMax) : "全年齢";
     if (meta) { meta.textContent = `行軸: ${result.rowAxes.join(" > ")} ／ 列軸: ${result.colAxis} ／ 集計対象年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`; meta.classList.remove("hidden"); }
-    const rowHeaders = result.rowAxes.map(axis => `<th class="custom-row-axis-col">${escapeHtml(axis)}</th>`).join("");
-    const headers = result.colLabels.map(label => `<th title="列軸：${escapeHtml(result.colAxis)}">${escapeHtml(label)}</th>`).join("");
-    const rows = result.rowEntries.map((entry,index) => {
-        const previous = result.rowEntries[index-1];
-        const rowMap = result.matrix.get(entry.key) || new Map();
-        const rowAxisCells = entry.labels.map(label => `<td class="custom-row-axis-col"><span class="row-label-text" data-full-text="${escapeHtml(label)}">${escapeHtml(label)}</span></td>`).join("");
-        const cells = result.colLabels.map(colLabel => `<td>${core.formatNumber(rowMap.get(colLabel) || 0)}</td>`).join("");
-        return `<tr class="${customRowGroupStart(entry,previous) ? "custom-group-start" : ""}">${rowAxisCells}${cells}<td>${core.formatNumber(result.rowTotals.get(entry.key) || 0)}</td></tr>`;
-    }).join("");
+    const rowHeaders=result.rowAxes.map((axis,index)=>`<th class="custom-row-axis-col" data-row-axis-index="${index}" title="${escapeHtml(axis)}">${escapeHtml(axis)}</th>`).join("");
+    const headers=result.colLabels.map(label=>`<th title="列軸：${escapeHtml(result.colAxis)}">${escapeHtml(label)}</th>`).join("");
+    const rows=result.rowEntries.map((entry,index)=>{const previous=result.rowEntries[index-1];const rowMap=result.matrix.get(entry.key)||new Map();const rowAxisCells=entry.labels.map((label,axisIndex)=>{const display=customPivotDisplayLabel(result,index,axisIndex);return `<td class="custom-row-axis-col" data-row-axis-index="${axisIndex}" data-pivot-value="${escapeHtml(label)}"><span class="row-label-text ${display?"":"pivot-value-suppressed"}" data-full-text="${escapeHtml(label)}">${escapeHtml(display)}</span></td>`;}).join("");const cells=result.colLabels.map(colLabel=>`<td>${core.formatNumber(rowMap.get(colLabel)||0)}</td>`).join("");return `<tr class="${customPivotGroupClass(entry,previous)}" data-pivot-labels="${escapeHtml(JSON.stringify(entry.labels))}">${rowAxisCells}${cells}<td>${core.formatNumber(result.rowTotals.get(entry.key)||0)}</td></tr>`;}).join("");
     const totalCells = result.colLabels.map(colLabel => `<td>${core.formatNumber(result.colTotals.get(colLabel) || 0)}</td>`).join("");
-    output.innerHTML = `<div class="table-wrap"><table class="custom-table"><thead><tr>${rowHeaders}${headers}<th>行合計</th></tr></thead><tbody>${rows}<tr class="total-row"><td colspan="${result.rowAxes.length}">列合計</td>${totalCells}<td>${core.formatNumber(result.applicationCount)}</td></tr></tbody></table></div>`;
+    output.innerHTML=`<div class="table-wrap"><table class="custom-table"><thead><tr>${rowHeaders}${headers}<th>行合計</th></tr></thead><tbody>${rows}<tr class="total-row"><td colspan="${result.rowAxes.length}">列合計</td>${totalCells}<td>${core.formatNumber(result.applicationCount)}</td></tr></tbody></table></div>`;
+    applyCustomPivotStickyGeometry(result,output);
     enhanceReportTables(output);
 }
 function bindCustomAnalysisControls() {
@@ -7147,6 +7141,7 @@ function initializeViewerPeriod(
 
     currentViewerBucketOverrides = {};
     currentCustomAnalysisState = { initialized:false, userTouched:false, rowAxes:[], colAxis:"", ageMin:"", ageMax:"" };
+    currentCustomPivotLayout = { result:null, output:null, widths:[] };
     updateViewerConditionSummaries();
 }
 
