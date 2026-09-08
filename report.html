@@ -1929,6 +1929,51 @@
         .custom-pivot-context-value { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--viewer-brand-blue-dark);font-size:10.5px;font-weight:750;line-height:1.12; }
         @media (max-width:900px){ .custom-pivot-context-bar { max-width:44vw; } }
 
+    
+        /* =========================================================
+           Viewer UI v30.1
+           Sidebar sticky masking + layout synchronization
+           ========================================================= */
+
+        .sidebar-content {
+            position: relative;
+            isolation: isolate;
+        }
+
+        #analysisConditionSidebarGroup {
+            z-index: 30;
+            overflow: visible;
+        }
+
+        /* Hide nav buttons while they pass through the scroll-container
+           padding immediately above the sticky analysis-condition card. */
+        #analysisConditionSidebarGroup::before {
+            content: "";
+            position: absolute;
+            z-index: 0;
+            top: -19px;
+            left: -12px;
+            right: -12px;
+            height: 20px;
+            pointer-events: none;
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(241,249,253,.998) 0%,
+                    rgba(245,251,254,.998) 100%
+                );
+        }
+
+        #analysisConditionSidebarGroup > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .report-sidebar,
+        .report-main {
+            will-change: width, margin-left;
+        }
+
     </style>
 </head>
 <body>
@@ -2551,7 +2596,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.08-viewer-ui-v26-analysis-controls";
+    "2026.09.08-viewer-ui-v30.1-layout-sync";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -2823,13 +2868,11 @@ function setViewerSidebarCollapsed(
         } catch (_) {}
     }
 
-    requestAnimationFrame(
-        () => {
-            scheduleCustomPivotLayoutRefresh();
-            scheduleStickyHeaderUpdate();
-            scheduleFloatingTableScrollbarUpdate();
-        }
-    );
+    startViewerSidebarTransitionSync();
+
+    scheduleViewerLayoutRefresh({
+        full: true
+    });
 }
 
 function setActiveSidebarTarget(
@@ -3681,6 +3724,251 @@ function scheduleFloatingTableScrollbarUpdate() {
         );
 }
 
+
+/* =========================================================
+   Viewer-wide layout synchronization
+   ========================================================= */
+
+let viewerLayoutRefreshRaf =
+    0;
+
+let viewerLayoutRefreshNeedsFull =
+    false;
+
+let viewerLayoutResizeObserver =
+    null;
+
+let viewerLayoutResizeSettleTimer =
+    0;
+
+let viewerSidebarTransitionRaf =
+    0;
+
+let viewerSidebarTransitionUntil =
+    0;
+
+function refreshViewerLayoutNow(
+    {
+        full = false
+    } = {}
+) {
+    if (full) {
+        refreshCustomPivotStickyGeometry();
+
+        stickyTableControllers
+            .forEach(
+                controller => {
+                    if (
+                        document.body.contains(
+                            controller.wrap
+                        )
+                    ) {
+                        refreshStickyHeaderClone(
+                            controller
+                        );
+                    }
+                }
+            );
+    }
+
+    updateAllStickyHeaders();
+    updateFloatingTableScrollbar();
+}
+
+function scheduleViewerLayoutRefresh(
+    {
+        full = false
+    } = {}
+) {
+    viewerLayoutRefreshNeedsFull =
+        viewerLayoutRefreshNeedsFull ||
+        !!full;
+
+    if (
+        viewerLayoutRefreshRaf
+    ) {
+        return;
+    }
+
+    viewerLayoutRefreshRaf =
+        requestAnimationFrame(
+            () => {
+                viewerLayoutRefreshRaf =
+                    0;
+
+                const needsFull =
+                    viewerLayoutRefreshNeedsFull;
+
+                viewerLayoutRefreshNeedsFull =
+                    false;
+
+                refreshViewerLayoutNow({
+                    full:
+                        needsFull
+                });
+            }
+        );
+}
+
+function scheduleViewerLayoutSettledRefresh(
+    delay = 90
+) {
+    clearTimeout(
+        viewerLayoutResizeSettleTimer
+    );
+
+    viewerLayoutResizeSettleTimer =
+        setTimeout(
+            () => {
+                scheduleViewerLayoutRefresh({
+                    full: true
+                });
+            },
+            delay
+        );
+}
+
+function startViewerSidebarTransitionSync(
+    duration = 280
+) {
+    viewerSidebarTransitionUntil =
+        Math.max(
+            viewerSidebarTransitionUntil,
+            performance.now() +
+                duration
+        );
+
+    if (
+        viewerSidebarTransitionRaf
+    ) {
+        return;
+    }
+
+    const tick =
+        now => {
+            scheduleViewerLayoutRefresh({
+                full: false
+            });
+
+            if (
+                now <
+                viewerSidebarTransitionUntil
+            ) {
+                viewerSidebarTransitionRaf =
+                    requestAnimationFrame(
+                        tick
+                    );
+                return;
+            }
+
+            viewerSidebarTransitionRaf =
+                0;
+
+            scheduleViewerLayoutRefresh({
+                full: true
+            });
+        };
+
+    viewerSidebarTransitionRaf =
+        requestAnimationFrame(
+            tick
+        );
+}
+
+function initializeViewerLayoutObserver() {
+    const sidebar =
+        document.getElementById(
+            "reportSidebar"
+        );
+
+    const main =
+        document.getElementById(
+            "reportMain"
+        );
+
+    if (
+        "ResizeObserver" in
+        window
+    ) {
+        viewerLayoutResizeObserver
+            ?.disconnect?.();
+
+        viewerLayoutResizeObserver =
+            new ResizeObserver(
+                () => {
+                    scheduleViewerLayoutRefresh({
+                        full: false
+                    });
+
+                    scheduleViewerLayoutSettledRefresh();
+                }
+            );
+
+        [
+            sidebar,
+            main
+        ]
+            .filter(Boolean)
+            .forEach(
+                element =>
+                    viewerLayoutResizeObserver
+                        .observe(
+                            element
+                        )
+            );
+    }
+
+    [
+        sidebar,
+        main
+    ]
+        .filter(Boolean)
+        .forEach(
+            element => {
+                element.addEventListener(
+                    "transitionrun",
+                    event => {
+                        if (
+                            ![
+                                "width",
+                                "margin-left"
+                            ]
+                                .includes(
+                                    event.propertyName
+                                )
+                        ) {
+                            return;
+                        }
+
+                        startViewerSidebarTransitionSync();
+                    }
+                );
+
+                element.addEventListener(
+                    "transitionend",
+                    event => {
+                        if (
+                            ![
+                                "width",
+                                "margin-left"
+                            ]
+                                .includes(
+                                    event.propertyName
+                                )
+                        ) {
+                            return;
+                        }
+
+                        scheduleViewerLayoutRefresh({
+                            full: true
+                        });
+                    }
+                );
+            }
+        );
+}
+
+
 function installLocalHorizontalScroll(
     wrap
 ) {
@@ -4278,7 +4566,11 @@ function enhanceReportTables(root=document){
         );
 
     requestAnimationFrame(
-        scheduleFloatingTableScrollbarUpdate
+        () => {
+            scheduleViewerLayoutRefresh({
+                full: true
+            });
+        }
     );
 }
 function ensureRowLabelTooltip(){let t=document.getElementById("rowLabelTooltip");if(t)return t;t=document.createElement("div");t.id="rowLabelTooltip";t.className="row-label-tooltip";t.setAttribute("role","tooltip");document.body.appendChild(t);return t;}
@@ -4290,12 +4582,14 @@ function initializeViewerDesktopUx(){
     initializeBucketControls();
     initializeViewerAnalysisPickers();
     ensureFloatingTableScrollbar();
+    initializeViewerLayoutObserver();
 
     window.addEventListener(
         "scroll",
         () => {
-            scheduleStickyHeaderUpdate();
-            scheduleFloatingTableScrollbarUpdate();
+            scheduleViewerLayoutRefresh({
+                full: false
+            });
         },
         {
             passive:
@@ -4306,11 +4600,18 @@ function initializeViewerDesktopUx(){
     window.addEventListener(
         "resize",
         () => {
-            scheduleCustomPivotLayoutRefresh();
-            scheduleStickyHeaderUpdate();
-            scheduleFloatingTableScrollbarUpdate();
+            scheduleViewerLayoutRefresh({
+                full: true
+            });
+
+            scheduleViewerLayoutSettledRefresh(
+                120
+            );
         },
-        {passive:true}
+        {
+            passive:
+                true
+        }
     );
 }
 
@@ -5274,7 +5575,20 @@ function applyCustomPivotStickyGeometry(result,output){
     requestAnimationFrame(()=>{stickyTableControllers.forEach(controller=>{if(controller.table===table){refreshStickyHeaderClone(controller);ensureCustomPivotContextBar(controller);}});scheduleFloatingTableScrollbarUpdate();scheduleStickyHeaderUpdate();});
 }
 function refreshCustomPivotStickyGeometry(){const {result,output}=currentCustomPivotLayout;if(!result||!output||!document.body.contains(output))return;applyCustomPivotStickyGeometry(result,output);}
-function scheduleCustomPivotLayoutRefresh(){if(customPivotLayoutRaf)return;customPivotLayoutRaf=requestAnimationFrame(()=>{customPivotLayoutRaf=0;refreshCustomPivotStickyGeometry();});}
+function scheduleCustomPivotLayoutRefresh(){
+    if(customPivotLayoutRaf)return;
+
+    customPivotLayoutRaf=requestAnimationFrame(
+        ()=>{
+            customPivotLayoutRaf=0;
+            refreshCustomPivotStickyGeometry();
+
+            scheduleViewerLayoutRefresh({
+                full:false
+            });
+        }
+    );
+}
 function customPivotDisplayLabel(result,rowIndex,axisIndex){
     const entry=result.rowEntries?.[rowIndex];if(!entry)return"";const value=entry.labels?.[axisIndex]||"";if(rowIndex===0)return value;const prev=result.rowEntries?.[rowIndex-1];if(!prev)return value;
     for(let i=0;i<=axisIndex;i++){if(entry.labels?.[i]!==prev.labels?.[i])return value;}return"";
