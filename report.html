@@ -1974,6 +1974,82 @@
             will-change: width, margin-left;
         }
 
+    
+        /* =========================================================
+           Viewer UI v30.2
+           Custom Pivot TOP-image row-axis preview
+           ========================================================= */
+
+        #customResult .custom-pivot-cell-content {
+            min-width: 0;
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        #customResult .custom-pivot-cell-content.pivot-value-suppressed {
+            visibility: hidden;
+        }
+
+        #customResult .custom-pivot-image-wrap {
+            width: 100%;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        #customResult .custom-pivot-image-thumb {
+            width: 72px;
+            height: 48px;
+            flex: 0 0 72px;
+            display: block;
+            object-fit: cover;
+            border: 1px solid #dbe6ec;
+            border-radius: 7px;
+            background: #f8fafc;
+        }
+
+        #customResult .custom-pivot-image-fallback {
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #334155;
+            font-size: 10.5px;
+            line-height: 1.3;
+        }
+
+        #customResult td[data-pivot-axis="TOP画像ファイル名"] {
+            min-height: 58px;
+        }
+
+        .custom-pivot-context-image-wrap {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .custom-pivot-context-image {
+            width: 44px;
+            height: 29px;
+            flex: 0 0 44px;
+            display: block;
+            object-fit: cover;
+            border: 1px solid #dbe6ec;
+            border-radius: 5px;
+            background: #fff;
+        }
+
+        .custom-pivot-context-image-fallback {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
     </style>
 </head>
 <body>
@@ -2596,7 +2672,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.08-viewer-ui-v30.1-layout-sync";
+    "2026.09.08-viewer-ui-v30.2-custom-top-image-preview";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -4198,7 +4274,83 @@ function copyStickyHeaderGeometry(
 function ensureCustomPivotContextBar(controller){const table=controller.table;if(!table?.classList?.contains("custom-table"))return null;const count=Number(table.dataset.customRowAxisCount||0);if(count<1)return null;if(controller.pivotContextBar)return controller.pivotContextBar;const bar=document.createElement("div");bar.className="custom-pivot-context-bar";bar.setAttribute("aria-hidden","true");document.body.appendChild(bar);controller.pivotContextBar=bar;return bar;}
 function hideCustomPivotContextBar(controller){controller.pivotContextBar?.classList.remove("visible");}
 function customPivotVisibleDataRow(controller,probeY){const rows=Array.from(controller.table.tBodies?.[0]?.rows||[]).filter(row=>row.dataset.pivotLabels);return rows.find(row=>row.getBoundingClientRect().bottom>probeY)||rows[rows.length-1]||null;}
-function updateCustomPivotContextBar(controller,shouldShow){const bar=ensureCustomPivotContextBar(controller);if(!bar)return;if(!shouldShow){hideCustomPivotContextBar(controller);return;}const {table,wrap,overlay}=controller;const axisHeaders=Array.from(table.tHead?.rows?.[0]?.querySelectorAll("th.custom-row-axis-col")||[]);if(!axisHeaders.length){hideCustomPivotContextBar(controller);return;}const parentCount=Math.max(1,axisHeaders.length-1);const headerHeight=overlay.getBoundingClientRect().height;const contextTop=stickyHeaderTopOffset()+headerHeight;const row=customPivotVisibleDataRow(controller,contextTop+34);if(!row){hideCustomPivotContextBar(controller);return;}let labels=[];try{labels=JSON.parse(row.dataset.pivotLabels||"[]");}catch(_){labels=[];}const parentHeaders=axisHeaders.slice(0,parentCount),widths=parentHeaders.map(h=>h.getBoundingClientRect().width),totalWidth=widths.reduce((s,v)=>s+v,0),wrapRect=wrap.getBoundingClientRect();bar.style.left=`${Math.round(wrapRect.left)}px`;bar.style.top=`${Math.round(contextTop)}px`;bar.style.width=`${Math.round(totalWidth)}px`;bar.innerHTML=parentHeaders.map((header,index)=>`<div class="custom-pivot-context-cell" style="width:${widths[index]}px" title="${escapeHtml(labels[index]||"")}"><span class="custom-pivot-context-axis">${escapeHtml(header.textContent||"")}</span><span class="custom-pivot-context-value">${escapeHtml(labels[index]||"")}</span></div>`).join("");bar.classList.add("visible");}
+function updateCustomPivotContextBar(controller,shouldShow){
+    const bar=ensureCustomPivotContextBar(controller);
+
+    if(!bar)return;
+
+    if(!shouldShow){
+        hideCustomPivotContextBar(controller);
+        return;
+    }
+
+    const {table,wrap,overlay}=controller;
+    const axisHeaders=Array.from(
+        table.tHead?.rows?.[0]?.querySelectorAll(
+            "th.custom-row-axis-col"
+        )||[]
+    );
+
+    if(!axisHeaders.length){
+        hideCustomPivotContextBar(controller);
+        return;
+    }
+
+    const parentCount=Math.max(1,axisHeaders.length-1);
+    const headerHeight=overlay.getBoundingClientRect().height;
+    const contextTop=stickyHeaderTopOffset()+headerHeight;
+    const row=customPivotVisibleDataRow(controller,contextTop+34);
+
+    if(!row){
+        hideCustomPivotContextBar(controller);
+        return;
+    }
+
+    let labels=[];
+    try{
+        labels=JSON.parse(row.dataset.pivotLabels||"[]");
+    }catch(_){
+        labels=[];
+    }
+
+    let rowAxes=[];
+    try{
+        rowAxes=JSON.parse(table.dataset.customPivotRowAxes||"[]");
+    }catch(_){
+        rowAxes=[];
+    }
+
+    const parentHeaders=axisHeaders.slice(0,parentCount);
+    const widths=parentHeaders.map(h=>h.getBoundingClientRect().width);
+    const totalWidth=widths.reduce((s,v)=>s+v,0);
+    const wrapRect=wrap.getBoundingClientRect();
+
+    bar.style.left=`${Math.round(wrapRect.left)}px`;
+    bar.style.top=`${Math.round(contextTop)}px`;
+    bar.style.width=`${Math.round(totalWidth)}px`;
+
+    const signature=JSON.stringify(
+        parentHeaders.map((header,index)=>[
+            rowAxes[index]||header.textContent||"",
+            labels[index]||""
+        ])
+    );
+
+    if(bar.dataset.pivotSignature!==signature){
+        bar.dataset.pivotSignature=signature;
+
+        bar.innerHTML=parentHeaders.map((header,index)=>{
+            const axis=rowAxes[index]||header.textContent||"";
+            const value=labels[index]||"";
+
+            return `<div class="custom-pivot-context-cell" style="width:${widths[index]}px" title="${escapeHtml(value)}"><span class="custom-pivot-context-axis">${escapeHtml(axis)}</span><span class="custom-pivot-context-value">${customPivotContextValueHtml(axis,value)}</span></div>`;
+        }).join("");
+
+        bindCustomPivotImageFallbacks(bar);
+    }
+
+    bar.classList.add("visible");
+}
 
 function refreshStickyHeaderClone(
     controller
@@ -5556,20 +5708,98 @@ function shrinkCustomPivotWidths(widths,cap,minimum=90){
     }
     return result.map(v=>Math.round(v));
 }
+function customTopImageUrl(fileName){
+    const name=String(fileName||"").trim();
+    if(!name||name==="（TOP画像なし）")return"";
+    return String(currentCustomContext?.imageMap?.[name]||"").trim();
+}
+
+function customPivotImageFallbackHtml(fileName,className="custom-pivot-image-fallback"){
+    return `<span class="${className} row-label-text" data-full-text="${escapeHtml(fileName)}" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>`;
+}
+
+function customPivotTopImageHtml(fileName,{context=false}={}){
+    const name=String(fileName||"").trim()||"（TOP画像なし）";
+    const imageUrl=customTopImageUrl(name);
+
+    if(!imageUrl){
+        return context
+            ? `<span class="custom-pivot-context-image-wrap">${customPivotImageFallbackHtml(name,"custom-pivot-context-image-fallback")}</span>`
+            : customPivotImageFallbackHtml(name);
+    }
+
+    if(context){
+        return `<span class="custom-pivot-context-image-wrap" title="${escapeHtml(name)}"><img class="custom-pivot-context-image" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-custom-top-image="1"><span class="custom-pivot-context-image-fallback hidden" data-image-fallback="1">${escapeHtml(name)}</span></span>`;
+    }
+
+    return `<span class="custom-pivot-image-wrap" title="${escapeHtml(name)}"><img class="custom-pivot-image-thumb" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-custom-top-image="1"><span class="custom-pivot-image-fallback row-label-text hidden" data-image-fallback="1" data-full-text="${escapeHtml(name)}">${escapeHtml(name)}</span></span>`;
+}
+
+function customPivotAxisValueHtml(axis,label){
+    if(axis==="TOP画像ファイル名"){
+        return customPivotTopImageHtml(label);
+    }
+
+    return `<span class="row-label-text" data-full-text="${escapeHtml(label)}">${escapeHtml(label)}</span>`;
+}
+
+function customPivotContextValueHtml(axis,label){
+    if(axis==="TOP画像ファイル名"){
+        return customPivotTopImageHtml(label,{context:true});
+    }
+
+    return escapeHtml(label);
+}
+
+function showCustomPivotImageFallback(image){
+    if(!image)return;
+    image.classList.add("hidden");
+    image.parentElement?.querySelector("[data-image-fallback='1']")?.classList.remove("hidden");
+}
+
+function bindCustomPivotImageFallbacks(root){
+    (root?.querySelectorAll?.("img[data-custom-top-image='1']")||[]).forEach(image=>{
+        if(image.dataset.fallbackBound==="1")return;
+        image.dataset.fallbackBound="1";
+
+        image.addEventListener("error",()=>{
+            showCustomPivotImageFallback(image);
+            scheduleViewerLayoutRefresh({full:true});
+        },{once:true});
+
+        if(image.complete&&!image.naturalWidth){
+            showCustomPivotImageFallback(image);
+        }
+    });
+}
+
 function calculateCustomPivotWidths(result){
     const count=result?.rowAxes?.length||0;if(!count)return[];
+
     const preferred=result.rowAxes.map((axis,index)=>{
+        if(axis==="TOP画像ファイル名"){
+            return 108;
+        }
+
         let width=measureCustomPivotText(axis,true)+34;
-        (result.rowEntries||[]).forEach(entry=>{width=Math.max(width,measureCustomPivotText(entry.labels?.[index]||"")+28);});
+
+        (result.rowEntries||[]).forEach(entry=>{
+            width=Math.max(
+                width,
+                measureCustomPivotText(entry.labels?.[index]||"")+28
+            );
+        });
+
         return Math.max(90,Math.min(220,Math.ceil(width)));
     });
+
     return shrinkCustomPivotWidths(preferred,customPivotStickyCap(count),90);
 }
 function customPivotLeftOffsets(widths){let left=0;return widths.map(w=>{const x=left;left+=w;return x;});}
 function applyCustomPivotStickyGeometry(result,output){
     const table=output?.querySelector(".custom-table"); if(!table||!result?.rowAxes?.length)return;
     const widths=calculateCustomPivotWidths(result),offsets=customPivotLeftOffsets(widths),total=widths.reduce((s,v)=>s+v,0);
-    table.dataset.customRowAxisCount=String(widths.length);table.style.setProperty("--custom-pivot-sticky-total",`${total}px`);
+    table.dataset.customRowAxisCount=String(widths.length);table.dataset.customPivotRowAxes=JSON.stringify(result.rowAxes||[]);table.style.setProperty("--custom-pivot-sticky-total",`${total}px`);
     widths.forEach((width,index)=>{table.querySelectorAll(`[data-row-axis-index="${index}"]`).forEach(cell=>{cell.style.width=`${width}px`;cell.style.minWidth=`${width}px`;cell.style.maxWidth=`${width}px`;cell.style.left=`${offsets[index]}px`;cell.style.position="sticky";cell.style.zIndex=cell.tagName==="TH"?String(28-index):String(16-index);});});
     currentCustomPivotLayout={result,output,widths};
     requestAnimationFrame(()=>{stickyTableControllers.forEach(controller=>{if(controller.table===table){refreshStickyHeaderClone(controller);ensureCustomPivotContextBar(controller);}});scheduleFloatingTableScrollbarUpdate();scheduleStickyHeaderUpdate();});
@@ -5599,7 +5829,24 @@ function refreshCustomPivotHierarchyDisplay(table){
     if(!table||table.dataset.customRowAxisCount===undefined)return;
     const rows=Array.from(table.tBodies?.[0]?.rows||[]).filter(row=>row.dataset.pivotLabels);let previous=null;
     rows.forEach(row=>{let labels=[];try{labels=JSON.parse(row.dataset.pivotLabels);}catch(_){labels=[];}
-        const cells=Array.from(row.querySelectorAll(".custom-row-axis-col"));cells.forEach((cell,index)=>{const span=cell.querySelector(".row-label-text");if(!span)return;let show=true;if(previous){show=false;for(let i=0;i<=index;i++){if(labels[i]!==previous[i]){show=true;break;}}}span.textContent=show?(labels[index]||""):"";span.classList.toggle("pivot-value-suppressed",!show);});
+        const cells=Array.from(row.querySelectorAll(".custom-row-axis-col"));
+        cells.forEach((cell,index)=>{
+            const content=cell.querySelector("[data-pivot-content='1']");
+            if(!content)return;
+
+            let show=true;
+            if(previous){
+                show=false;
+                for(let i=0;i<=index;i++){
+                    if(labels[i]!==previous[i]){
+                        show=true;
+                        break;
+                    }
+                }
+            }
+
+            content.classList.toggle("pivot-value-suppressed",!show);
+        });
         row.classList.remove("custom-group-start-l1","custom-group-start-l2","custom-group-start-l3");if(previous){let level=0;for(let i=0;i<Math.min(labels.length,previous.length);i++){if(labels[i]!==previous[i]){level=i+1;break;}}if(level)row.classList.add(`custom-group-start-l${Math.min(level,3)}`);}previous=labels;
     });
 }
@@ -5617,9 +5864,15 @@ function renderCustomResult(result, core) {
     if (meta) { meta.textContent = `行軸: ${result.rowAxes.join(" > ")} ／ 列軸: ${result.colAxis} ／ 集計対象年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`; meta.classList.remove("hidden"); }
     const rowHeaders=result.rowAxes.map((axis,index)=>`<th class="custom-row-axis-col" data-row-axis-index="${index}" title="${escapeHtml(axis)}">${escapeHtml(axis)}</th>`).join("");
     const headers=result.colLabels.map(label=>`<th title="列軸：${escapeHtml(result.colAxis)}">${escapeHtml(label)}</th>`).join("");
-    const rows=result.rowEntries.map((entry,index)=>{const previous=result.rowEntries[index-1];const rowMap=result.matrix.get(entry.key)||new Map();const rowAxisCells=entry.labels.map((label,axisIndex)=>{const display=customPivotDisplayLabel(result,index,axisIndex);return `<td class="custom-row-axis-col" data-row-axis-index="${axisIndex}" data-pivot-value="${escapeHtml(label)}"><span class="row-label-text ${display?"":"pivot-value-suppressed"}" data-full-text="${escapeHtml(label)}">${escapeHtml(display)}</span></td>`;}).join("");const cells=result.colLabels.map(colLabel=>`<td>${core.formatNumber(rowMap.get(colLabel)||0)}</td>`).join("");return `<tr class="${customPivotGroupClass(entry,previous)}" data-pivot-labels="${escapeHtml(JSON.stringify(entry.labels))}">${rowAxisCells}${cells}<td>${core.formatNumber(result.rowTotals.get(entry.key)||0)}</td></tr>`;}).join("");
+    const rows=result.rowEntries.map((entry,index)=>{const previous=result.rowEntries[index-1];const rowMap=result.matrix.get(entry.key)||new Map();const rowAxisCells=entry.labels.map((label,axisIndex)=>{
+        const display=customPivotDisplayLabel(result,index,axisIndex);
+        const axis=result.rowAxes[axisIndex]||"";
+
+        return `<td class="custom-row-axis-col" data-row-axis-index="${axisIndex}" data-pivot-axis="${escapeHtml(axis)}" data-pivot-value="${escapeHtml(label)}"><span class="custom-pivot-cell-content ${display?"":"pivot-value-suppressed"}" data-pivot-content="1">${customPivotAxisValueHtml(axis,label)}</span></td>`;
+    }).join("");const cells=result.colLabels.map(colLabel=>`<td>${core.formatNumber(rowMap.get(colLabel)||0)}</td>`).join("");return `<tr class="${customPivotGroupClass(entry,previous)}" data-pivot-labels="${escapeHtml(JSON.stringify(entry.labels))}">${rowAxisCells}${cells}<td>${core.formatNumber(result.rowTotals.get(entry.key)||0)}</td></tr>`;}).join("");
     const totalCells = result.colLabels.map(colLabel => `<td>${core.formatNumber(result.colTotals.get(colLabel) || 0)}</td>`).join("");
     output.innerHTML=`<div class="table-wrap"><table class="custom-table"><thead><tr>${rowHeaders}${headers}<th>行合計</th></tr></thead><tbody>${rows}<tr class="total-row"><td colspan="${result.rowAxes.length}">列合計</td>${totalCells}<td>${core.formatNumber(result.applicationCount)}</td></tr></tbody></table></div>`;
+    bindCustomPivotImageFallbacks(output);
     applyCustomPivotStickyGeometry(result,output);
     enhanceReportTables(output);
 }
