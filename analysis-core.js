@@ -364,6 +364,13 @@ function buildImageMap(dataset) {
         const endKey = dateKey(parseDate(settings["集計終了日"]));
         const targetAgeMin = settings["ターゲット年齢下限"];
         const targetAgeMax = settings["ターゲット年齢上限"];
+        const basicColumnKey = s(settings["基本表列軸"]) || "age";
+        const basicAgeFilterMode =
+            s(settings["基本表示年齢モード"]) === "指定範囲"
+                ? "指定範囲"
+                : "全年齢";
+        const basicAgeMin = settings["基本表示年齢下限"];
+        const basicAgeMax = settings["基本表示年齢上限"];
 
         const widths = {
             monthDay: positiveInt(settings["月内応募日幅"], 7),
@@ -490,12 +497,33 @@ function buildImageMap(dataset) {
             if (record.matched) recordsMatched.push(record);
         });
 
+        const basicAgeFilterActive =
+            basicColumnKey === "month" &&
+            basicAgeFilterMode === "指定範囲";
+        const basicRecordsAll = basicAgeFilterActive
+            ? recordsAll.filter(record =>
+                isTargetAge(record.age, basicAgeMin, basicAgeMax)
+            )
+            : recordsAll;
+        const basicRecordsMatched = basicAgeFilterActive
+            ? recordsMatched.filter(record =>
+                isTargetAge(record.age, basicAgeMin, basicAgeMax)
+            )
+            : recordsMatched;
+
         return {
             settings,
             ageMode,
             ageCols: ageBuckets(ageMode),
             targetAgeMin,
             targetAgeMax,
+            basicAgeFilterMode,
+            basicAgeMin,
+            basicAgeMax,
+            basicAgeFilterActive,
+            basicAgeFilterLabel: basicAgeFilterActive
+                ? targetLabel(basicAgeMin, basicAgeMax)
+                : "全年齢",
             widths,
             keywordMaster,
             tagMaster,
@@ -505,7 +533,9 @@ function buildImageMap(dataset) {
             enterpriseInfo,
             timelineRecords,
             recordsAll,
-            recordsMatched
+            recordsMatched,
+            basicRecordsAll,
+            basicRecordsMatched
         };
     }
 
@@ -647,8 +677,8 @@ function buildImageMap(dataset) {
     }
 
     function buildBasicTableDefinitions(context) {
-        const all = context.recordsAll;
-        const matched = context.recordsMatched;
+        const all = context.basicRecordsAll || context.recordsAll;
+        const matched = context.basicRecordsMatched || context.recordsMatched;
         const w = context.widths;
         const definitions = [];
 
@@ -1038,6 +1068,9 @@ function buildImageMap(dataset) {
     ) {
         const columnLabels = basicColumnState.columnLabels || [];
         const groups = new Map();
+        const baseColumnCounts = Object.fromEntries(
+            columnLabels.map(label => [label, 0])
+        );
 
         records.forEach(record => {
             let rowCat = categoryFn(record);
@@ -1076,8 +1109,12 @@ function buildImageMap(dataset) {
             if (!Object.prototype.hasOwnProperty.call(group.columnCounts, columnLabel)) {
                 group.columnCounts[columnLabel] = 0;
             }
+            if (!Object.prototype.hasOwnProperty.call(baseColumnCounts, columnLabel)) {
+                baseColumnCounts[columnLabel] = 0;
+            }
 
             group.columnCounts[columnLabel] += 1;
+            baseColumnCounts[columnLabel] += 1;
             group.total += 1;
 
             if (record.isTarget) {
@@ -1099,8 +1136,32 @@ function buildImageMap(dataset) {
             columnLabels,
             groups: resultGroups,
             baseTotal: records.length,
-            baseTarget
+            baseTarget,
+            baseColumnCounts
         };
+    }
+
+    function baseColumnCountsForRecords(
+        records,
+        columnLabels,
+        basicColumnState,
+        context
+    ) {
+        const counts = Object.fromEntries(
+            (columnLabels || []).map(label => [label, 0])
+        );
+
+        (records || []).forEach(record => {
+            const columnCat = basicColumnAxisCategory(
+                record,
+                basicColumnState,
+                context
+            );
+            const label = s(columnCat?.label) || "（未設定）";
+            counts[label] = (counts[label] || 0) + 1;
+        });
+
+        return counts;
     }
 
     function monthLabelFromDate(date) {
@@ -1268,7 +1329,7 @@ function buildImageMap(dataset) {
     }
 
 function aggregateNoteDetail(context, basicColumnState) {
-    const records = context.recordsMatched;
+    const records = context.basicRecordsMatched || context.recordsMatched;
 
     const visible = records.some(
         record =>
@@ -1315,6 +1376,7 @@ function accumulateMultiGroup(group, record) {
 }
 
 function aggregateIndeedTags(context, basicColumnState) {
+    const records = context.basicRecordsMatched || context.recordsMatched;
     const isAgeAxis = !basicColumnState || basicColumnState.key === "age";
     const columnLabels = isAgeAxis
         ? [...context.ageCols]
@@ -1344,7 +1406,7 @@ function aggregateIndeedTags(context, basicColumnState) {
         return groups.get(key);
     }
 
-    context.recordsMatched.forEach(record => {
+    records.forEach(record => {
         const codes = splitCodes(
             record.job?.["Indeed求人タグコード"]
         );
@@ -1380,7 +1442,7 @@ function aggregateIndeedTags(context, basicColumnState) {
         return {
             visible: false,
             rows: [],
-            baseTotal: context.recordsMatched.length,
+            baseTotal: records.length,
             baseTarget: 0
         };
     }
@@ -1397,7 +1459,11 @@ function aggregateIndeedTags(context, basicColumnState) {
     });
 
     realGroups.sort((a, b) => {
-        if (a.target !== b.target) return b.target - a.target;
+        if (!isAgeAxis && basicColumnState?.key === "month") {
+            if (a.total !== b.total) return b.total - a.total;
+        } else if (a.target !== b.target) {
+            return b.target - a.target;
+        }
         if (a.total !== b.total) return b.total - a.total;
         return a.label.localeCompare(b.label, "ja");
     });
@@ -1408,11 +1474,20 @@ function aggregateIndeedTags(context, basicColumnState) {
 
     if (noTagGroup) realGroups.push(noTagGroup);
 
-    const baseTotal = context.recordsMatched.length;
-    const baseTarget = context.recordsMatched.reduce(
+    const baseTotal = records.length;
+    const baseTarget = records.reduce(
         (sum, record) => sum + (record.isTarget ? 1 : 0),
         0
     );
+
+    const baseColumnCounts = isAgeAxis
+        ? undefined
+        : baseColumnCountsForRecords(
+            records,
+            columnLabels,
+            basicColumnState,
+            context
+        );
 
     return {
         visible: true,
@@ -1422,6 +1497,7 @@ function aggregateIndeedTags(context, basicColumnState) {
         columnAxisLabel: isAgeAxis ? "年齢" : basicColumnState.label,
         baseTotal,
         baseTarget,
+        baseColumnCounts,
         displayLimit: context.indeedTagLimit,
         rows: realGroups.map(group => ({
             label: group.label,
@@ -1467,6 +1543,7 @@ function accumulateMultiDetailGroup(group, record, isAgeAxis, columnLabels, basi
 }
 
 function aggregateTopImages(context, basicColumnState) {
+    const records = context.basicRecordsMatched || context.recordsMatched;
     const isAgeAxis = !basicColumnState || basicColumnState.key === "age";
     const columnLabels = isAgeAxis
         ? [...context.ageCols]
@@ -1474,7 +1551,7 @@ function aggregateTopImages(context, basicColumnState) {
     const groups = new Map();
     let hasAnyImage = false;
 
-    context.recordsMatched.forEach(record => {
+    records.forEach(record => {
         const fileName = s(
             record.job?.["メイン画像ファイル名"]
         );
@@ -1528,7 +1605,7 @@ function aggregateTopImages(context, basicColumnState) {
         return {
             visible: false,
             rows: [],
-            baseTotal: context.recordsMatched.length,
+            baseTotal: records.length,
             baseTarget: 0
         };
     }
@@ -1545,7 +1622,11 @@ function aggregateTopImages(context, basicColumnState) {
     });
 
     realGroups.sort((a, b) => {
-        if (a.target !== b.target) return b.target - a.target;
+        if (!isAgeAxis && basicColumnState?.key === "month") {
+            if (a.total !== b.total) return b.total - a.total;
+        } else if (a.target !== b.target) {
+            return b.target - a.target;
+        }
         if (a.total !== b.total) return b.total - a.total;
         return a.label.localeCompare(b.label, "ja");
     });
@@ -1556,11 +1637,20 @@ function aggregateTopImages(context, basicColumnState) {
 
     if (noImageGroup) realGroups.push(noImageGroup);
 
-    const baseTotal = context.recordsMatched.length;
-    const baseTarget = context.recordsMatched.reduce(
+    const baseTotal = records.length;
+    const baseTarget = records.reduce(
         (sum, record) => sum + (record.isTarget ? 1 : 0),
         0
     );
+
+    const baseColumnCounts = isAgeAxis
+        ? undefined
+        : baseColumnCountsForRecords(
+            records,
+            columnLabels,
+            basicColumnState,
+            context
+        );
 
     return {
         visible: true,
@@ -1570,6 +1660,7 @@ function aggregateTopImages(context, basicColumnState) {
         columnAxisLabel: isAgeAxis ? "年齢" : basicColumnState.label,
         baseTotal,
         baseTarget,
+        baseColumnCounts,
         displayLimit: context.topImageLimit,
         rows: realGroups.map(group => ({
             label: group.label,

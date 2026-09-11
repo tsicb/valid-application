@@ -791,17 +791,85 @@
             font-weight: 700;
         }
 
-        .basic-column-axis-control select {
-            width: 100%;
+        .basic-display-segmented {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            padding: 3px;
+            border: 1px solid #dbe7ed;
+            border-radius: 9px;
+            background: #f4f8fa;
+        }
+
+        .basic-display-segmented button {
             min-width: 0;
-            min-height: 32px;
-            padding: 5px 8px;
-            border: 1px solid #d7e5ec;
-            border-radius: 8px;
-            background: #fff;
-            color: #173043;
+            padding: 7px 6px;
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: #64748b;
+            cursor: pointer;
             font-size: 10.5px;
             font-weight: 700;
+        }
+
+        .basic-display-segmented button.active {
+            background: #fff;
+            color: var(--viewer-brand-blue-dark);
+            box-shadow: 0 1px 4px rgba(15,23,42,.09);
+        }
+
+        .basic-display-segmented button:disabled {
+            cursor: not-allowed;
+            opacity: .45;
+        }
+
+        .month-age-filter-control {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e7eef2;
+        }
+
+        .month-age-filter-control.hidden {
+            display: none;
+        }
+
+        .month-age-filter-label {
+            margin-bottom: 5px;
+            color: #718292;
+            font-size: 9.5px;
+            font-weight: 700;
+        }
+
+        .month-age-filter-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .month-age-filter-actions button {
+            min-width: 0;
+            padding: 6px 5px;
+            border: 1px solid #dbe7ed;
+            border-radius: 7px;
+            background: #fff;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 9.8px;
+            font-weight: 700;
+        }
+
+        .month-age-filter-actions button.active {
+            border-color: rgba(20,142,204,.35);
+            background: var(--viewer-brand-blue-soft);
+            color: var(--viewer-brand-blue-dark);
+        }
+
+        .month-age-filter-summary {
+            margin-top: 5px;
+            color: #526576;
+            font-size: 9.4px;
+            line-height: 1.4;
         }
 
         .basic-column-axis-note {
@@ -903,6 +971,14 @@
 
         .cross-table col.cross-col-target-share {
             width: 132px;
+        }
+
+        .cross-table col.cross-col-recent {
+            width: 118px;
+        }
+
+        .cross-table col.cross-col-recent-share {
+            width: 126px;
         }
 
 
@@ -1721,6 +1797,16 @@
         .detail-cross-table col.detail-col-target-share {
             width:
                 132px;
+        }
+
+        .detail-cross-table col.detail-col-recent {
+            width:
+                118px;
+        }
+
+        .detail-cross-table col.detail-col-recent-share {
+            width:
+                126px;
         }
 
         .detail-cross-table col.detail-col-job-count {
@@ -2542,6 +2628,9 @@
             grid-template-columns: minmax(0, 1.7fr) minmax(260px, .9fr);
             gap: 12px;
         }
+        .analysis-chart-grid.single {
+            grid-template-columns: minmax(0, 1fr);
+        }
         .analysis-chart-card {
             min-width: 0;
             border: 1px solid #e0e9ee;
@@ -2613,6 +2702,8 @@
         }
         .analysis-hbar-target { background: var(--viewer-brand-blue); }
         .analysis-hbar-other { background: #d5e0e6; }
+        .analysis-hbar-period { background: #0f6795; }
+        .analysis-hbar-recent { background: #6aa6c4; }
         .analysis-hbar-value {
             color: #526673;
             font-size: 10px;
@@ -2670,9 +2761,13 @@
         .analysis-chart-svg .axis-text { fill: #6b7c88; font-size: 9px; font-weight: 600; }
         .analysis-chart-svg .bar-target { fill: #0f6795; }
         .analysis-chart-svg .bar-other { fill: #d5e0e6; }
+        .analysis-chart-svg .bar-period { fill: #0f6795; }
+        .analysis-chart-svg .bar-recent { fill: #6aa6c4; }
         .analysis-chart-svg .line-total { fill: none; stroke: #71808c; stroke-width: 2.3; }
         .analysis-chart-svg .line-target { fill: none; stroke: #0f6795; stroke-width: 2.5; }
         .analysis-chart-svg .line-rate { fill: none; stroke: #0f6795; stroke-width: 2.3; }
+        .analysis-chart-svg .line-period { fill: none; stroke: #0f6795; stroke-width: 2.5; }
+        .analysis-chart-svg .point-period { fill: #0f6795; stroke: #fff; stroke-width: 1.5; }
         .analysis-chart-svg .point-total { fill: #71808c; }
         .analysis-chart-svg .point-target,
         .analysis-chart-svg .point-rate { fill: #0f6795; stroke: #fff; stroke-width: 1.5; }
@@ -2743,28 +2838,31 @@
             </div>
             <div class="sidebar-content">
                 <section id="analysisConditionSidebarGroup" class="sidebar-group">
-                    <div class="sidebar-group-title">分析条件</div>
+                    <div class="sidebar-group-title">分析設定</div>
                     <div class="viewer-condition-stack">
                         <button id="viewerPeriodPickerBtn" type="button" class="viewer-condition-button">
                             <span class="viewer-condition-label">集計期間</span>
                             <span id="viewerPeriodSummary" class="viewer-condition-value">全期間</span>
                         </button>
-                        <button id="viewerTargetAgePickerBtn" type="button" class="viewer-condition-button">
+                    </div>
+                    <div class="basic-column-axis-control">
+                        <label>基本表示</label>
+                        <div class="basic-display-segmented" role="group" aria-label="基本表示">
+                            <button id="viewerBasicModeAge" type="button" data-basic-display-mode="age" class="active">年代別</button>
+                            <button id="viewerBasicModeMonth" type="button" data-basic-display-mode="month">応募年月別</button>
+                        </div>
+                        <button id="viewerTargetAgePickerBtn" type="button" class="viewer-condition-button" style="margin-top:8px;">
                             <span class="viewer-condition-label">ターゲット年齢</span>
                             <span id="viewerTargetAgeSummary" class="viewer-condition-value">全年齢</span>
                         </button>
-                    </div>
-                </section>
-                <section class="sidebar-group"><div class="sidebar-group-title">概要</div><nav class="sidebar-nav" aria-label="概要">
-                    <button type="button" class="sidebar-nav-button" data-target="reportOverview" title="レポート概要">概要</button>
-                    <button type="button" class="sidebar-nav-button" data-target="kpiSection" title="主要指標">主要指標</button>
-                    <button type="button" class="sidebar-nav-button" data-target="ageSection" title="年代構成">年代</button>
-                </nav></section>
-                <section id="basicSidebarGroup" class="sidebar-group">
-                    <div class="sidebar-group-title">基本分析</div>
-                    <div class="basic-column-axis-control">
-                        <label for="viewerBasicColumnAxisSelect">基本表の列</label>
-                        <select id="viewerBasicColumnAxisSelect" aria-label="基本表の列"></select>
+                        <div id="viewerMonthAgeFilterControl" class="month-age-filter-control hidden">
+                            <div class="month-age-filter-label">表示対象年齢</div>
+                            <div class="month-age-filter-actions" role="group" aria-label="応募年月別の表示対象年齢">
+                                <button id="viewerMonthAgeAllBtn" type="button" data-month-age-mode="all" class="active">全年齢</button>
+                                <button id="viewerMonthAgeCustomBtn" type="button" data-month-age-mode="custom">自由指定</button>
+                            </div>
+                            <div id="viewerMonthAgeFilterSummary" class="month-age-filter-summary">全年齢</div>
+                        </div>
                         <div id="viewerBasicColumnAxisNote" class="basic-column-axis-note">各分析表を年代別に比較します。</div>
                     </div>
                     <div class="analysis-chart-toggle-row">
@@ -2777,6 +2875,14 @@
                             <span class="analysis-chart-toggle-knob" aria-hidden="true"></span>
                         </button>
                     </div>
+                </section>
+                <section class="sidebar-group"><div class="sidebar-group-title">概要</div><nav class="sidebar-nav" aria-label="概要">
+                    <button type="button" class="sidebar-nav-button" data-target="reportOverview" title="レポート概要">概要</button>
+                    <button type="button" class="sidebar-nav-button" data-target="kpiSection" title="主要指標">主要指標</button>
+                    <button type="button" class="sidebar-nav-button" data-target="ageSection" title="年代構成">年代</button>
+                </nav></section>
+                <section id="basicSidebarGroup" class="sidebar-group">
+                    <div class="sidebar-group-title">基本分析</div>
                     <nav id="analysisNav" class="analysis-nav" aria-label="基本分析"></nav>
                 </section>
                 <section id="detailSidebarGroup" class="sidebar-group"><div class="sidebar-group-title">詳細・自由分析</div><nav id="detailAnalysisNav" class="sidebar-nav" aria-label="詳細・自由分析"></nav></section>
@@ -2790,7 +2896,7 @@
                 <div id="reportSubtitle" class="subtitle"></div>
                 <div class="report-condition-summary" aria-label="現在の分析条件">
                     <span class="report-condition-chip">集計期間 <strong id="reportPeriodCondition">全期間</strong></span>
-                    <span class="report-condition-chip">ターゲット年齢 <strong id="reportTargetAgeCondition">全年齢</strong></span>
+                    <span class="report-condition-chip"><span id="reportAgeConditionLabel">ターゲット年齢</span> <strong id="reportTargetAgeCondition">全年齢</strong></span>
                 </div>
             </div>
             <button id="reloadBtn" type="button" class="reload">データを再読み込み</button>
@@ -2892,7 +2998,7 @@
         <div class="section-head">
             <div>
                 <h2>求人備考1行目別応募傾向</h2>
-                <div class="section-note">
+                <div id="noteDetailNote" class="section-note">
                     求人備考の最初の1行（&lt;BR&gt;等より前）で集計
                 </div>
             </div>
@@ -3355,7 +3461,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.09-viewer-ui-v30.7-top-image-sticky-card";
+    "2026.09.11-viewer-ui-v30.8-final";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -3469,92 +3575,112 @@ let viewerSidebarScrollEndTimer =
 let viewerSidebarScrollRaf =
     0;
 
-function renderBasicColumnAxisControl(
-    basicColumnAxis
-) {
-    const select =
-        document.getElementById(
-            "viewerBasicColumnAxisSelect"
-        );
-    const note =
-        document.getElementById(
-            "viewerBasicColumnAxisNote"
-        );
+function monthAgeFilterSummaryLabel() {
+    if (currentViewerMonthAgeFilter.mode !== "custom") return "全年齢";
 
-    if (!select) return;
+    const min = viewerOptionalNumber(currentViewerMonthAgeFilter.min);
+    const max = viewerOptionalNumber(currentViewerMonthAgeFilter.max);
 
-    const options =
-        Array.isArray(
-            basicColumnAxis?.options
-        )
-            ? basicColumnAxis.options
-            : [];
+    if (min === null && max === null) return "全年齢";
+    if (min !== null && max !== null) return `${min}～${max}歳`;
+    if (min !== null) return `${min}歳以上`;
+    return `${max}歳以下`;
+}
 
-    select.innerHTML =
-        options.map(option => {
-            const disabled =
-                !option.available;
-            const suffix =
-                disabled &&
-                option.unavailableReason
-                    ? `（${option.unavailableReason}）`
-                    : "";
+function renderBasicColumnAxisControl(basicColumnAxis) {
+    const note = document.getElementById("viewerBasicColumnAxisNote");
+    const monthFilter = document.getElementById("viewerMonthAgeFilterControl");
+    const monthSummary = document.getElementById("viewerMonthAgeFilterSummary");
+    const targetAgeButton = document.getElementById("viewerTargetAgePickerBtn");
+    const ageButton = document.getElementById("viewerBasicModeAge");
+    const monthButton = document.getElementById("viewerBasicModeMonth");
+    const allButton = document.getElementById("viewerMonthAgeAllBtn");
+    const customButton = document.getElementById("viewerMonthAgeCustomBtn");
 
-            return `<option value="${escapeHtml(option.key)}" ${option.key === basicColumnAxis?.key ? "selected" : ""} ${disabled ? "disabled" : ""}>${escapeHtml(option.label + suffix)}</option>`;
-        }).join("");
+    const options = Array.isArray(basicColumnAxis?.options) ? basicColumnAxis.options : [];
+    const ageOption = options.find(option => option.key === "age");
+    const monthOption = options.find(option => option.key === "month");
+    const activeKey = basicColumnAxis?.key === "month" ? "month" : "age";
 
-    select.value =
-        basicColumnAxis?.key ||
-        "age";
+    if (ageButton) {
+        ageButton.classList.toggle("active", activeKey === "age");
+        ageButton.disabled = ageOption ? !ageOption.available : false;
+    }
+
+    if (monthButton) {
+        monthButton.classList.toggle("active", activeKey === "month");
+        monthButton.disabled = monthOption ? !monthOption.available : false;
+        monthButton.title = monthOption && !monthOption.available
+            ? (monthOption.unavailableReason || "応募年月別を利用できません")
+            : "応募年月別で表示";
+    }
+
+    if (monthFilter) {
+        monthFilter.classList.toggle("hidden", activeKey !== "month");
+    }
+    if (targetAgeButton) {
+        targetAgeButton.classList.toggle("hidden", activeKey === "month");
+    }
+
+    if (allButton) allButton.classList.toggle("active", currentViewerMonthAgeFilter.mode !== "custom");
+    if (customButton) customButton.classList.toggle("active", currentViewerMonthAgeFilter.mode === "custom");
+    if (monthSummary) monthSummary.textContent = monthAgeFilterSummaryLabel();
 
     if (note) {
-        note.textContent =
-            basicColumnAxis?.key === "age"
-                ? "各分析表を年代別に比較します。"
-                : `各分析表を${basicColumnAxis?.label || "選択項目"}別に比較します。同じ項目の表は構成比表示になります。`;
+        if (activeKey === "month") {
+            note.textContent = currentViewerMonthAgeFilter.mode === "custom"
+                ? `応募年月別に比較します。表示対象年齢：${monthAgeFilterSummaryLabel()}。`
+                : "応募年月別に比較します。表示対象年齢は全年齢です。";
+        } else {
+            note.textContent = `年代別に比較します。ターゲット年齢：${targetAgeSummaryLabel()}。`;
+        }
+    }
+
+    const chartNote = document.querySelector("#analysisConditionSidebarGroup .analysis-chart-toggle-note");
+    if (chartNote) {
+        chartNote.textContent = activeKey === "month"
+            ? "応募量と月次推移を可視化"
+            : "各表の量とターゲット率を可視化";
     }
 }
 
-function initializeBasicColumnAxisControl() {
-    const select =
-        document.getElementById(
-            "viewerBasicColumnAxisSelect"
-        );
+function ensureMonthAgeCustomSeeded() {
+    if (currentViewerMonthAgeFilter.seeded) return;
+    currentViewerMonthAgeFilter.min = currentViewerTargetAge.min;
+    currentViewerMonthAgeFilter.max = currentViewerTargetAge.max;
+    currentViewerMonthAgeFilter.seeded = true;
+}
 
-    if (
-        !select ||
-        select.dataset.bound === "1"
-    ) {
-        return;
+function initializeBasicColumnAxisControl() {
+    document.querySelectorAll("[data-basic-display-mode]").forEach(button => {
+        if (button.dataset.bound === "1") return;
+        button.dataset.bound = "1";
+        button.addEventListener("click", () => {
+            const next = button.dataset.basicDisplayMode === "month" ? "month" : "age";
+            if (button.disabled || next === currentViewerBasicColumnAxis) return;
+            currentViewerBasicColumnAxis = next;
+            if (currentViewerData) renderReport(currentViewerData);
+        });
+    });
+
+    const allButton = document.getElementById("viewerMonthAgeAllBtn");
+    if (allButton && allButton.dataset.bound !== "1") {
+        allButton.dataset.bound = "1";
+        allButton.addEventListener("click", () => {
+            if (currentViewerMonthAgeFilter.mode === "all") return;
+            currentViewerMonthAgeFilter.mode = "all";
+            if (currentViewerData) renderReport(currentViewerData);
+        });
     }
 
-    select.dataset.bound = "1";
-    select.addEventListener(
-        "change",
-        () => {
-            const next =
-                String(
-                    select.value ||
-                    "age"
-                );
-
-            if (
-                next ===
-                currentViewerBasicColumnAxis
-            ) {
-                return;
-            }
-
-            currentViewerBasicColumnAxis =
-                next;
-
-            if (currentViewerData) {
-                renderReport(
-                    currentViewerData
-                );
-            }
-        }
-    );
+    const customButton = document.getElementById("viewerMonthAgeCustomBtn");
+    if (customButton && customButton.dataset.bound !== "1") {
+        customButton.dataset.bound = "1";
+        customButton.addEventListener("click", () => {
+            ensureMonthAgeCustomSeeded();
+            openAgePicker("month");
+        });
+    }
 }
 
 function updateAnalysisChartToggleUi() {
@@ -5972,21 +6098,30 @@ function initializeBucketControls() {
 
 function crossTableColgroupHtml(
     columns,
-    columnWidth = 72
+    columnWidth = 72,
+    summaryMode = "target"
 ) {
-    return `
-        <colgroup>
-            <col class="cross-col-label">
-            ${columns.map(() => `<col class="cross-col-age" style="width:${columnWidth}px">`).join("")}
+    const summaryCols = summaryMode === "month"
+        ? `
+            <col class="cross-col-total">
+            <col class="cross-col-share">
+            <col class="cross-col-recent">
+            <col class="cross-col-recent-share">`
+        : `
             <col class="cross-col-total">
             <col class="cross-col-share">
             <col class="cross-col-target">
             <col class="cross-col-target-rate">
-            <col class="cross-col-target-share">
+            <col class="cross-col-target-share">`;
+
+    return `
+        <colgroup>
+            <col class="cross-col-label">
+            ${columns.map(() => `<col class="cross-col-age" style="width:${columnWidth}px">`).join("")}
+            ${summaryCols}
         </colgroup>
     `;
 }
-
 
 let currentViewerTargetDisplayLabel = "全年齢";
 
@@ -6002,6 +6137,61 @@ function formatCountMaybeDecimal(value, core) {
     }
     return number.toLocaleString("ja-JP", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
+
+function isMonthColumnAnalysis(aggregate) {
+    return aggregate?.columnAxisKey === "month" && Array.isArray(aggregate?.columnLabels);
+}
+
+function recentMonthLabelsFor(aggregate) {
+    const labels = Array.isArray(aggregate?.columnLabels)
+        ? aggregate.columnLabels.filter(Boolean)
+        : [];
+    const monthLabels = labels.filter(label => /\d{2,4}年\d{1,2}月/.test(String(label || "")));
+    const source = monthLabels.length ? monthLabels : labels.filter(label => !String(label || "").startsWith("（"));
+    return source.slice(Math.max(0, source.length - 3));
+}
+
+function countForLabels(counts, labels) {
+    return (labels || []).reduce(
+        (sum, label) => sum + Number(counts?.[label] || 0),
+        0
+    );
+}
+
+function baseRecentMonthCount(aggregate, labels = recentMonthLabelsFor(aggregate)) {
+    if (aggregate?.baseColumnCounts) {
+        return countForLabels(aggregate.baseColumnCounts, labels);
+    }
+
+    return (aggregate?.groups || []).reduce(
+        (sum, group) => sum + countForLabels(group.columnCounts, labels),
+        0
+    );
+}
+
+function recentMonthRangeText(labels) {
+    const items = (labels || []).filter(Boolean);
+    if (!items.length) return "";
+    if (items.length === 1) return items[0];
+    return `${items[0]}～${items[items.length - 1]}`;
+}
+
+function recentMonthMetricLabel(labels, suffix) {
+    const count = Math.max(1, (labels || []).length);
+    return `直近${count}ヶ月${suffix}`;
+}
+
+function recentMetricHeaderHtml(label, labels) {
+    const range = recentMonthRangeText(labels);
+    return `<th><span class="target-header"><span class="target-header-main">${escapeHtml(label)}</span>${range ? `<span class="target-header-age">${escapeHtml(range)}</span>` : ""}</span></th>`;
+}
+
+function basicTableAgeFilterSuffix() {
+    return currentViewerBasicColumnAxis === "month"
+        ? ` ／ 表示対象年齢：${escapeHtml(monthAgeFilterSummaryLabel())}`
+        : "";
+}
+
 
 function basicCrossColumnWidth(agg) {
     const widths = {
@@ -6041,22 +6231,30 @@ function analysisChartKind(tableId) {
     return "horizontal";
 }
 
-function analysisChartRowsFromGroups(groups) {
+function analysisChartRowsFromGroups(groups, options = {}) {
+    const recentLabels = Array.isArray(options.recentLabels) ? options.recentLabels : [];
     return (Array.isArray(groups) ? groups : [])
         .map(group => ({
             label: String(group?.label || "（未設定）"),
             total: Math.max(0, Number(group?.total || 0)),
-            target: Math.max(0, Number(group?.target || 0))
+            target: Math.max(0, Number(group?.target || 0)),
+            recent: recentLabels.length
+                ? Math.max(0, countForLabels(group?.columnCounts, recentLabels))
+                : 0
         }))
         .filter(row => row.total > 0);
 }
 
-function analysisChartRowsFromDetailRows(rows) {
+function analysisChartRowsFromDetailRows(rows, options = {}) {
+    const recentLabels = Array.isArray(options.recentLabels) ? options.recentLabels : [];
     return (Array.isArray(rows) ? rows : [])
         .map(row => ({
             label: String(row?.label || "（未設定）"),
             total: Math.max(0, Number(row?.total || 0)),
-            target: Math.max(0, Number(row?.target || 0))
+            target: Math.max(0, Number(row?.target || 0)),
+            recent: recentLabels.length
+                ? Math.max(0, countForLabels(row?.columnCounts, recentLabels))
+                : 0
         }))
         .filter(row => row.total > 0);
 }
@@ -6064,14 +6262,20 @@ function analysisChartRowsFromDetailRows(rows) {
 function analysisChartPanelHtml(tableId, label, rows, options = {}) {
     if (!currentViewerAnalysisChartsEnabled) return "";
 
+    const mode = options.mode || (currentViewerBasicColumnAxis === "month" ? "month" : "target");
     const config = {
         tableId,
         label,
+        mode,
         kind: options.kind || analysisChartKind(tableId),
+        recentLabel: options.recentLabel || "直近3ヶ月応募数",
+        recentRange: options.recentRange || "",
+        filterLabel: options.filterLabel || (mode === "month" ? monthAgeFilterSummaryLabel() : targetAgeSummaryLabel()),
         rows: (Array.isArray(rows) ? rows : []).map(row => ({
             label: String(row?.label || "（未設定）"),
             total: Math.max(0, Number(row?.total || 0)),
-            target: Math.max(0, Math.min(Number(row?.target || 0), Number(row?.total || 0)))
+            target: Math.max(0, Math.min(Number(row?.target || 0), Number(row?.total || 0))),
+            recent: Math.max(0, Math.min(Number(row?.recent || 0), Number(row?.total || 0)))
         }))
     };
 
@@ -6113,7 +6317,8 @@ function analysisChartPrepareRows(config) {
         .map(row => ({
             label: String(row.label || "（未設定）"),
             total: Math.max(0, Number(row.total || 0)),
-            target: Math.max(0, Math.min(Number(row.target || 0), Number(row.total || 0)))
+            target: Math.max(0, Math.min(Number(row.target || 0), Number(row.total || 0))),
+            recent: Math.max(0, Math.min(Number(row.recent || 0), Number(row.total || 0)))
         }))
         .filter(row => row.total > 0);
 
@@ -6130,9 +6335,10 @@ function analysisChartPrepareRows(config) {
         (acc, row) => {
             acc.total += row.total;
             acc.target += row.target;
+            acc.recent += row.recent;
             return acc;
         },
-        { label: "その他", total: 0, target: 0 }
+        { label: "その他", total: 0, target: 0, recent: 0 }
     );
 
     return {
@@ -6302,6 +6508,136 @@ function buildAnalysisOrderedCharts(rows, kind) {
     `;
 }
 
+function buildMonthModeHorizontalRows(rows, metric, maxValue, fillClass) {
+    return rows.map(row => {
+        const value = Math.max(0, Number(row?.[metric] || 0));
+        const pct = maxValue ? Math.max(0, Math.min(100, value / maxValue * 100)) : 0;
+        return `
+            <div class="analysis-hbar-row" title="${escapeHtml(row.label)}：${value.toLocaleString("ja-JP")}件">
+                <div class="analysis-hbar-label" title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</div>
+                <div class="analysis-hbar-track">
+                    <span class="${fillClass}" style="width:${pct}%"></span>
+                </div>
+                <div class="analysis-hbar-value">${value.toLocaleString("ja-JP")}件</div>
+            </div>
+        `;
+    }).join("");
+}
+
+function buildAnalysisMonthHorizontalCharts(rows, config, summarized) {
+    const maxValue = Math.max(1, ...rows.map(row => row.total));
+    const recentTitle = config.recentLabel || "直近3ヶ月応募数";
+    const recentSub = [config.recentRange, `表示対象年齢：${config.filterLabel || "全年齢"}`]
+        .filter(Boolean)
+        .join(" ／ ");
+
+    return `
+        <div class="analysis-chart-grid">
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">期間応募数</div>
+                <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。集計期間全体の応募量を区分別に比較します。</div>
+                <div class="analysis-hbar-list">${buildMonthModeHorizontalRows(rows, "total", maxValue, "analysis-hbar-period")}</div>
+            </div>
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">${escapeHtml(recentTitle)}</div>
+                <div class="analysis-chart-subtitle">${escapeHtml(recentSub || `表示対象年齢：${config.filterLabel || "全年齢"}`)}。左と同じスケールで直近の応募量を確認します。</div>
+                <div class="analysis-hbar-list">${buildMonthModeHorizontalRows(rows, "recent", maxValue, "analysis-hbar-recent")}</div>
+            </div>
+        </div>
+        ${summarized ? '<div class="analysis-chart-footnote">カテゴリ数が多いため、グラフは先頭11区分＋その他に集約しています。表では全区分を確認できます。</div>' : ""}
+    `;
+}
+
+function buildAnalysisMonthOrderedSvg(rows, metric, kind = "bars", scaleOverride = null) {
+    const width = Math.max(560, rows.length * 54 + 74);
+    const height = 230;
+    const pad = { top: 16, right: 16, bottom: 54, left: 46 };
+    const plotWidth = width - pad.left - pad.right;
+    const plotHeight = height - pad.top - pad.bottom;
+    const maxValue = Math.max(1, ...rows.map(row => Number(row?.[metric] || 0)));
+    const scale = scaleOverride || analysisChartNiceScale(maxValue, 4);
+    const stepX = plotWidth / Math.max(1, rows.length);
+    const baseline = pad.top + plotHeight;
+    const parts = [];
+
+    for (let value = 0; value <= scale.ceiling + .0001; value += scale.step) {
+        const y = baseline - (value / scale.ceiling) * plotHeight;
+        parts.push(`<line class="grid-line" x1="${pad.left}" y1="${y}" x2="${pad.left + plotWidth}" y2="${y}"></line>`);
+        parts.push(`<text class="axis-text" x="${pad.left - 7}" y="${y + 3}" text-anchor="end">${Math.round(value).toLocaleString("ja-JP")}</text>`);
+    }
+
+    if (kind === "line") {
+        const points = [];
+        rows.forEach((row, index) => {
+            const value = Math.max(0, Number(row?.[metric] || 0));
+            const x = pad.left + stepX * index + stepX / 2;
+            const y = baseline - value / scale.ceiling * plotHeight;
+            points.push(`${x},${y}`);
+            parts.push(`<circle class="point-period" cx="${x}" cy="${y}" r="3.5"><title>${escapeHtml(`${row.label}：${value.toLocaleString("ja-JP")}件`)}</title></circle>`);
+        });
+        if (points.length) parts.unshift(`<polyline class="line-period" points="${points.join(" ")}"></polyline>`);
+    } else {
+        const barWidth = Math.max(10, Math.min(30, stepX * .58));
+        const barClass = metric === "recent" ? "bar-recent" : "bar-period";
+        rows.forEach((row, index) => {
+            const value = Math.max(0, Number(row?.[metric] || 0));
+            const x = pad.left + stepX * index + (stepX - barWidth) / 2;
+            const barHeight = value / scale.ceiling * plotHeight;
+            const y = baseline - barHeight;
+            parts.push(`<rect class="${barClass}" x="${x}" y="${y}" width="${barWidth}" height="${barHeight}"><title>${escapeHtml(`${row.label}：${value.toLocaleString("ja-JP")}件`)}</title></rect>`);
+        });
+    }
+
+    rows.forEach((row, index) => {
+        const x = pad.left + stepX * index + stepX / 2;
+        const label = analysisChartShortLabel(row.label, 10);
+        const rotate = rows.length > 8 || String(row.label).length > 6;
+        if (rotate) {
+            parts.push(`<text class="axis-text" x="${x}" y="${baseline + 14}" text-anchor="end" transform="rotate(-38 ${x} ${baseline + 14})"><title>${escapeHtml(row.label)}</title>${escapeHtml(label)}</text>`);
+        } else {
+            parts.push(`<text class="axis-text" x="${x}" y="${baseline + 17}" text-anchor="middle"><title>${escapeHtml(row.label)}</title>${escapeHtml(label)}</text>`);
+        }
+    });
+
+    parts.push(`<line class="axis-line" x1="${pad.left}" y1="${baseline}" x2="${pad.left + plotWidth}" y2="${baseline}"></line>`);
+    return `<svg class="analysis-chart-svg" viewBox="0 0 ${width} ${height}" style="width:${width}px" role="img">${parts.join("")}</svg>`;
+}
+
+function buildAnalysisMonthOrderedCharts(rows, config) {
+    if (config.tableId === "month") {
+        return `
+            <div class="analysis-chart-grid single">
+                <div class="analysis-chart-card">
+                    <div class="analysis-chart-title">応募数の月次推移</div>
+                    <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。選択期間内の実応募数を月順で表示します。</div>
+                    <div class="analysis-chart-scroll">${buildAnalysisMonthOrderedSvg(rows, "total", "line")}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    const scale = analysisChartNiceScale(Math.max(1, ...rows.map(row => row.total)), 4);
+    const recentTitle = config.recentLabel || "直近3ヶ月応募数";
+    const recentSub = [config.recentRange, `表示対象年齢：${config.filterLabel || "全年齢"}`]
+        .filter(Boolean)
+        .join(" ／ ");
+
+    return `
+        <div class="analysis-chart-grid">
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">期間応募数</div>
+                <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。軸の順序を保って期間全体の応募量を確認します。</div>
+                <div class="analysis-chart-scroll">${buildAnalysisMonthOrderedSvg(rows, "total", "bars", scale)}</div>
+            </div>
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">${escapeHtml(recentTitle)}</div>
+                <div class="analysis-chart-subtitle">${escapeHtml(recentSub || `表示対象年齢：${config.filterLabel || "全年齢"}`)}。左と同じY軸スケールで直近の分布を確認します。</div>
+                <div class="analysis-chart-scroll">${buildAnalysisMonthOrderedSvg(rows, "recent", "bars", scale)}</div>
+            </div>
+        </div>
+    `;
+}
+
 function renderAnalysisChartPanel(panel) {
     if (!panel || panel.dataset.chartRendered === "1") return;
     let config = null;
@@ -6320,9 +6656,15 @@ function renderAnalysisChartPanel(panel) {
         return;
     }
 
-    panel.innerHTML = config.kind === "horizontal"
-        ? buildAnalysisHorizontalCharts(prepared.rows, prepared.summarized)
-        : buildAnalysisOrderedCharts(prepared.rows, config.kind);
+    if (config.mode === "month") {
+        panel.innerHTML = config.kind === "horizontal"
+            ? buildAnalysisMonthHorizontalCharts(prepared.rows, config, prepared.summarized)
+            : buildAnalysisMonthOrderedCharts(prepared.rows, config);
+    } else {
+        panel.innerHTML = config.kind === "horizontal"
+            ? buildAnalysisHorizontalCharts(prepared.rows, prepared.summarized)
+            : buildAnalysisOrderedCharts(prepared.rows, config.kind);
+    }
     panel.dataset.chartRendered = "1";
     scheduleViewerLayoutRefresh({ full: true });
 }
@@ -6372,7 +6714,8 @@ function refreshAnalysisChartForSortedTable(table) {
         .map(row => ({
             label: row.dataset.chartLabel,
             total: Number(row.dataset.chartTotal || 0),
-            target: Number(row.dataset.chartTarget || 0)
+            target: Number(row.dataset.chartTarget || 0),
+            recent: Number(row.dataset.chartRecent || 0)
         }))
         .filter(row => row.total > 0);
 
@@ -6395,6 +6738,7 @@ function renderCrossTable(table, core) {
             : (agg.ageCols || []);
     const isAgeAxis =
         !Array.isArray(agg.columnLabels);
+    const monthMode = isMonthColumnAnalysis(agg);
     const columnAxisLabel =
         isAgeAxis
             ? "年齢"
@@ -6402,6 +6746,8 @@ function renderCrossTable(table, core) {
     const totalColumns = Object.fromEntries(
         columnLabels.map(label => [label, 0])
     );
+    const recentLabels = monthMode ? recentMonthLabelsFor(agg) : [];
+    const baseRecent = monthMode ? baseRecentMonthCount(agg, recentLabels) : 0;
 
     agg.groups.forEach(group => {
         columnLabels.forEach(label => {
@@ -6413,14 +6759,25 @@ function renderCrossTable(table, core) {
         });
     });
 
+    const summaryHeaders = monthMode
+        ? [
+            "<th>期間応募数</th>",
+            "<th>期間構成比</th>",
+            recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "応募数"), recentLabels),
+            recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "構成比"), recentLabels)
+        ]
+        : [
+            "<th>総応募数</th>",
+            "<th>応募構成比</th>",
+            targetMetricHeaderHtml("ターゲット応募数"),
+            targetMetricHeaderHtml("ターゲット率"),
+            targetMetricHeaderHtml("ターゲット応募構成比")
+        ];
+
     const headerHtml = [
         "<th>区分</th>",
         ...columnLabels.map(label => `<th>${escapeHtml(label)}</th>`),
-        "<th>総応募数</th>",
-        "<th>応募構成比</th>",
-        targetMetricHeaderHtml("ターゲット応募数"),
-        targetMetricHeaderHtml("ターゲット率"),
-        targetMetricHeaderHtml("ターゲット応募構成比")
+        ...summaryHeaders
     ].join("");
 
     const rowsHtml = agg.groups.map(group => {
@@ -6432,15 +6789,24 @@ function renderCrossTable(table, core) {
             .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
             .join("");
         const rowKey = `${table.id}:${group.sortValue ?? group.label}`;
-        const baseRow = `
-            <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}">
-                <td data-sort-value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</td>
-                ${columnCells}
+        const recentCount = monthMode ? countForLabels(counts, recentLabels) : 0;
+        const summaryCells = monthMode
+            ? `
+                <td>${core.formatNumber(group.total)}</td>
+                <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
+                <td>${core.formatNumber(recentCount)}</td>
+                <td>${core.formatPercent(baseRecent ? recentCount / baseRecent : 0)}</td>`
+            : `
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
                 <td>${core.formatNumber(group.target)}</td>
                 <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
-                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
+                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>`;
+        const baseRow = `
+            <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}" data-chart-recent="${recentCount}">
+                <td data-sort-value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</td>
+                ${columnCells}
+                ${summaryCells}
             </tr>
         `;
 
@@ -6472,23 +6838,49 @@ function renderCrossTable(table, core) {
         .map(label => `<td>${core.formatPercent(agg.baseTotal ? (totalColumns[label] || 0) / agg.baseTotal : 0)}</td>`)
         .join("");
 
+    const totalSummaryCells = monthMode
+        ? `
+            <td>${core.formatNumber(agg.baseTotal)}</td>
+            <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
+            <td>${core.formatNumber(baseRecent)}</td>
+            <td>${core.formatPercent(baseRecent ? 1 : 0)}</td>`
+        : `
+            <td>${core.formatNumber(agg.baseTotal)}</td>
+            <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
+            <td>${core.formatNumber(agg.baseTarget)}</td>
+            <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
+            <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>`;
+    const compositionTail = monthMode
+        ? "<td></td><td></td><td></td><td></td>"
+        : "<td></td><td></td><td></td><td></td><td></td>";
+
     return `
         <section id="analysis-${escapeHtml(table.id)}" class="card section">
             <div class="section-head">
                 <div>
                     <h2>${escapeHtml(table.label)}</h2>
                     <div class="section-note">
-                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""}${isAgeAxis ? "" : ` ／ 基本列：${escapeHtml(columnAxisLabel)}`}
+                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""}${isAgeAxis ? "" : ` ／ 基本列：${escapeHtml(columnAxisLabel)}`}${basicTableAgeFilterSuffix()}
                     </div>
                 </div>
                 <div class="section-head-actions">
                     ${bucketControlHtml(table.id)}
                 </div>
             </div>
-            ${analysisChartPanelHtml(table.id, table.label, analysisChartRowsFromGroups(agg.groups))}
+            ${analysisChartPanelHtml(
+                table.id,
+                table.label,
+                analysisChartRowsFromGroups(agg.groups, { recentLabels }),
+                {
+                    mode: monthMode ? "month" : "target",
+                    recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
+                    recentRange: recentMonthRangeText(recentLabels),
+                    filterLabel: monthAgeFilterSummaryLabel()
+                }
+            )}
             <div class="table-wrap">
                 <table class="cross-table ${isAgeAxis ? "" : "basic-axis-cross-table"}">
-                    ${crossTableColgroupHtml(columnLabels, isAgeAxis ? 72 : basicCrossColumnWidth(agg))}
+                    ${crossTableColgroupHtml(columnLabels, isAgeAxis ? 72 : basicCrossColumnWidth(agg), monthMode ? "month" : "target")}
                     <thead>
                         <tr>${headerHtml}</tr>
                     </thead>
@@ -6497,16 +6889,12 @@ function renderCrossTable(table, core) {
                         <tr class="total-row">
                             <td>【総計】</td>
                             ${totalColumnCells}
-                            <td>${core.formatNumber(agg.baseTotal)}</td>
-                            <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
-                            <td>${core.formatNumber(agg.baseTarget)}</td>
-                            <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
-                            <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
+                            ${totalSummaryCells}
                         </tr>
                         <tr class="composition-row">
                             <td>${escapeHtml(columnAxisLabel)}構成比</td>
                             ${compositionCells}
-                            <td></td><td></td><td></td><td></td><td></td>
+                            ${compositionTail}
                         </tr>
                     </tbody>
                 </table>
@@ -6517,23 +6905,28 @@ function renderCrossTable(table, core) {
 
 function renderBasicDistributionTable(table, core) {
     const agg = table.aggregate;
+    const monthMode = currentViewerBasicColumnAxis === "month";
     const rowsHtml = agg.groups.map(group => {
         const share =
             agg.baseTotal
                 ? group.total / agg.baseTotal
                 : 0;
         const rowKey = `${table.id}:${group.sortValue ?? group.label}`;
+        const targetCells = monthMode
+            ? ""
+            : `
+                <td>${core.formatNumber(group.target)}</td>
+                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
+                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>`;
         const baseRow = `
-            <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}">
+            <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}" data-chart-recent="0">
                 <td data-sort-value="${escapeHtml(group.label)}">${escapeHtml(group.label)}</td>
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(share)}</td>
                 <td class="distribution-bar-cell">
                     <div class="bar"><span style="width:${Math.max(0, Math.min(100, share * 100))}%"></span></div>
                 </td>
-                <td>${core.formatNumber(group.target)}</td>
-                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
-                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
+                ${targetCells}
             </tr>
         `;
 
@@ -6547,9 +6940,7 @@ function renderBasicDistributionTable(table, core) {
                 <td>${formatCountMaybeDecimal(agg.forecast.total, core)}</td>
                 <td>—</td>
                 <td></td>
-                <td>${formatCountMaybeDecimal(agg.forecast.target, core)}</td>
-                <td>—</td>
-                <td>—</td>
+                ${monthMode ? "" : `<td>${formatCountMaybeDecimal(agg.forecast.target, core)}</td><td>—</td><td>—</td>`}
             </tr>`;
     }).join("");
 
@@ -6559,14 +6950,22 @@ function renderBasicDistributionTable(table, core) {
                 <div>
                     <h2>${escapeHtml(table.label)}</h2>
                     <div class="section-note">
-                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""} ／ 基本列自身のため構成比表示
+                        集計ベース：${escapeHtml(table.baseLabel)} ${core.formatNumber(agg.baseTotal)}件${table.conditionText ? ` ／ ${escapeHtml(table.conditionText)}` : ""} ／ 基本列自身のため構成比表示${basicTableAgeFilterSuffix()}
                     </div>
                 </div>
                 <div class="section-head-actions">
                     ${bucketControlHtml(table.id)}
                 </div>
             </div>
-            ${analysisChartPanelHtml(table.id, table.label, analysisChartRowsFromGroups(agg.groups))}
+            ${analysisChartPanelHtml(
+                table.id,
+                table.label,
+                analysisChartRowsFromGroups(agg.groups),
+                {
+                    mode: monthMode ? "month" : "target",
+                    filterLabel: monthAgeFilterSummaryLabel()
+                }
+            )}
             <div class="table-wrap">
                 <table class="basic-distribution-table">
                     <thead>
@@ -6575,9 +6974,10 @@ function renderBasicDistributionTable(table, core) {
                             <th>応募数</th>
                             <th>応募構成比</th>
                             <th>比率</th>
-                            ${targetMetricHeaderHtml("ターゲット応募数")}
-                            ${targetMetricHeaderHtml("ターゲット率")}
-                            ${targetMetricHeaderHtml("ターゲット応募構成比")}
+                            ${monthMode ? "" : `
+                                ${targetMetricHeaderHtml("ターゲット応募数")}
+                                ${targetMetricHeaderHtml("ターゲット率")}
+                                ${targetMetricHeaderHtml("ターゲット応募構成比")}`}
                         </tr>
                     </thead>
                     <tbody>
@@ -6587,9 +6987,10 @@ function renderBasicDistributionTable(table, core) {
                             <td>${core.formatNumber(agg.baseTotal)}</td>
                             <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
                             <td></td>
-                            <td>${core.formatNumber(agg.baseTarget)}</td>
-                            <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
-                            <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
+                            ${monthMode ? "" : `
+                                <td>${core.formatNumber(agg.baseTarget)}</td>
+                                <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
+                                <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>`}
                         </tr>
                     </tbody>
                 </table>
@@ -6598,7 +6999,6 @@ function renderBasicDistributionTable(table, core) {
     `;
 }
 
-
 function renderStandaloneCross(agg, core, firstHeader) {
     const columnLabels =
         Array.isArray(agg.columnLabels)
@@ -6606,6 +7006,7 @@ function renderStandaloneCross(agg, core, firstHeader) {
             : (agg.ageCols || []);
     const isAgeAxis =
         !Array.isArray(agg.columnLabels);
+    const monthMode = isMonthColumnAnalysis(agg);
     const columnAxisLabel =
         isAgeAxis
             ? "年齢"
@@ -6613,6 +7014,8 @@ function renderStandaloneCross(agg, core, firstHeader) {
     const totalColumns = Object.fromEntries(
         columnLabels.map(label => [label, 0])
     );
+    const recentLabels = monthMode ? recentMonthLabelsFor(agg) : [];
+    const baseRecent = monthMode ? baseRecentMonthCount(agg, recentLabels) : 0;
 
     agg.groups.forEach(group => {
         columnLabels.forEach(label => {
@@ -6621,14 +7024,25 @@ function renderStandaloneCross(agg, core, firstHeader) {
         });
     });
 
+    const summaryHeaders = monthMode
+        ? [
+            "<th>期間応募数</th>",
+            "<th>期間構成比</th>",
+            recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "応募数"), recentLabels),
+            recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "構成比"), recentLabels)
+        ]
+        : [
+            "<th>総応募数</th>",
+            "<th>応募構成比</th>",
+            targetMetricHeaderHtml("ターゲット応募数"),
+            targetMetricHeaderHtml("ターゲット率"),
+            targetMetricHeaderHtml("ターゲット応募構成比")
+        ];
+
     const headers = [
         `<th>${escapeHtml(firstHeader)}</th>`,
         ...columnLabels.map(label => `<th>${escapeHtml(label)}</th>`),
-        "<th>総応募数</th>",
-        "<th>応募構成比</th>",
-        targetMetricHeaderHtml("ターゲット応募数"),
-        targetMetricHeaderHtml("ターゲット率"),
-        targetMetricHeaderHtml("ターゲット応募構成比")
+        ...summaryHeaders
     ].join("");
 
     const rows = agg.groups.map(group => {
@@ -6636,16 +7050,25 @@ function renderStandaloneCross(agg, core, firstHeader) {
         const columnCells = columnLabels
             .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
             .join("");
-
-        return `
-            <tr data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}">
-                <td>${escapeHtml(group.label)}</td>
-                ${columnCells}
+        const recentCount = monthMode ? countForLabels(counts, recentLabels) : 0;
+        const summaryCells = monthMode
+            ? `
+                <td>${core.formatNumber(group.total)}</td>
+                <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
+                <td>${core.formatNumber(recentCount)}</td>
+                <td>${core.formatPercent(baseRecent ? recentCount / baseRecent : 0)}</td>`
+            : `
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
                 <td>${core.formatNumber(group.target)}</td>
                 <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
-                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>
+                <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>`;
+
+        return `
+            <tr data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}" data-chart-recent="${recentCount}">
+                <td>${escapeHtml(group.label)}</td>
+                ${columnCells}
+                ${summaryCells}
             </tr>
         `;
     }).join("");
@@ -6657,27 +7080,29 @@ function renderStandaloneCross(agg, core, firstHeader) {
     const compositionCells = columnLabels
         .map(label => `<td>${core.formatPercent(agg.baseTotal ? (totalColumns[label] || 0) / agg.baseTotal : 0)}</td>`)
         .join("");
+    const totalSummary = monthMode
+        ? `<td>${core.formatNumber(agg.baseTotal)}</td><td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td><td>${core.formatNumber(baseRecent)}</td><td>${core.formatPercent(baseRecent ? 1 : 0)}</td>`
+        : `<td>${core.formatNumber(agg.baseTotal)}</td><td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td><td>${core.formatNumber(agg.baseTarget)}</td><td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td><td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>`;
+    const compositionTail = monthMode
+        ? "<td></td><td></td><td></td><td></td>"
+        : "<td></td><td></td><td></td><td></td><td></td>";
 
     return `
         <div class="table-wrap">
             <table class="cross-table ${isAgeAxis ? "" : "basic-axis-cross-table"}">
-                ${crossTableColgroupHtml(columnLabels, isAgeAxis ? 72 : basicCrossColumnWidth(agg))}
+                ${crossTableColgroupHtml(columnLabels, isAgeAxis ? 72 : basicCrossColumnWidth(agg), monthMode ? "month" : "target")}
                 <thead><tr>${headers}</tr></thead>
                 <tbody>
                     ${rows}
                     <tr class="total-row">
                         <td>【総計】</td>
                         ${totalColumnCells}
-                        <td>${core.formatNumber(agg.baseTotal)}</td>
-                        <td>${core.formatPercent(agg.baseTotal ? 1 : 0)}</td>
-                        <td>${core.formatNumber(agg.baseTarget)}</td>
-                        <td>${core.formatPercent(agg.baseTotal ? agg.baseTarget / agg.baseTotal : 0)}</td>
-                        <td>${core.formatPercent(agg.baseTarget ? 1 : 0)}</td>
+                        ${totalSummary}
                     </tr>
                     <tr class="composition-row">
                         <td>${escapeHtml(columnAxisLabel)}構成比</td>
                         ${compositionCells}
-                        <td></td><td></td><td></td><td></td><td></td>
+                        ${compositionTail}
                     </tr>
                 </tbody>
             </table>
@@ -6694,12 +7119,26 @@ function renderNoteDetail(detail, core) {
     }
 
     section.classList.remove("hidden");
+    const noteMonthMode = isMonthColumnAnalysis(detail.aggregate);
+    const noteRecentLabels = noteMonthMode ? recentMonthLabelsFor(detail.aggregate) : [];
+    const note = document.getElementById("noteDetailNote");
+    if (note) {
+        note.textContent = noteMonthMode
+            ? `求人備考の最初の1行（<BR>等より前）で集計 ／ 求人突合済応募 ${core.formatNumber(detail.aggregate.baseTotal)}件 ／ 基本列：応募年月 ／ 表示対象年齢：${monthAgeFilterSummaryLabel()}`
+            : "求人備考の最初の1行（<BR>等より前）で集計";
+    }
     document.getElementById("noteDetailBody").innerHTML =
         analysisChartPanelHtml(
             "note-detail",
             "求人備考1行目別応募傾向",
-            analysisChartRowsFromGroups(detail.aggregate.groups),
-            { kind: "horizontal" }
+            analysisChartRowsFromGroups(detail.aggregate.groups, { recentLabels: noteRecentLabels }),
+            {
+                kind: "horizontal",
+                mode: noteMonthMode ? "month" : "target",
+                recentLabel: recentMonthMetricLabel(noteRecentLabels, "応募数"),
+                recentRange: recentMonthRangeText(noteRecentLabels),
+                filterLabel: monthAgeFilterSummaryLabel()
+            }
         ) +
         renderStandaloneCross(
             detail.aggregate,
@@ -6738,59 +7177,39 @@ function detailHeaderHtml(
 
 function detailTableWidth(
     type,
-    columns
+    columns,
+    monthMode = false
 ) {
-    const ageWidth =
+    const columnWidth =
         (Array.isArray(columns)
             ? columns.length
             : 0) *
         72;
+    const labelWidth = type === "top-image" ? 176 : 210;
+    const commonTail = 105 + 110 + 125 + 125;
+    const analysisTail = monthMode
+        ? 118 + 126
+        : 112 + 100 + 132;
 
-    if (
-        type ===
-        "top-image"
-    ) {
-        return (
-            176 +
-            ageWidth +
-            105 +
-            110 +
-            112 +
-            100 +
-            132 +
-            125 +
-            125
-        );
-    }
-
-    return (
-        210 +
-        ageWidth +
-        105 +
-        110 +
-        112 +
-        100 +
-        132 +
-        125 +
-        125
-    );
+    return labelWidth + columnWidth + commonTail + analysisTail;
 }
 
 function indeedTagDetailColgroupHtml(
-    ageCols
+    columns,
+    monthMode = false
 ) {
     return `
         <colgroup>
             <col class="detail-col-label">
-            ${(ageCols || []).map(
+            ${(columns || []).map(
                 () =>
                     '<col class="detail-col-age">'
             ).join("")}
             <col class="detail-col-count">
             <col class="detail-col-rate">
-            <col class="detail-col-target">
-            <col class="detail-col-target-rate">
-            <col class="detail-col-target-share">
+            ${monthMode
+                ? '<col class="detail-col-recent"><col class="detail-col-recent-share">'
+                : '<col class="detail-col-target"><col class="detail-col-target-rate"><col class="detail-col-target-share">'}
             <col class="detail-col-job-count">
             <col class="detail-col-apps-per-job">
         </colgroup>
@@ -6798,20 +7217,21 @@ function indeedTagDetailColgroupHtml(
 }
 
 function topImageDetailColgroupHtml(
-    ageCols
+    columns,
+    monthMode = false
 ) {
     return `
         <colgroup>
             <col class="detail-col-top-image">
-            ${(ageCols || []).map(
+            ${(columns || []).map(
                 () =>
                     '<col class="detail-col-age">'
             ).join("")}
             <col class="detail-col-count">
             <col class="detail-col-rate">
-            <col class="detail-col-target">
-            <col class="detail-col-target-rate">
-            <col class="detail-col-target-share">
+            ${monthMode
+                ? '<col class="detail-col-recent"><col class="detail-col-recent-share">'
+                : '<col class="detail-col-target"><col class="detail-col-target-rate"><col class="detail-col-target-share">'}
             <col class="detail-col-job-count">
             <col class="detail-col-apps-per-job">
         </colgroup>
@@ -6832,9 +7252,12 @@ function renderIndeedTagDetail(detail, core) {
         Number.isFinite(detail.displayLimit)
             ? `${detail.displayLimit}件`
             : "すべて";
+    const monthMode = detail.columnAxisKey === "month" && Array.isArray(detail.columnLabels);
+    const recentLabels = monthMode ? recentMonthLabelsFor(detail) : [];
+    const baseRecent = monthMode ? baseRecentMonthCount(detail, recentLabels) : 0;
 
     document.getElementById("indeedTagDetailNote").textContent =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ 1応募は複数タグへ重複集計${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}`;
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ 1応募は複数タグへ重複集計${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}${monthMode ? ` ／ 表示対象年齢：${monthAgeFilterSummaryLabel()}` : ""}`;
 
     const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
     const isAgeAxis = !Array.isArray(detail.columnLabels);
@@ -6852,16 +7275,23 @@ function renderIndeedTagDetail(detail, core) {
             columns
                 .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
                 .join("");
+        const recentCount = monthMode ? countForLabels(counts, recentLabels) : 0;
+        const analysisCells = monthMode
+            ? `
+                <td>${core.formatNumber(recentCount)}</td>
+                <td>${core.formatPercent(baseRecent ? recentCount / baseRecent : 0)}</td>`
+            : `
+                <td>${core.formatNumber(row.target)}</td>
+                <td>${core.formatPercent(row.targetRate)}</td>
+                <td>${core.formatPercent(row.targetCoverRate)}</td>`;
 
         return `
-            <tr data-chart-label="${escapeHtml(row.label)}" data-chart-total="${row.total}" data-chart-target="${row.target}">
+            <tr data-chart-label="${escapeHtml(row.label)}" data-chart-total="${row.total}" data-chart-target="${row.target}" data-chart-recent="${recentCount}">
                 <td>${escapeHtml(row.label)}</td>
                 ${columnCells}
                 <td>${core.formatNumber(row.total)}</td>
                 <td>${core.formatPercent(row.coverRate)}</td>
-                <td>${core.formatNumber(row.target)}</td>
-                <td>${core.formatPercent(row.targetRate)}</td>
-                <td>${core.formatPercent(row.targetCoverRate)}</td>
+                ${analysisCells}
                 <td>${core.formatNumber(row.jobCount)}</td>
                 <td>${Number(row.appsPerJob || 0).toFixed(2)}</td>
             </tr>
@@ -6871,31 +7301,38 @@ function renderIndeedTagDetail(detail, core) {
     const detailWidth =
         detailTableWidth(
             "indeed-tag",
-            columns
+            columns,
+            monthMode
         );
 
     document.getElementById("indeedTagDetailBody").innerHTML = `
         ${analysisChartPanelHtml(
             "indeed-tag-detail",
             "Indeed求人タグ別応募傾向",
-            analysisChartRowsFromDetailRows(detail.rows),
-            { kind: "horizontal" }
+            analysisChartRowsFromDetailRows(detail.rows, { recentLabels }),
+            {
+                kind: "horizontal",
+                mode: monthMode ? "month" : "target",
+                recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
+                recentRange: recentMonthRangeText(recentLabels),
+                filterLabel: monthAgeFilterSummaryLabel()
+            }
         )}
         <div class="table-wrap detail-table-wrap">
             <table
                 class="cross-table detail-cross-table indeed-tag-detail-table ${isAgeAxis ? "" : "basic-axis-cross-table"}"
                 style="--detail-table-width:${detailWidth}px"
             >
-                ${indeedTagDetailColgroupHtml(columns)}
+                ${indeedTagDetailColgroupHtml(columns, monthMode)}
                 <thead>
                     <tr>
                         <th>${detailHeaderHtml("求人タグ")}</th>
                         ${columnHeaders}
-                        <th>${detailHeaderHtml("タグ対象", "応募数", "タグ対象応募数")}</th>
-                        <th>${detailHeaderHtml("全応募", "カバー率", "全応募カバー率")}</th>
-                        ${targetMetricHeaderHtml("ターゲット応募数")}
-                        ${targetMetricHeaderHtml("ターゲット率")}
-                        ${targetMetricHeaderHtml("ターゲット応募カバー率")}
+                        <th>${detailHeaderHtml(monthMode ? "期間" : "タグ対象", "応募数", monthMode ? "期間応募数" : "タグ対象応募数")}</th>
+                        <th>${detailHeaderHtml(monthMode ? "期間" : "全応募", "カバー率", monthMode ? "期間カバー率" : "全応募カバー率")}</th>
+                        ${monthMode
+                            ? `${recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "応募数"), recentLabels)}${recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "カバー率"), recentLabels)}`
+                            : `${targetMetricHeaderHtml("ターゲット応募数")}${targetMetricHeaderHtml("ターゲット率")}${targetMetricHeaderHtml("ターゲット応募カバー率")}`}
                         <th>${detailHeaderHtml("応募あり", "求人件数", "応募あり求人件数")}</th>
                         <th>${detailHeaderHtml("1求人あたり", "応募数", "1求人あたり応募数")}</th>
                     </tr>
@@ -6920,9 +7357,12 @@ function renderTopImageDetail(detail, core) {
         Number.isFinite(detail.displayLimit)
             ? `${detail.displayLimit}件`
             : "すべて";
+    const monthMode = detail.columnAxisKey === "month" && Array.isArray(detail.columnLabels);
+    const recentLabels = monthMode ? recentMonthLabelsFor(detail) : [];
+    const baseRecent = monthMode ? baseRecentMonthCount(detail, recentLabels) : 0;
 
     document.getElementById("topImageDetailNote").textContent =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ URL未取得でも数値分析には含みます${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}`;
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ URL未取得でも数値分析には含みます${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}${monthMode ? ` ／ 表示対象年齢：${monthAgeFilterSummaryLabel()}` : ""}`;
 
     const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
     const isAgeAxis = !Array.isArray(detail.columnLabels);
@@ -6949,16 +7389,23 @@ function renderTopImageDetail(detail, core) {
         const fileNameLine = fileName && row.imageUrl
             ? `<span class="top-image-detail-filename row-label-text" data-full-text="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>`
             : "";
+        const recentCount = monthMode ? countForLabels(counts, recentLabels) : 0;
+        const analysisCells = monthMode
+            ? `
+                <td>${core.formatNumber(recentCount)}</td>
+                <td>${core.formatPercent(baseRecent ? recentCount / baseRecent : 0)}</td>`
+            : `
+                <td>${core.formatNumber(row.target)}</td>
+                <td>${core.formatPercent(row.targetRate)}</td>
+                <td>${core.formatPercent(row.targetShare)}</td>`;
 
         return `
-            <tr data-chart-label="${escapeHtml(row.label)}" data-chart-total="${row.total}" data-chart-target="${row.target}">
+            <tr data-chart-label="${escapeHtml(row.label)}" data-chart-total="${row.total}" data-chart-target="${row.target}" data-chart-recent="${recentCount}">
                 <td data-sort-value="${escapeHtml(row.fileName || row.label || "")}"><div class="top-image-detail-cell" title="${escapeHtml(displayName)}">${visual}${fileNameLine}</div></td>
                 ${columnCells}
                 <td>${core.formatNumber(row.total)}</td>
                 <td>${core.formatPercent(row.share)}</td>
-                <td>${core.formatNumber(row.target)}</td>
-                <td>${core.formatPercent(row.targetRate)}</td>
-                <td>${core.formatPercent(row.targetShare)}</td>
+                ${analysisCells}
                 <td>${core.formatNumber(row.jobCount)}</td>
                 <td>${Number(row.appsPerJob || 0).toFixed(2)}</td>
             </tr>
@@ -6968,7 +7415,8 @@ function renderTopImageDetail(detail, core) {
     const detailWidth =
         detailTableWidth(
             "top-image",
-            columns
+            columns,
+            monthMode
         );
 
     const topImageBody = document.getElementById("topImageDetailBody");
@@ -6976,24 +7424,30 @@ function renderTopImageDetail(detail, core) {
         ${analysisChartPanelHtml(
             "top-image-detail",
             "TOP画像別応募傾向",
-            analysisChartRowsFromDetailRows(detail.rows),
-            { kind: "horizontal" }
+            analysisChartRowsFromDetailRows(detail.rows, { recentLabels }),
+            {
+                kind: "horizontal",
+                mode: monthMode ? "month" : "target",
+                recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
+                recentRange: recentMonthRangeText(recentLabels),
+                filterLabel: monthAgeFilterSummaryLabel()
+            }
         )}
         <div class="table-wrap detail-table-wrap">
             <table
                 class="cross-table detail-cross-table top-image-detail-table ${isAgeAxis ? "" : "basic-axis-cross-table"}"
                 style="--detail-table-width:${detailWidth}px"
             >
-                ${topImageDetailColgroupHtml(columns)}
+                ${topImageDetailColgroupHtml(columns, monthMode)}
                 <thead>
                     <tr>
                         <th>${detailHeaderHtml("TOP画像", "画像＋ファイル名", "TOP画像（画像＋ファイル名）")}</th>
                         ${columnHeaders}
-                        <th>${detailHeaderHtml("総応募数")}</th>
-                        <th>${detailHeaderHtml("応募", "構成比", "応募構成比")}</th>
-                        ${targetMetricHeaderHtml("ターゲット応募数")}
-                        ${targetMetricHeaderHtml("ターゲット率")}
-                        ${targetMetricHeaderHtml("ターゲット応募構成比")}
+                        <th>${detailHeaderHtml(monthMode ? "期間" : "総応募数", monthMode ? "応募数" : "", monthMode ? "期間応募数" : "総応募数")}</th>
+                        <th>${detailHeaderHtml(monthMode ? "期間" : "応募", "構成比", monthMode ? "期間構成比" : "応募構成比")}</th>
+                        ${monthMode
+                            ? `${recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "応募数"), recentLabels)}${recentMetricHeaderHtml(recentMonthMetricLabel(recentLabels, "構成比"), recentLabels)}`
+                            : `${targetMetricHeaderHtml("ターゲット応募数")}${targetMetricHeaderHtml("ターゲット率")}${targetMetricHeaderHtml("ターゲット応募構成比")}`}
                         <th>${detailHeaderHtml("応募あり", "求人件数", "応募あり求人件数")}</th>
                         <th>${detailHeaderHtml("1求人あたり", "応募数", "1求人あたり応募数")}</th>
                     </tr>
@@ -7004,7 +7458,6 @@ function renderTopImageDetail(detail, core) {
     `;
     bindCustomPivotImageFallbacks(topImageBody);
 }
-
 
 function monthProgressLegendHtml(progress) {
     const compareItems = (progress.comparisons || []).map(series => {
@@ -7639,6 +8092,13 @@ let currentViewerTargetAge = {
     max: ""
 };
 
+let currentViewerMonthAgeFilter = {
+    mode: "all",
+    min: "",
+    max: "",
+    seeded: false
+};
+
 let currentViewerProgressAge = {
     min: "",
     max: ""
@@ -8045,7 +8505,22 @@ function dataForCurrentViewerPeriod(
             "応募進捗表示モード":
                 currentViewerMonthProgressMode,
             "基本表列軸":
-                currentViewerBasicColumnAxis
+                currentViewerBasicColumnAxis,
+            "基本表示年齢モード":
+                currentViewerBasicColumnAxis === "month" &&
+                currentViewerMonthAgeFilter.mode === "custom"
+                    ? "指定範囲"
+                    : "全年齢",
+            "基本表示年齢下限":
+                currentViewerBasicColumnAxis === "month" &&
+                currentViewerMonthAgeFilter.mode === "custom"
+                    ? currentViewerMonthAgeFilter.min
+                    : "",
+            "基本表示年齢上限":
+                currentViewerBasicColumnAxis === "month" &&
+                currentViewerMonthAgeFilter.mode === "custom"
+                    ? currentViewerMonthAgeFilter.max
+                    : ""
         }
     };
 }
@@ -8230,6 +8705,18 @@ function updateViewerConditionSummaries() {
     if (age) {
         age.textContent =
             targetAgeSummaryLabel();
+    }
+
+    const monthAgeSummary = document.getElementById("viewerMonthAgeFilterSummary");
+    if (monthAgeSummary) monthAgeSummary.textContent = monthAgeFilterSummaryLabel();
+
+    const reportAgeLabel = document.getElementById("reportAgeConditionLabel");
+    const reportAgeValue = document.getElementById("reportTargetAgeCondition");
+    if (reportAgeLabel) {
+        reportAgeLabel.textContent = currentViewerBasicColumnAxis === "month" ? "表の対象年齢" : "ターゲット年齢";
+    }
+    if (reportAgeValue) {
+        reportAgeValue.textContent = currentViewerBasicColumnAxis === "month" ? monthAgeFilterSummaryLabel() : targetAgeSummaryLabel();
     }
 
     const progressAge =
@@ -8950,6 +9437,7 @@ function ageBandIndexForMax(
 function agePickerSourceRange(context) {
     if (context === "custom") return { min: currentCustomAnalysisState.ageMin, max: currentCustomAnalysisState.ageMax };
     if (context === "progress") return { min: currentViewerProgressAge.min, max: currentViewerProgressAge.max };
+    if (context === "month") return { min: currentViewerMonthAgeFilter.min, max: currentViewerMonthAgeFilter.max };
     return { min: currentViewerTargetAge.min, max: currentViewerTargetAge.max };
 }
 
@@ -8965,6 +9453,10 @@ function configureAgePickerModal(context) {
         if (title) title.textContent = "月間応募進捗の集計対象年齢を選択";
         if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。月間応募進捗グラフだけを絞り込みます。";
         if (apply) apply.textContent = "この年齢範囲で集計";
+    } else if (context === "month") {
+        if (title) title.textContent = "応募年月別の表示対象年齢を選択";
+        if (note) note.textContent = "5歳刻みで表示対象年齢を選択します。応募年月別の基本表・詳細表を、この年齢範囲の応募に絞り込みます。";
+        if (apply) apply.textContent = "この年齢範囲を選択";
     } else {
         if (title) title.textContent = "ターゲット年齢を選択";
         if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。ターゲット応募数・率の定義を変更します。";
@@ -8973,7 +9465,7 @@ function configureAgePickerModal(context) {
 }
 
 function openAgePicker(context = "target") {
-    viewerAgePickerContext = context === "custom" ? "custom" : context === "progress" ? "progress" : "target";
+    viewerAgePickerContext = context === "custom" ? "custom" : context === "progress" ? "progress" : context === "month" ? "month" : "target";
     configureAgePickerModal(viewerAgePickerContext);
     const range = agePickerSourceRange(viewerAgePickerContext);
     let startIndex = ageBandIndexForMin(range.min);
@@ -9294,6 +9786,11 @@ function initializeViewerAnalysisPickers() {
                     closeViewerModal("viewerTargetAgeModal");
                     updateViewerConditionSummaries();
                     renderReport(currentViewerData);
+                } else if (viewerAgePickerContext === "month") {
+                    currentViewerMonthAgeFilter = { mode:"all", min:currentViewerMonthAgeFilter.min, max:currentViewerMonthAgeFilter.max, seeded:currentViewerMonthAgeFilter.seeded };
+                    closeViewerModal("viewerTargetAgeModal");
+                    updateViewerConditionSummaries();
+                    renderReport(currentViewerData);
                 } else {
                     currentViewerTargetAge = { min:"", max:"" };
                     viewerTargetAgeTouched = true;
@@ -9488,6 +9985,11 @@ function initializeViewerAnalysisPickers() {
                 closeViewerModal("viewerTargetAgeModal");
                 updateViewerConditionSummaries();
                 renderReport(currentViewerData);
+            } else if (viewerAgePickerContext === "month") {
+                currentViewerMonthAgeFilter = { mode:"custom", min:startBand.min, max:endBand.max ?? "", seeded:true };
+                closeViewerModal("viewerTargetAgeModal");
+                updateViewerConditionSummaries();
+                renderReport(currentViewerData);
             } else {
                 currentViewerTargetAge = { min:startBand.min, max:endBand.max ?? "" };
                 viewerTargetAgeTouched = true;
@@ -9562,6 +10064,13 @@ function initializeViewerPeriod(
 
     viewerTargetAgeTouched =
         false;
+
+    currentViewerMonthAgeFilter = {
+        mode: "all",
+        min: "",
+        max: "",
+        seeded: false
+    };
 
     currentViewerProgressAge = {
         min: "",
@@ -9662,7 +10171,17 @@ function renderReport(data) {
     const reportPeriodCondition = document.getElementById("reportPeriodCondition");
     if (reportPeriodCondition) reportPeriodCondition.textContent = periodSummaryLabel();
     const reportTargetAgeCondition = document.getElementById("reportTargetAgeCondition");
-    if (reportTargetAgeCondition) reportTargetAgeCondition.textContent = result.targetLabel;
+    if (reportTargetAgeCondition) {
+        reportTargetAgeCondition.textContent = currentViewerBasicColumnAxis === "month"
+            ? monthAgeFilterSummaryLabel()
+            : result.targetLabel;
+    }
+    const reportAgeConditionLabel = document.getElementById("reportAgeConditionLabel");
+    if (reportAgeConditionLabel) {
+        reportAgeConditionLabel.textContent = currentViewerBasicColumnAxis === "month"
+            ? "表の対象年齢"
+            : "ターゲット年齢";
+    }
 
     document.getElementById("kpiTotal").textContent =
         core.formatNumber(result.totalCount);
