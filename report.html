@@ -1688,6 +1688,11 @@
                 124px;
         }
 
+        .detail-cross-table col.detail-col-top-image {
+            width:
+                176px;
+        }
+
         .detail-cross-table col.detail-col-age {
             width:
                 72px;
@@ -1730,8 +1735,82 @@
 
         .top-image-detail-table
         .image-preview {
-            max-width:
-                108px;
+            width: 112px;
+            height: 74px;
+            max-width: 112px;
+            margin: 0 auto;
+            cursor: zoom-in;
+        }
+
+        .top-image-detail-table th:first-child,
+        .top-image-detail-table td:first-child {
+            width: 176px !important;
+            min-width: 176px !important;
+            max-width: 176px !important;
+        }
+
+        .top-image-detail-cell {
+            width: 100%;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .top-image-detail-visual {
+            width: 112px;
+            min-height: 52px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .top-image-detail-fallback {
+            width: 112px;
+            min-height: 58px;
+            border-radius: 9px;
+            border: 1px dashed #cbd5e1;
+            background: #f8fafc;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 7px;
+            text-align: center;
+            font-size: 10px;
+            line-height: 1.35;
+        }
+
+        .top-image-detail-fallback-status {
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .top-image-detail-fallback-name {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #475569;
+            font-size: 10px;
+        }
+
+        .top-image-detail-filename {
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #475569;
+            font-size: 10px;
+            line-height: 1.35;
+            text-align: left;
         }
 
         /* Never squeeze wide detail tables to the viewport.
@@ -3276,7 +3355,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.09-viewer-ui-v30.6-analysis-charts";
+    "2026.09.09-viewer-ui-v30.7-top-image-sticky-card";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -5491,7 +5570,7 @@ function initializeCustomTopImageHoverPreview(){
     const caption=preview.querySelector(".custom-top-image-hover-caption");
     let activeImage=null;
     document.addEventListener("mouseover",event=>{
-        const image=event.target.closest?.("#customResult img.custom-pivot-image-thumb[data-custom-top-image='1']");
+        const image=event.target.closest?.("img[data-top-image-hover='1']");
         if(!image||image.classList.contains("hidden")||!image.naturalWidth)return;
         activeImage=image;
         if(previewImage)previewImage.src=image.currentSrc||image.src;
@@ -5505,7 +5584,7 @@ function initializeCustomTopImageHoverPreview(){
         }
     });
     document.addEventListener("mouseout",event=>{
-        const image=event.target.closest?.("#customResult img.custom-pivot-image-thumb[data-custom-top-image='1']");
+        const image=event.target.closest?.("img[data-top-image-hover='1']");
         if(!image||image!==activeImage)return;
         activeImage=null;
         preview.classList.remove("visible");
@@ -6672,8 +6751,7 @@ function detailTableWidth(
         "top-image"
     ) {
         return (
-            210 +
-            124 +
+            176 +
             ageWidth +
             105 +
             110 +
@@ -6724,8 +6802,7 @@ function topImageDetailColgroupHtml(
 ) {
     return `
         <colgroup>
-            <col class="detail-col-label">
-            <col class="detail-col-preview">
+            <col class="detail-col-top-image">
             ${(ageCols || []).map(
                 () =>
                     '<col class="detail-col-age">'
@@ -6864,15 +6941,18 @@ function renderTopImageDetail(detail, core) {
                 .map(label => `<td>${core.formatNumber(counts?.[label] || 0)}</td>`)
                 .join("");
 
-        const preview =
-            row.imageUrl
-                ? `<img class="image-preview" src="${escapeHtml(row.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
-                : `<div class="image-missing">${row.fileName ? "URL未取得" : "TOP画像なし"}</div>`;
+        const fileName = String(row.fileName || "").trim();
+        const displayName = fileName || "TOP画像なし";
+        const visual = row.imageUrl
+            ? `<div class="top-image-detail-visual"><img class="image-preview top-image-detail-thumb" src="${escapeHtml(row.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-custom-top-image="1" data-top-image-hover="1"><div class="top-image-detail-fallback hidden" data-image-fallback="1"><span class="top-image-detail-fallback-status">URL未取得</span><span class="top-image-detail-fallback-name">${escapeHtml(displayName)}</span></div></div>`
+            : `<div class="top-image-detail-visual"><div class="top-image-detail-fallback"><span class="top-image-detail-fallback-status">${fileName ? "URL未取得" : "TOP画像なし"}</span>${fileName ? `<span class="top-image-detail-fallback-name">${escapeHtml(fileName)}</span>` : ""}</div></div>`;
+        const fileNameLine = fileName && row.imageUrl
+            ? `<span class="top-image-detail-filename row-label-text" data-full-text="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>`
+            : "";
 
         return `
             <tr data-chart-label="${escapeHtml(row.label)}" data-chart-total="${row.total}" data-chart-target="${row.target}">
-                <td data-sort-value="${escapeHtml(row.label)}">${escapeHtml(row.label)}</td>
-                <td data-sort-value="${escapeHtml(row.fileName || row.label || "")}">${preview}</td>
+                <td data-sort-value="${escapeHtml(row.fileName || row.label || "")}"><div class="top-image-detail-cell" title="${escapeHtml(displayName)}">${visual}${fileNameLine}</div></td>
                 ${columnCells}
                 <td>${core.formatNumber(row.total)}</td>
                 <td>${core.formatPercent(row.share)}</td>
@@ -6891,7 +6971,8 @@ function renderTopImageDetail(detail, core) {
             columns
         );
 
-    document.getElementById("topImageDetailBody").innerHTML = `
+    const topImageBody = document.getElementById("topImageDetailBody");
+    topImageBody.innerHTML = `
         ${analysisChartPanelHtml(
             "top-image-detail",
             "TOP画像別応募傾向",
@@ -6906,8 +6987,7 @@ function renderTopImageDetail(detail, core) {
                 ${topImageDetailColgroupHtml(columns)}
                 <thead>
                     <tr>
-                        <th>${detailHeaderHtml("画像", "ファイル名", "画像ファイル名")}</th>
-                        <th>${detailHeaderHtml("プレビュー")}</th>
+                        <th>${detailHeaderHtml("TOP画像", "画像＋ファイル名", "TOP画像（画像＋ファイル名）")}</th>
                         ${columnHeaders}
                         <th>${detailHeaderHtml("総応募数")}</th>
                         <th>${detailHeaderHtml("応募", "構成比", "応募構成比")}</th>
@@ -6922,6 +7002,7 @@ function renderTopImageDetail(detail, core) {
             </table>
         </div>
     `;
+    bindCustomPivotImageFallbacks(topImageBody);
 }
 
 
@@ -7358,7 +7439,7 @@ function customPivotTopImageHtml(fileName,{context=false}={}){
         return `<span class="custom-pivot-context-image-wrap" title="${escapeHtml(name)}"><img class="custom-pivot-context-image" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-custom-top-image="1"><span class="custom-pivot-context-image-fallback hidden" data-image-fallback="1">${escapeHtml(name)}</span></span>`;
     }
 
-    return `<span class="custom-pivot-image-wrap" title="${escapeHtml(name)}"><img class="custom-pivot-image-thumb" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-custom-top-image="1"><span class="custom-pivot-image-fallback row-label-text hidden" data-image-fallback="1" data-full-text="${escapeHtml(name)}">${escapeHtml(name)}</span></span>`;
+    return `<span class="custom-pivot-image-wrap" title="${escapeHtml(name)}"><img class="custom-pivot-image-thumb" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-custom-top-image="1" data-top-image-hover="1"><span class="custom-pivot-image-fallback row-label-text hidden" data-image-fallback="1" data-full-text="${escapeHtml(name)}">${escapeHtml(name)}</span></span>`;
 }
 
 function customPivotAxisValueHtml(axis,label){
@@ -7381,6 +7462,7 @@ function showCustomPivotImageFallback(image){
     if(!image)return;
     image.classList.add("hidden");
     image.parentElement?.querySelector("[data-image-fallback='1']")?.classList.remove("hidden");
+    image.closest(".top-image-detail-cell")?.querySelector(".top-image-detail-filename")?.classList.add("hidden");
 }
 
 function bindCustomPivotImageFallbacks(root){
