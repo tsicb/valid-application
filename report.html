@@ -3263,6 +3263,281 @@
             }
         }
 
+
+        /* =========================================================
+           Viewer UI v30.16
+           Design Tokens v1 / branded shell
+           ========================================================= */
+        :root {
+            /* Brand */
+            --viewer-brand-blue: #148ecc;
+            --viewer-brand-blue-dark: #0d6795;
+            --viewer-brand-blue-deep: #0a5278;
+            --viewer-brand-blue-soft: #edf8fd;
+            --viewer-brand-blue-soft-2: #dff3fc;
+            --viewer-accent-yellow: #eeff16;
+            --viewer-accent-yellow-soft: #fbffd7;
+
+            /* Neutral surfaces / typography */
+            --viewer-surface-page: #f5f9fc;
+            --viewer-surface-panel: #ffffff;
+            --viewer-surface-soft: #f8fbfd;
+            --viewer-surface-muted: #f2f6f8;
+            --viewer-text-primary: #173043;
+            --viewer-text-secondary: #64748b;
+            --viewer-text-tertiary: #80909c;
+            --viewer-border-default: rgba(20,142,204,.14);
+            --viewer-border-strong: rgba(20,142,204,.26);
+            --viewer-shadow-card: 0 12px 30px -25px rgba(13,103,149,.42), 0 3px 10px rgba(15,23,42,.035);
+            --viewer-shadow-floating: 0 14px 34px -22px rgba(13,103,149,.56), 0 5px 16px rgba(15,23,42,.055);
+            --viewer-focus-ring: 0 0 0 3px rgba(20,142,204,.14);
+
+            /* Compatibility aliases used by the older Viewer CSS. */
+            --bg: var(--viewer-surface-page);
+            --card: var(--viewer-surface-panel);
+            --line: var(--viewer-border-default);
+            --text: var(--viewer-text-primary);
+            --muted: var(--viewer-text-secondary);
+            --blue: var(--viewer-brand-blue);
+            --blue-soft: var(--viewer-brand-blue-soft);
+            --shadow: var(--viewer-shadow-card);
+        }
+
+        html, body {
+            color: var(--viewer-text-primary);
+            background: var(--viewer-surface-page);
+        }
+        body {
+            background:
+                radial-gradient(circle at 3% 0%, rgba(20,142,204,.075), transparent 27%),
+                radial-gradient(circle at 98% 100%, rgba(238,255,22,.075), transparent 20%),
+                linear-gradient(180deg, #f9fcfd 0%, var(--viewer-surface-page) 46%, #f7f9fb 100%);
+        }
+
+        /* Product identity: structure is blue, yellow remains a small signature. */
+        .report-sidebar {
+            border-right-color: var(--viewer-border-default);
+            background: linear-gradient(180deg, rgba(237,248,253,.98) 0%, rgba(255,255,255,.99) 23%, #fff 100%);
+            box-shadow: 14px 0 36px -32px rgba(13,103,149,.58);
+        }
+        .sidebar-header {
+            border-bottom-color: var(--viewer-border-default);
+            background: rgba(255,255,255,.62);
+        }
+        .sidebar-brand-main { color: var(--viewer-brand-blue-deep); }
+        .sidebar-brand-main::after {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-left: 6px;
+            border-radius: 999px;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.12);
+            vertical-align: 1px;
+        }
+        .sidebar-group-title { color: #526d7f; }
+        .sidebar-toggle {
+            border-color: var(--viewer-border-default);
+            color: var(--viewer-brand-blue-dark);
+            box-shadow: 0 4px 12px -10px rgba(13,103,149,.55);
+        }
+        .sidebar-toggle:hover {
+            border-color: var(--viewer-border-strong);
+            background: var(--viewer-brand-blue-soft);
+        }
+        .sidebar-nav-button,
+        .analysis-nav button {
+            border-color: var(--viewer-border-default);
+            color: #415969;
+            background: rgba(255,255,255,.94);
+        }
+        .sidebar-nav-button:hover,
+        .analysis-nav button:hover {
+            border-color: var(--viewer-border-strong);
+            background: var(--viewer-brand-blue-soft);
+            color: var(--viewer-brand-blue-deep);
+        }
+        .sidebar-nav-button.active,
+        .analysis-nav button.active {
+            border-color: rgba(20,142,204,.34);
+            background: linear-gradient(90deg, var(--viewer-brand-blue-soft) 0%, #fff 92%);
+            color: var(--viewer-brand-blue-deep);
+            box-shadow: inset 3px 0 0 var(--viewer-brand-blue), 0 4px 12px -11px rgba(13,103,149,.46);
+        }
+
+        /* Global analysis controls are the visual operating center of the Viewer. */
+        .viewer-global-analysis-bar {
+            border-color: var(--viewer-border-default);
+            border-left: 4px solid var(--viewer-brand-blue);
+            background:
+                linear-gradient(102deg, rgba(20,142,204,.075) 0%, rgba(255,255,255,.97) 38%, rgba(255,255,255,.97) 90%, rgba(238,255,22,.075) 100%);
+            box-shadow: var(--viewer-shadow-floating);
+        }
+        .viewer-global-analysis-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--viewer-brand-blue-deep);
+        }
+        .viewer-global-analysis-title::after {
+            content: "";
+            width: 6px;
+            height: 6px;
+            flex: 0 0 6px;
+            border-radius: 999px;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.12);
+        }
+        .viewer-global-analysis-bar .viewer-condition-button.viewer-global-condition-button,
+        .viewer-global-mode-control,
+        #viewerGlobalAnalysisBar .viewer-global-chart-toggle {
+            border-color: var(--viewer-border-default);
+            background: rgba(255,255,255,.96);
+            box-shadow: 0 3px 10px -10px rgba(13,103,149,.42);
+        }
+        .viewer-global-analysis-bar .viewer-condition-button.viewer-global-condition-button:hover {
+            border-color: var(--viewer-border-strong);
+            background: var(--viewer-brand-blue-soft);
+        }
+        .viewer-global-analysis-bar .viewer-condition-label,
+        .viewer-global-control-label { color: var(--viewer-text-tertiary); }
+        .viewer-global-analysis-bar .viewer-condition-value { color: var(--viewer-brand-blue-deep); }
+        .viewer-global-analysis-bar .basic-display-segmented {
+            border-color: var(--viewer-border-default);
+            background: var(--viewer-surface-muted);
+        }
+        .viewer-global-analysis-bar .basic-display-segmented button {
+            position: relative;
+            color: var(--viewer-text-secondary);
+        }
+        .viewer-global-analysis-bar .basic-display-segmented button.active {
+            background: var(--viewer-brand-blue);
+            color: #fff;
+            box-shadow: 0 4px 10px -7px rgba(13,103,149,.64), inset 0 -2px 0 var(--viewer-accent-yellow);
+        }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle[aria-checked="true"] .analysis-chart-toggle-knob {
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 2px 6px rgba(15,23,42,.18), 0 0 0 1px rgba(13,103,149,.12);
+        }
+
+        /* Page identity and primary/secondary actions. */
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--viewer-brand-blue-dark);
+        }
+        .eyebrow::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 2px;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.12);
+        }
+        h1 { color: var(--viewer-text-primary); }
+        .reload {
+            border-color: var(--viewer-border-default);
+            color: var(--viewer-brand-blue-dark);
+            background: rgba(255,255,255,.96);
+        }
+        .reload:hover {
+            border-color: var(--viewer-border-strong);
+            background: var(--viewer-brand-blue-soft);
+            color: var(--viewer-brand-blue-deep);
+        }
+
+        /* Cards stay neutral; branded accents identify the product without competing with data. */
+        .card {
+            border-color: var(--viewer-border-default);
+            background: var(--viewer-surface-panel);
+            box-shadow: var(--viewer-shadow-card);
+        }
+        .section {
+            border-top-color: rgba(20,142,204,.26);
+        }
+        .section-head h2 {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--viewer-text-primary);
+        }
+        .section-head h2::before {
+            content: "";
+            width: 4px;
+            height: 18px;
+            flex: 0 0 4px;
+            border-radius: 999px;
+            background: var(--viewer-brand-blue);
+        }
+        .section-head h2::after {
+            content: "";
+            width: 5px;
+            height: 5px;
+            flex: 0 0 5px;
+            margin-left: -3px;
+            border-radius: 999px;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.10);
+        }
+        .section-note { color: var(--viewer-text-secondary); }
+
+        .grid-kpi .card {
+            position: relative;
+            overflow: hidden;
+        }
+        .grid-kpi .card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto;
+            height: 3px;
+            background: linear-gradient(90deg, var(--viewer-brand-blue) 0 84%, var(--viewer-accent-yellow) 84% 100%);
+        }
+        .kpi-label { color: var(--viewer-text-secondary); }
+        .kpi-value { color: var(--viewer-text-primary); }
+
+        /* Major tab controls reuse the same interaction language. */
+        .month-progress-toggle,
+        .viewer-segmented {
+            border-color: var(--viewer-border-default);
+            background: var(--viewer-surface-muted);
+        }
+        .viewer-segmented button.active {
+            color: var(--viewer-brand-blue-deep);
+            box-shadow: 0 2px 8px -6px rgba(13,103,149,.46), inset 0 -2px 0 var(--viewer-accent-yellow);
+        }
+        .analysis-series-toolbar button.active {
+            border-color: var(--viewer-border-strong);
+            background: var(--viewer-brand-blue-soft);
+            color: var(--viewer-brand-blue-deep);
+            box-shadow: inset 0 -2px 0 var(--viewer-accent-yellow);
+        }
+        .period-action {
+            border-color: var(--viewer-border-default);
+            color: var(--viewer-brand-blue-dark);
+        }
+        .period-action.primary,
+        .viewer-modal-foot button.primary {
+            border-color: var(--viewer-brand-blue);
+            background: var(--viewer-brand-blue);
+            color: #fff;
+            box-shadow: inset 0 -2px 0 rgba(238,255,22,.78);
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: none;
+            box-shadow: var(--viewer-focus-ring);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar-toggle,
+            .viewer-condition-button,
+            .basic-display-segmented button,
+            .analysis-chart-toggle { transition: none !important; }
+        }
 </style>
 </head>
 <body>
@@ -3927,7 +4202,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.13-viewer-ui-v30.15-chart-tooltip-target-rate";
+    "2026.09.13-viewer-ui-v30.16-design-tokens-shell";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
