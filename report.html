@@ -189,6 +189,42 @@
         }
         .section h2 { margin: 0; font-size: 17px; }
         .section-note { font-size: 11px; color: var(--muted); }
+        .month-age-filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 20px;
+            padding: 2px 7px;
+            border: 1px solid #dfe9ee;
+            border-radius: 999px;
+            background: #f8fbfc;
+            color: #6f7f8b;
+            font-size: 10px;
+            font-weight: 650;
+            vertical-align: middle;
+        }
+        .month-age-filter-badge strong {
+            color: #536674;
+            font-weight: 800;
+        }
+        .month-age-filter-badge.active {
+            border-color: rgba(20,142,204,.27);
+            background: var(--viewer-brand-blue-soft);
+            color: var(--viewer-brand-blue-dark);
+            box-shadow: inset 3px 0 0 var(--viewer-accent-yellow);
+        }
+        .month-age-filter-badge.active::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            flex: 0 0 7px;
+            border-radius: 50%;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.16);
+        }
+        .month-age-filter-badge.active strong {
+            color: var(--viewer-brand-blue-dark);
+        }
         .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; min-width: 620px; background: white; }
         th, td {
@@ -870,6 +906,32 @@
             color: #526576;
             font-size: 9.4px;
             line-height: 1.4;
+        }
+
+        .month-age-filter-control.filter-active {
+            margin-top: 8px;
+            padding: 8px;
+            border: 1px solid rgba(20,142,204,.24);
+            border-radius: 9px;
+            background: linear-gradient(90deg, rgba(238,255,22,.13), rgba(237,248,253,.82) 28%, #fff 100%);
+        }
+
+        .month-age-filter-control.filter-active .month-age-filter-summary {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--viewer-brand-blue-dark);
+            font-weight: 800;
+        }
+
+        .month-age-filter-control.filter-active .month-age-filter-summary::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            flex: 0 0 7px;
+            border-radius: 50%;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.16);
         }
 
         .basic-column-axis-note {
@@ -2650,6 +2712,117 @@
             font-size: 9.5px;
             line-height: 1.35;
         }
+        .analysis-series-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .analysis-series-toolbar-label {
+            color: #71808c;
+            font-size: 9.5px;
+            font-weight: 700;
+            margin-right: 2px;
+        }
+        .analysis-series-toolbar button {
+            padding: 5px 8px;
+            border: 1px solid #d8e4ea;
+            border-radius: 7px;
+            background: #fff;
+            color: #657784;
+            cursor: pointer;
+            font-size: 9.5px;
+            font-weight: 750;
+        }
+        .analysis-series-toolbar button:hover {
+            border-color: rgba(20,142,204,.35);
+            background: var(--viewer-brand-blue-soft);
+        }
+        .analysis-series-toolbar button.active {
+            border-color: rgba(20,142,204,.42);
+            background: var(--viewer-brand-blue-soft);
+            color: var(--viewer-brand-blue-dark);
+        }
+        .analysis-series-picker {
+            margin-top: 9px;
+            padding: 9px 10px;
+            border: 1px solid #dfe9ee;
+            border-radius: 9px;
+            background: #fff;
+        }
+        .analysis-series-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 6px 10px;
+            max-height: 180px;
+            overflow: auto;
+            padding: 2px;
+        }
+        .analysis-series-picker-item {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #425664;
+            font-size: 9.5px;
+        }
+        .analysis-series-picker-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .analysis-series-picker-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .analysis-series-picker-note {
+            color: #7a8994;
+            font-size: 9px;
+            line-height: 1.35;
+        }
+        .analysis-series-picker-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .analysis-series-picker-actions button {
+            padding: 5px 9px;
+            border: 1px solid #d7e3e9;
+            border-radius: 7px;
+            background: #fff;
+            color: #60717d;
+            cursor: pointer;
+            font-size: 9.5px;
+            font-weight: 750;
+        }
+        .analysis-series-picker-actions button[data-series-apply] {
+            border-color: var(--viewer-brand-blue);
+            background: var(--viewer-brand-blue);
+            color: #fff;
+        }
+        .analysis-month-series-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px 12px;
+            margin-top: 9px;
+        }
+        .analysis-month-series-legend-item {
+            min-width: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #5f707c;
+            font-size: 9.5px;
+        }
+        .analysis-month-series-legend-line {
+            width: 16px;
+            height: 3px;
+            border-radius: 999px;
+            flex: 0 0 16px;
+        }
         .analysis-chart-legend {
             display: flex;
             flex-wrap: wrap;
@@ -2768,6 +2941,8 @@
         .analysis-chart-svg .line-rate { fill: none; stroke: #0f6795; stroke-width: 2.3; }
         .analysis-chart-svg .line-period { fill: none; stroke: #0f6795; stroke-width: 2.5; }
         .analysis-chart-svg .point-period { fill: #0f6795; stroke: #fff; stroke-width: 1.5; }
+        .analysis-chart-svg .month-series-line { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+        .analysis-chart-svg .month-series-point { stroke: #fff; stroke-width: 1.4; }
         .analysis-chart-svg .point-total { fill: #71808c; }
         .analysis-chart-svg .point-target,
         .analysis-chart-svg .point-rate { fill: #0f6795; stroke: #fff; stroke-width: 1.5; }
@@ -3461,7 +3636,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.11-viewer-ui-v30.8-final";
+    "2026.09.12-viewer-ui-v30.9-month-series-filter-emphasis";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -3617,6 +3792,7 @@ function renderBasicColumnAxisControl(basicColumnAxis) {
 
     if (monthFilter) {
         monthFilter.classList.toggle("hidden", activeKey !== "month");
+        monthFilter.classList.toggle("filter-active", activeKey === "month" && currentViewerMonthAgeFilter.mode === "custom");
     }
     if (targetAgeButton) {
         targetAgeButton.classList.toggle("hidden", activeKey === "month");
@@ -3624,7 +3800,11 @@ function renderBasicColumnAxisControl(basicColumnAxis) {
 
     if (allButton) allButton.classList.toggle("active", currentViewerMonthAgeFilter.mode !== "custom");
     if (customButton) customButton.classList.toggle("active", currentViewerMonthAgeFilter.mode === "custom");
-    if (monthSummary) monthSummary.textContent = monthAgeFilterSummaryLabel();
+    if (monthSummary) {
+        monthSummary.textContent = currentViewerMonthAgeFilter.mode === "custom"
+            ? `フィルター適用中：${monthAgeFilterSummaryLabel()}`
+            : "全年齢";
+    }
 
     if (note) {
         if (activeKey === "month") {
@@ -3639,7 +3819,7 @@ function renderBasicColumnAxisControl(basicColumnAxis) {
     const chartNote = document.querySelector("#analysisConditionSidebarGroup .analysis-chart-toggle-note");
     if (chartNote) {
         chartNote.textContent = activeKey === "month"
-            ? "応募量と月次推移を可視化"
+            ? "各表の月次推移を折れ線で可視化"
             : "各表の量とターゲット率を可視化";
     }
 }
@@ -6186,9 +6366,17 @@ function recentMetricHeaderHtml(label, labels) {
     return `<th><span class="target-header"><span class="target-header-main">${escapeHtml(label)}</span>${range ? `<span class="target-header-age">${escapeHtml(range)}</span>` : ""}</span></th>`;
 }
 
+function monthAgeFilterBadgeHtml() {
+    const label = escapeHtml(monthAgeFilterSummaryLabel());
+    if (currentViewerMonthAgeFilter.mode === "custom") {
+        return `<span class="month-age-filter-badge active" title="この表は表示対象年齢で絞り込まれています">年齢フィルター適用中 <strong>${label}</strong></span>`;
+    }
+    return `<span class="month-age-filter-badge">表示対象年齢 <strong>全年齢</strong></span>`;
+}
+
 function basicTableAgeFilterSuffix() {
     return currentViewerBasicColumnAxis === "month"
-        ? ` ／ 表示対象年齢：${escapeHtml(monthAgeFilterSummaryLabel())}`
+        ? ` ／ ${monthAgeFilterBadgeHtml()}`
         : "";
 }
 
@@ -6233,6 +6421,7 @@ function analysisChartKind(tableId) {
 
 function analysisChartRowsFromGroups(groups, options = {}) {
     const recentLabels = Array.isArray(options.recentLabels) ? options.recentLabels : [];
+    const monthLabels = Array.isArray(options.monthLabels) ? options.monthLabels : [];
     return (Array.isArray(groups) ? groups : [])
         .map(group => ({
             label: String(group?.label || "（未設定）"),
@@ -6240,13 +6429,17 @@ function analysisChartRowsFromGroups(groups, options = {}) {
             target: Math.max(0, Number(group?.target || 0)),
             recent: recentLabels.length
                 ? Math.max(0, countForLabels(group?.columnCounts, recentLabels))
-                : 0
+                : 0,
+            monthCounts: monthLabels.length
+                ? Object.fromEntries(monthLabels.map(label => [label, Math.max(0, Number(group?.columnCounts?.[label] || 0))]))
+                : {}
         }))
         .filter(row => row.total > 0);
 }
 
 function analysisChartRowsFromDetailRows(rows, options = {}) {
     const recentLabels = Array.isArray(options.recentLabels) ? options.recentLabels : [];
+    const monthLabels = Array.isArray(options.monthLabels) ? options.monthLabels : [];
     return (Array.isArray(rows) ? rows : [])
         .map(row => ({
             label: String(row?.label || "（未設定）"),
@@ -6254,7 +6447,10 @@ function analysisChartRowsFromDetailRows(rows, options = {}) {
             target: Math.max(0, Number(row?.target || 0)),
             recent: recentLabels.length
                 ? Math.max(0, countForLabels(row?.columnCounts, recentLabels))
-                : 0
+                : 0,
+            monthCounts: monthLabels.length
+                ? Object.fromEntries(monthLabels.map(label => [label, Math.max(0, Number(row?.columnCounts?.[label] || 0))]))
+                : {}
         }))
         .filter(row => row.total > 0);
 }
@@ -6271,11 +6467,13 @@ function analysisChartPanelHtml(tableId, label, rows, options = {}) {
         recentLabel: options.recentLabel || "直近3ヶ月応募数",
         recentRange: options.recentRange || "",
         filterLabel: options.filterLabel || (mode === "month" ? monthAgeFilterSummaryLabel() : targetAgeSummaryLabel()),
+        monthLabels: Array.isArray(options.monthLabels) ? options.monthLabels.map(String) : [],
         rows: (Array.isArray(rows) ? rows : []).map(row => ({
             label: String(row?.label || "（未設定）"),
             total: Math.max(0, Number(row?.total || 0)),
             target: Math.max(0, Math.min(Number(row?.target || 0), Number(row?.total || 0))),
-            recent: Math.max(0, Math.min(Number(row?.recent || 0), Number(row?.total || 0)))
+            recent: Math.max(0, Math.min(Number(row?.recent || 0), Number(row?.total || 0))),
+            monthCounts: row?.monthCounts && typeof row.monthCounts === "object" ? row.monthCounts : {}
         }))
     };
 
@@ -6318,11 +6516,12 @@ function analysisChartPrepareRows(config) {
             label: String(row.label || "（未設定）"),
             total: Math.max(0, Number(row.total || 0)),
             target: Math.max(0, Math.min(Number(row.target || 0), Number(row.total || 0))),
-            recent: Math.max(0, Math.min(Number(row.recent || 0), Number(row.total || 0)))
+            recent: Math.max(0, Math.min(Number(row.recent || 0), Number(row.total || 0))),
+            monthCounts: row?.monthCounts && typeof row.monthCounts === "object" ? row.monthCounts : {}
         }))
         .filter(row => row.total > 0);
 
-    if (config.kind !== "horizontal" || rows.length <= 12) {
+    if (config.mode === "month" || config.kind !== "horizontal" || rows.length <= 12) {
         return {
             rows,
             summarized: false
@@ -6638,6 +6837,267 @@ function buildAnalysisMonthOrderedCharts(rows, config) {
     `;
 }
 
+const ANALYSIS_MONTH_SERIES_COLORS = Object.freeze([
+    "#148ecc", "#0d6f78", "#8255b5", "#cf7b24", "#4b7f35",
+    "#c84f6a", "#4364a8", "#8a6c22", "#5d6f7b", "#15958d"
+]);
+
+const analysisMonthSeriesState = new Map();
+
+function analysisMonthSeriesStateFor(config) {
+    const key = String(config?.tableId || "month-series");
+    if (!analysisMonthSeriesState.has(key)) {
+        analysisMonthSeriesState.set(key, {
+            mode: "top5",
+            custom: [],
+            pickerOpen: false,
+            draft: []
+        });
+    }
+    return analysisMonthSeriesState.get(key);
+}
+
+function analysisMonthSeriesLimit(mode) {
+    if (mode === "top3") return 3;
+    if (mode === "top10") return 10;
+    return 5;
+}
+
+function analysisMonthSortedSeries(config) {
+    return (Array.isArray(config?.rows) ? config.rows : [])
+        .filter(row => Number(row?.total || 0) > 0)
+        .slice()
+        .sort((a, b) => {
+            const totalDiff = Number(b?.total || 0) - Number(a?.total || 0);
+            if (totalDiff) return totalDiff;
+            return String(a?.label || "").localeCompare(String(b?.label || ""), "ja");
+        });
+}
+
+function analysisMonthSelectedSeries(config, state) {
+    const all = analysisMonthSortedSeries(config);
+    if (state?.mode === "custom") {
+        const wanted = new Set((state.custom || []).map(String));
+        const custom = all.filter(row => wanted.has(String(row.label))).slice(0, 10);
+        if (custom.length) return custom;
+    }
+    return all.slice(0, analysisMonthSeriesLimit(state?.mode || "top5"));
+}
+
+function analysisMonthSeriesControlsHtml(config, state, allSeries) {
+    if ((allSeries || []).length <= 1) return "";
+    const modes = [
+        ["top3", "上位3"],
+        ["top5", "上位5"],
+        ["top10", "上位10"]
+    ];
+    const buttons = modes.map(([mode, label]) =>
+        `<button type="button" data-series-mode="${mode}" class="${state.mode === mode && !state.pickerOpen ? "active" : ""}">${label}</button>`
+    ).join("");
+    const customActive = state.mode === "custom" || state.pickerOpen;
+
+    let picker = "";
+    if (state.pickerOpen) {
+        const draft = new Set((state.draft || []).map(String));
+        picker = `
+            <div class="analysis-series-picker" data-series-picker="1">
+                <div class="analysis-series-picker-grid">
+                    ${allSeries.map(row => {
+                        const label = String(row.label || "（未設定）");
+                        return `<label class="analysis-series-picker-item" title="${escapeHtml(label)}"><input type="checkbox" data-series-choice="${escapeHtml(label)}" ${draft.has(label) ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`;
+                    }).join("")}
+                </div>
+                <div class="analysis-series-picker-footer">
+                    <div class="analysis-series-picker-note">最大10系列まで選択できます。</div>
+                    <div class="analysis-series-picker-actions">
+                        <button type="button" data-series-cancel="1">キャンセル</button>
+                        <button type="button" data-series-apply="1">適用</button>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    return `
+        <div class="analysis-series-toolbar" role="group" aria-label="折れ線グラフの表示系列">
+            <span class="analysis-series-toolbar-label">表示系列</span>
+            ${buttons}
+            <button type="button" data-series-custom="1" class="${customActive ? "active" : ""}">選択</button>
+        </div>
+        ${picker}`;
+}
+
+function analysisMonthSeriesLegendHtml(series) {
+    return `<div class="analysis-month-series-legend">${series.map((row, index) => {
+        const color = ANALYSIS_MONTH_SERIES_COLORS[index % ANALYSIS_MONTH_SERIES_COLORS.length];
+        return `<span class="analysis-month-series-legend-item" title="${escapeHtml(row.label)}"><span class="analysis-month-series-legend-line" style="background:${color}"></span>${escapeHtml(analysisChartShortLabel(row.label, 18))}</span>`;
+    }).join("")}</div>`;
+}
+
+function buildAnalysisMonthSeriesSvg(monthLabels, series) {
+    const labels = Array.isArray(monthLabels) ? monthLabels : [];
+    const rows = Array.isArray(series) ? series : [];
+    const width = Math.max(620, labels.length * 82 + 92);
+    const height = 286;
+    const pad = { top: 18, right: 20, bottom: 58, left: 52 };
+    const plotWidth = width - pad.left - pad.right;
+    const plotHeight = height - pad.top - pad.bottom;
+    const baseline = pad.top + plotHeight;
+    const maxValue = Math.max(1, ...rows.flatMap(row => labels.map(label => Number(row?.monthCounts?.[label] || 0))));
+    const scale = analysisChartNiceScale(maxValue, 4);
+    const stepX = labels.length > 1 ? plotWidth / (labels.length - 1) : 0;
+    const parts = [];
+
+    for (let value = 0; value <= scale.ceiling + .0001; value += scale.step) {
+        const y = baseline - value / scale.ceiling * plotHeight;
+        parts.push(`<line class="grid-line" x1="${pad.left}" y1="${y}" x2="${pad.left + plotWidth}" y2="${y}"></line>`);
+        parts.push(`<text class="axis-text" x="${pad.left - 7}" y="${y + 3}" text-anchor="end">${Math.round(value).toLocaleString("ja-JP")}</text>`);
+    }
+
+    rows.forEach((row, seriesIndex) => {
+        const color = ANALYSIS_MONTH_SERIES_COLORS[seriesIndex % ANALYSIS_MONTH_SERIES_COLORS.length];
+        const points = labels.map((label, index) => {
+            const value = Math.max(0, Number(row?.monthCounts?.[label] || 0));
+            const x = labels.length > 1 ? pad.left + stepX * index : pad.left + plotWidth / 2;
+            const y = baseline - value / scale.ceiling * plotHeight;
+            return { label, value, x, y };
+        });
+        if (points.length > 1) {
+            parts.push(`<polyline class="month-series-line" style="stroke:${color}" points="${points.map(point => `${point.x},${point.y}`).join(" ")}"></polyline>`);
+        }
+        points.forEach(point => {
+            parts.push(`<circle class="month-series-point" style="fill:${color}" cx="${point.x}" cy="${point.y}" r="3.8"><title>${escapeHtml(`${row.label} ／ ${point.label}：${point.value.toLocaleString("ja-JP")}件`)}</title></circle>`);
+        });
+    });
+
+    labels.forEach((label, index) => {
+        const x = labels.length > 1 ? pad.left + stepX * index : pad.left + plotWidth / 2;
+        const rotate = labels.length > 9;
+        const short = analysisChartShortLabel(label, 9);
+        if (rotate) {
+            parts.push(`<text class="axis-text" x="${x}" y="${baseline + 15}" text-anchor="end" transform="rotate(-36 ${x} ${baseline + 15})"><title>${escapeHtml(label)}</title>${escapeHtml(short)}</text>`);
+        } else {
+            parts.push(`<text class="axis-text" x="${x}" y="${baseline + 18}" text-anchor="middle"><title>${escapeHtml(label)}</title>${escapeHtml(short)}</text>`);
+        }
+    });
+    parts.push(`<line class="axis-line" x1="${pad.left}" y1="${baseline}" x2="${pad.left + plotWidth}" y2="${baseline}"></line>`);
+    return `<svg class="analysis-chart-svg" viewBox="0 0 ${width} ${height}" style="width:${width}px;height:${height}px" role="img" aria-label="応募数の月次推移">${parts.join("")}</svg>`;
+}
+
+function buildAnalysisMonthTimeSeriesChart(config) {
+    if (config.tableId === "month") {
+        const monthRows = (Array.isArray(config.rows) ? config.rows : []).slice();
+        const monthLabels = monthRows.map(row => String(row.label || ""));
+        const totalSeries = [{
+            label: "応募数",
+            total: monthRows.reduce((sum, row) => sum + Number(row.total || 0), 0),
+            monthCounts: Object.fromEntries(monthRows.map(row => [String(row.label || ""), Math.max(0, Number(row.total || 0))]))
+        }];
+        return `
+            <div class="analysis-chart-grid single">
+                <div class="analysis-chart-card">
+                    <div class="analysis-chart-title">応募数の月次推移</div>
+                    <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。選択期間内の実応募数を月順で表示します。</div>
+                    ${analysisMonthSeriesLegendHtml(totalSeries)}
+                    <div class="analysis-chart-scroll">${buildAnalysisMonthSeriesSvg(monthLabels, totalSeries)}</div>
+                </div>
+            </div>`;
+    }
+
+    const state = analysisMonthSeriesStateFor(config);
+    const allSeries = analysisMonthSortedSeries(config);
+    const selected = analysisMonthSelectedSeries(config, state);
+    const monthLabels = Array.isArray(config.monthLabels) ? config.monthLabels : [];
+    const modeLabel = state.mode === "custom"
+        ? `選択した${selected.length}系列`
+        : `期間応募数${state.mode === "top3" ? "上位3" : state.mode === "top10" ? "上位10" : "上位5"}系列`;
+
+    return `
+        <div class="analysis-chart-grid single">
+            <div class="analysis-chart-card">
+                <div class="analysis-chart-title">${escapeHtml(config.label || "区分別")}・応募数の月次推移</div>
+                <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。${escapeHtml(modeLabel)}を同じ時間軸で比較します。</div>
+                ${analysisMonthSeriesControlsHtml(config, state, allSeries)}
+                ${analysisMonthSeriesLegendHtml(selected)}
+                <div class="analysis-chart-scroll">${buildAnalysisMonthSeriesSvg(monthLabels, selected)}</div>
+                <div class="analysis-chart-footnote">線は期間応募数の多い順を基準に選びます。任意選択は最大10系列です。</div>
+            </div>
+        </div>`;
+}
+
+function rerenderAnalysisMonthPanel(panel) {
+    if (!panel) return;
+    panel.dataset.chartRendered = "";
+    renderAnalysisChartPanel(panel);
+}
+
+function bindAnalysisMonthSeriesControls(panel, config) {
+    if (!panel || config?.mode !== "month" || config?.tableId === "month") return;
+    const state = analysisMonthSeriesStateFor(config);
+    const allSeries = analysisMonthSortedSeries(config);
+
+    panel.querySelectorAll("[data-series-mode]").forEach(button => {
+        button.addEventListener("click", () => {
+            state.mode = button.dataset.seriesMode || "top5";
+            state.pickerOpen = false;
+            state.draft = [];
+            rerenderAnalysisMonthPanel(panel);
+        });
+    });
+
+    panel.querySelector("[data-series-custom]")?.addEventListener("click", () => {
+        if (state.pickerOpen) {
+            state.pickerOpen = false;
+        } else {
+            const seed = state.mode === "custom" && state.custom.length
+                ? state.custom
+                : analysisMonthSelectedSeries(config, state).map(row => String(row.label));
+            state.draft = seed.slice(0, 10);
+            state.pickerOpen = true;
+        }
+        rerenderAnalysisMonthPanel(panel);
+    });
+
+    panel.querySelectorAll("[data-series-choice]").forEach(input => {
+        input.addEventListener("change", () => {
+            const label = String(input.dataset.seriesChoice || "");
+            const draft = new Set((state.draft || []).map(String));
+            if (input.checked) {
+                if (draft.size >= 10 && !draft.has(label)) {
+                    input.checked = false;
+                    const note = panel.querySelector(".analysis-series-picker-note");
+                    if (note) note.textContent = "最大10系列までです。いずれかを外してから追加してください。";
+                    return;
+                }
+                draft.add(label);
+            } else {
+                draft.delete(label);
+            }
+            state.draft = Array.from(draft);
+        });
+    });
+
+    panel.querySelector("[data-series-cancel]")?.addEventListener("click", () => {
+        state.pickerOpen = false;
+        state.draft = [];
+        rerenderAnalysisMonthPanel(panel);
+    });
+
+    panel.querySelector("[data-series-apply]")?.addEventListener("click", () => {
+        const valid = new Set(allSeries.map(row => String(row.label)));
+        const selected = (state.draft || []).filter(label => valid.has(String(label))).slice(0, 10);
+        if (!selected.length) {
+            const note = panel.querySelector(".analysis-series-picker-note");
+            if (note) note.textContent = "1系列以上を選択してください。";
+            return;
+        }
+        state.custom = selected;
+        state.mode = "custom";
+        state.pickerOpen = false;
+        state.draft = [];
+        rerenderAnalysisMonthPanel(panel);
+    });
+}
+
 function renderAnalysisChartPanel(panel) {
     if (!panel || panel.dataset.chartRendered === "1") return;
     let config = null;
@@ -6657,9 +7117,9 @@ function renderAnalysisChartPanel(panel) {
     }
 
     if (config.mode === "month") {
-        panel.innerHTML = config.kind === "horizontal"
-            ? buildAnalysisMonthHorizontalCharts(prepared.rows, config, prepared.summarized)
-            : buildAnalysisMonthOrderedCharts(prepared.rows, config);
+        config.rows = prepared.rows;
+        panel.innerHTML = buildAnalysisMonthTimeSeriesChart(config);
+        bindAnalysisMonthSeriesControls(panel, config);
     } else {
         panel.innerHTML = config.kind === "horizontal"
             ? buildAnalysisHorizontalCharts(prepared.rows, prepared.summarized)
@@ -6707,6 +7167,7 @@ function refreshAnalysisChartForSortedTable(table) {
         return;
     }
 
+    if (config.mode === "month") return;
     if (config.kind !== "horizontal") return;
 
     const rows = Array.from(table.tBodies?.[0]?.rows || [])
@@ -6870,12 +7331,13 @@ function renderCrossTable(table, core) {
             ${analysisChartPanelHtml(
                 table.id,
                 table.label,
-                analysisChartRowsFromGroups(agg.groups, { recentLabels }),
+                analysisChartRowsFromGroups(agg.groups, { recentLabels, monthLabels: monthMode ? columnLabels : [] }),
                 {
                     mode: monthMode ? "month" : "target",
                     recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
                     recentRange: recentMonthRangeText(recentLabels),
-                    filterLabel: monthAgeFilterSummaryLabel()
+                    filterLabel: monthAgeFilterSummaryLabel(),
+                    monthLabels: monthMode ? columnLabels : []
                 }
             )}
             <div class="table-wrap">
@@ -7123,21 +7585,22 @@ function renderNoteDetail(detail, core) {
     const noteRecentLabels = noteMonthMode ? recentMonthLabelsFor(detail.aggregate) : [];
     const note = document.getElementById("noteDetailNote");
     if (note) {
-        note.textContent = noteMonthMode
-            ? `求人備考の最初の1行（<BR>等より前）で集計 ／ 求人突合済応募 ${core.formatNumber(detail.aggregate.baseTotal)}件 ／ 基本列：応募年月 ／ 表示対象年齢：${monthAgeFilterSummaryLabel()}`
-            : "求人備考の最初の1行（<BR>等より前）で集計";
+        note.innerHTML = noteMonthMode
+            ? `求人備考の最初の1行（&lt;BR&gt;等より前）で集計 ／ 求人突合済応募 ${core.formatNumber(detail.aggregate.baseTotal)}件 ／ 基本列：応募年月 ／ ${monthAgeFilterBadgeHtml()}`
+            : "求人備考の最初の1行（&lt;BR&gt;等より前）で集計";
     }
     document.getElementById("noteDetailBody").innerHTML =
         analysisChartPanelHtml(
             "note-detail",
             "求人備考1行目別応募傾向",
-            analysisChartRowsFromGroups(detail.aggregate.groups, { recentLabels: noteRecentLabels }),
+            analysisChartRowsFromGroups(detail.aggregate.groups, { recentLabels: noteRecentLabels, monthLabels: noteMonthMode ? (detail.aggregate.columnLabels || []) : [] }),
             {
                 kind: "horizontal",
                 mode: noteMonthMode ? "month" : "target",
                 recentLabel: recentMonthMetricLabel(noteRecentLabels, "応募数"),
                 recentRange: recentMonthRangeText(noteRecentLabels),
-                filterLabel: monthAgeFilterSummaryLabel()
+                filterLabel: monthAgeFilterSummaryLabel(),
+                monthLabels: noteMonthMode ? (detail.aggregate.columnLabels || []) : []
             }
         ) +
         renderStandaloneCross(
@@ -7256,8 +7719,8 @@ function renderIndeedTagDetail(detail, core) {
     const recentLabels = monthMode ? recentMonthLabelsFor(detail) : [];
     const baseRecent = monthMode ? baseRecentMonthCount(detail, recentLabels) : 0;
 
-    document.getElementById("indeedTagDetailNote").textContent =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ 1応募は複数タグへ重複集計${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}${monthMode ? ` ／ 表示対象年齢：${monthAgeFilterSummaryLabel()}` : ""}`;
+    document.getElementById("indeedTagDetailNote").innerHTML =
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${escapeHtml(limitLabel)} ／ 1応募は複数タグへ重複集計${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${escapeHtml(detail.columnAxisLabel)}` : ""}${monthMode ? ` ／ ${monthAgeFilterBadgeHtml()}` : ""}`;
 
     const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
     const isAgeAxis = !Array.isArray(detail.columnLabels);
@@ -7309,13 +7772,14 @@ function renderIndeedTagDetail(detail, core) {
         ${analysisChartPanelHtml(
             "indeed-tag-detail",
             "Indeed求人タグ別応募傾向",
-            analysisChartRowsFromDetailRows(detail.rows, { recentLabels }),
+            analysisChartRowsFromDetailRows(detail.rows, { recentLabels, monthLabels: monthMode ? columns : [] }),
             {
                 kind: "horizontal",
                 mode: monthMode ? "month" : "target",
                 recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
                 recentRange: recentMonthRangeText(recentLabels),
-                filterLabel: monthAgeFilterSummaryLabel()
+                filterLabel: monthAgeFilterSummaryLabel(),
+                monthLabels: monthMode ? columns : []
             }
         )}
         <div class="table-wrap detail-table-wrap">
@@ -7361,8 +7825,8 @@ function renderTopImageDetail(detail, core) {
     const recentLabels = monthMode ? recentMonthLabelsFor(detail) : [];
     const baseRecent = monthMode ? baseRecentMonthCount(detail, recentLabels) : 0;
 
-    document.getElementById("topImageDetailNote").textContent =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${limitLabel} ／ URL未取得でも数値分析には含みます${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${detail.columnAxisLabel}` : ""}${monthMode ? ` ／ 表示対象年齢：${monthAgeFilterSummaryLabel()}` : ""}`;
+    document.getElementById("topImageDetailNote").innerHTML =
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${escapeHtml(limitLabel)} ／ URL未取得でも数値分析には含みます${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${escapeHtml(detail.columnAxisLabel)}` : ""}${monthMode ? ` ／ ${monthAgeFilterBadgeHtml()}` : ""}`;
 
     const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
     const isAgeAxis = !Array.isArray(detail.columnLabels);
@@ -7424,13 +7888,14 @@ function renderTopImageDetail(detail, core) {
         ${analysisChartPanelHtml(
             "top-image-detail",
             "TOP画像別応募傾向",
-            analysisChartRowsFromDetailRows(detail.rows, { recentLabels }),
+            analysisChartRowsFromDetailRows(detail.rows, { recentLabels, monthLabels: monthMode ? columns : [] }),
             {
                 kind: "horizontal",
                 mode: monthMode ? "month" : "target",
                 recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
                 recentRange: recentMonthRangeText(recentLabels),
-                filterLabel: monthAgeFilterSummaryLabel()
+                filterLabel: monthAgeFilterSummaryLabel(),
+                monthLabels: monthMode ? columns : []
             }
         )}
         <div class="table-wrap detail-table-wrap">
@@ -10085,6 +10550,7 @@ function initializeViewerPeriod(
 
     currentViewerBucketOverrides = {};
     currentViewerAnalysisChartsEnabled = false;
+    analysisMonthSeriesState.clear();
     updateAnalysisChartToggleUi();
     currentViewerBasicColumnAxis = "age";
     currentCustomAnalysisState = { initialized:false, userTouched:false, rowAxes:[], colAxis:"", ageMin:"", ageMax:"" };
