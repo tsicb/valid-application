@@ -3192,6 +3192,7 @@
                 <section class="sidebar-group"><div class="sidebar-group-title">概要</div><nav class="sidebar-nav" aria-label="概要">
                     <button type="button" class="sidebar-nav-button" data-target="reportOverview" title="レポート概要">概要</button>
                     <button type="button" class="sidebar-nav-button" data-target="kpiSection" title="主要指標">主要指標</button>
+                    <button type="button" class="sidebar-nav-button" data-target="monthProgressSection" title="月間応募進捗">応募進捗</button>
                     <button type="button" class="sidebar-nav-button" data-target="ageSection" title="年代構成">年代</button>
                 </nav></section>
                 <section id="basicSidebarGroup" class="sidebar-group">
@@ -3810,7 +3811,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.12-viewer-ui-v30.12-sticky-analysis-bar-fix";
+    "2026.09.12-viewer-ui-v30.13-progress-nav-order";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -4490,12 +4491,6 @@ function refreshDetailSidebarNavigation() {
     if (!nav || !group) return;
 
     const candidates = [
-        {
-            id:
-                "monthProgressSection",
-            label:
-                "進捗"
-        },
         {
             id:
                 "noteDetailSection",
