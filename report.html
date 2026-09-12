@@ -3028,6 +3028,37 @@
             font-size: 10.5px;
             font-weight: 800;
         }
+        #viewerGlobalAgePickerBtn.filter-active {
+            border-color: rgba(20,142,204,.34);
+            background: linear-gradient(90deg,rgba(238,255,22,.16),rgba(237,248,253,.92) 34%,#fff 100%);
+            box-shadow: inset 3px 0 0 var(--viewer-accent-yellow);
+        }
+        #viewerGlobalAgePickerBtn.filter-active .viewer-condition-value::before {
+            content: "";
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            margin-right: 5px;
+            border-radius: 50%;
+            background: var(--viewer-accent-yellow);
+            box-shadow: 0 0 0 1px rgba(13,103,149,.18);
+            vertical-align: 1px;
+        }
+        .viewer-target-overlap-status {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 4px 7px;
+            border: 1px solid #f1d47a;
+            border-radius: 999px;
+            background: #fffbe8;
+            color: #8a5a00;
+            font-size: 9px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .viewer-target-overlap-status.hidden { display: none; }
         .viewer-global-chevron {
             color: #7a8d9d;
             font-size: 14px;
@@ -3219,6 +3250,11 @@
                 <span id="viewerPeriodSummary" class="viewer-condition-value">全期間</span>
                 <span class="viewer-global-chevron" aria-hidden="true">›</span>
             </button>
+            <button id="viewerGlobalAgePickerBtn" type="button" class="viewer-condition-button viewer-global-condition-button viewer-global-age-filter-button" title="集計対象年齢を変更">
+                <span class="viewer-condition-label">年齢</span>
+                <span id="viewerGlobalAgeSummary" class="viewer-condition-value">全年齢</span>
+                <span class="viewer-global-chevron" aria-hidden="true">›</span>
+            </button>
             <div class="viewer-global-mode-control">
                 <span class="viewer-global-control-label">表示</span>
                 <div class="basic-display-segmented" role="group" aria-label="基本表示">
@@ -3231,14 +3267,7 @@
                 <span id="viewerTargetAgeSummary" class="viewer-condition-value">全年齢</span>
                 <span class="viewer-global-chevron" aria-hidden="true">›</span>
             </button>
-            <div id="viewerMonthAgeFilterControl" class="month-age-filter-control viewer-global-month-age hidden">
-                <div class="month-age-filter-label">表示対象年齢</div>
-                <div class="month-age-filter-actions" role="group" aria-label="応募年月別の表示対象年齢">
-                    <button id="viewerMonthAgeAllBtn" type="button" data-month-age-mode="all" class="active">全年齢</button>
-                    <button id="viewerMonthAgeCustomBtn" type="button" data-month-age-mode="custom">自由指定</button>
-                </div>
-                <div id="viewerMonthAgeFilterSummary" class="month-age-filter-summary">全年齢</div>
-            </div>
+            <span id="viewerTargetOverlapStatus" class="viewer-target-overlap-status hidden"></span>
             <div class="analysis-chart-toggle-row viewer-global-chart-toggle">
                 <div>
                     <div class="analysis-chart-toggle-label">グラフ</div>
@@ -3273,7 +3302,7 @@
 
         <div id="viewerDataSourceNotice" class="notice">
             このページは閲覧専用です。保存済みデータをブラウザ内で集計しています。
-            期間は分析レポート上で自由に絞り込めます。
+            期間・年齢は分析レポート上の共通フィルターで自由に絞り込めます。
         </div>
 
 
@@ -3282,7 +3311,7 @@
             <div class="card kpi">
                 <div class="kpi-label">分析対象応募数</div>
                 <div id="kpiTotal" class="kpi-value">-</div>
-                <div class="kpi-sub">選択期間内</div>
+                <div id="kpiTotalLabel" class="kpi-sub">選択期間内</div>
             </div>
             <div class="card kpi">
                 <div class="kpi-label">ターゲット応募数</div>
@@ -3308,7 +3337,6 @@
                     <div id="monthProgressNote" class="section-note"></div>
                 </div>
                 <div class="section-head-actions month-progress-controls">
-                    <button id="progressAgePickerBtn" type="button" class="custom-age-button"><span id="progressAgeSummary" class="custom-age-current">全年齢</span><span aria-hidden="true">›</span></button>
                     <div class="month-progress-toggle" role="group" aria-label="月間応募進捗の表示切替">
                         <button id="monthProgressModeCumulative" type="button" class="month-progress-toggle-btn active" data-progress-mode="cumulative">累積</button>
                         <button id="monthProgressModeDaily" type="button" class="month-progress-toggle-btn" data-progress-mode="daily">日別</button>
@@ -3391,9 +3419,8 @@
             <div class="field custom-control-wide"><label for="customRowAxis2">行軸2（任意）</label><select id="customRowAxis2"></select></div>
             <div class="field custom-control-wide"><label for="customRowAxis3">行軸3（任意）</label><select id="customRowAxis3"></select></div>
             <div class="field custom-control-wide"><label for="customColAxis">列軸</label><select id="customColAxis"></select></div>
-            <div class="field custom-control-wide"><label for="customAgePickerBtn">集計対象年齢</label><button id="customAgePickerBtn" type="button" class="custom-age-button"><span id="customAgeSummary" class="custom-age-current">全年齢</span><span aria-hidden="true">›</span></button></div>
         </div>
-        <div class="custom-auto-note">軸や年齢を変更すると<strong>自動で再集計</strong>します。行軸は最大3段まで指定できます。</div>
+        <div class="custom-auto-note">軸を変更すると<strong>自動で再集計</strong>します。年齢は上部の共通フィルターを使用し、行軸は最大3段まで指定できます。</div>
 
         <div id="customMessage" class="custom-message hidden"></div>
         <div id="customMeta" class="custom-meta hidden"></div>
@@ -3811,7 +3838,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.12-viewer-ui-v30.13-progress-nav-order";
+    "2026.09.12-viewer-ui-v30.14-global-age-filter";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -3925,11 +3952,9 @@ let viewerSidebarScrollEndTimer =
 let viewerSidebarScrollRaf =
     0;
 
-function monthAgeFilterSummaryLabel() {
-    if (currentViewerMonthAgeFilter.mode !== "custom") return "全年齢";
-
-    const min = viewerOptionalNumber(currentViewerMonthAgeFilter.min);
-    const max = viewerOptionalNumber(currentViewerMonthAgeFilter.max);
+function globalAgeFilterSummaryLabel() {
+    const min = viewerOptionalNumber(currentViewerGlobalAgeFilter.min);
+    const max = viewerOptionalNumber(currentViewerGlobalAgeFilter.max);
 
     if (min === null && max === null) return "全年齢";
     if (min !== null && max !== null) return `${min}～${max}歳`;
@@ -3937,15 +3962,73 @@ function monthAgeFilterSummaryLabel() {
     return `${max}歳以下`;
 }
 
+function globalAgeFilterActive() {
+    return viewerOptionalNumber(currentViewerGlobalAgeFilter.min) !== null ||
+        viewerOptionalNumber(currentViewerGlobalAgeFilter.max) !== null;
+}
+
+function targetAgeOverlapState() {
+    if (!globalAgeFilterActive()) return { kind:"full", label:"" };
+
+    const fMin = viewerOptionalNumber(currentViewerGlobalAgeFilter.min);
+    const fMax = viewerOptionalNumber(currentViewerGlobalAgeFilter.max);
+    const tMin = viewerOptionalNumber(currentViewerTargetAge.min);
+    const tMax = viewerOptionalNumber(currentViewerTargetAge.max);
+
+    if (tMin === null && tMax === null) return { kind:"full", label:"" };
+
+    const low = Math.max(fMin ?? -Infinity, tMin ?? -Infinity);
+    const high = Math.min(fMax ?? Infinity, tMax ?? Infinity);
+
+    if (low > high) {
+        return {
+            kind:"none",
+            label:"ターゲット範囲外",
+            title:"現在の年齢フィルターとターゲット年齢が重なっていないため、ターゲット応募数は0件になります。"
+        };
+    }
+
+    const targetFullyInside =
+        (fMin === null || tMin === null || tMin >= fMin) &&
+        (fMax === null || tMax === null || tMax <= fMax);
+
+    if (!targetFullyInside) {
+        return {
+            kind:"partial",
+            label:"ターゲット一部のみ",
+            title:"ターゲット年齢の一部だけが現在の年齢フィルター内に含まれています。ターゲット集計は共通フィルター内の応募だけを対象にします。"
+        };
+    }
+
+    return { kind:"full", label:"" };
+}
+
+function updateGlobalAgeFilterUi() {
+    const button = document.getElementById("viewerGlobalAgePickerBtn");
+    const summary = document.getElementById("viewerGlobalAgeSummary");
+    const active = globalAgeFilterActive();
+
+    button?.classList.toggle("filter-active", active);
+    if (summary) summary.textContent = globalAgeFilterSummaryLabel();
+    if (button) {
+        button.title = active
+            ? `集計対象年齢：${globalAgeFilterSummaryLabel()}。クリックして変更`
+            : "集計対象年齢：全年齢。クリックして変更";
+    }
+
+    const overlap = targetAgeOverlapState();
+    const status = document.getElementById("viewerTargetOverlapStatus");
+    if (status) {
+        status.classList.toggle("hidden", overlap.kind === "full");
+        status.textContent = overlap.label || "";
+        status.title = overlap.title || "";
+    }
+}
+
 function renderBasicColumnAxisControl(basicColumnAxis) {
     const note = document.getElementById("viewerBasicColumnAxisNote");
-    const monthFilter = document.getElementById("viewerMonthAgeFilterControl");
-    const monthSummary = document.getElementById("viewerMonthAgeFilterSummary");
-    const targetAgeButton = document.getElementById("viewerTargetAgePickerBtn");
     const ageButton = document.getElementById("viewerBasicModeAge");
     const monthButton = document.getElementById("viewerBasicModeMonth");
-    const allButton = document.getElementById("viewerMonthAgeAllBtn");
-    const customButton = document.getElementById("viewerMonthAgeCustomBtn");
 
     const options = Array.isArray(basicColumnAxis?.options) ? basicColumnAxis.options : [];
     const ageOption = options.find(option => option.key === "age");
@@ -3965,30 +4048,12 @@ function renderBasicColumnAxisControl(basicColumnAxis) {
             : "応募年月別で表示";
     }
 
-    if (monthFilter) {
-        monthFilter.classList.toggle("hidden", activeKey !== "month");
-        monthFilter.classList.toggle("filter-active", activeKey === "month" && currentViewerMonthAgeFilter.mode === "custom");
-    }
-    if (targetAgeButton) {
-        targetAgeButton.classList.toggle("hidden", activeKey === "month");
-    }
-
-    if (allButton) allButton.classList.toggle("active", currentViewerMonthAgeFilter.mode !== "custom");
-    if (customButton) customButton.classList.toggle("active", currentViewerMonthAgeFilter.mode === "custom");
-    if (monthSummary) {
-        monthSummary.textContent = currentViewerMonthAgeFilter.mode === "custom"
-            ? `フィルター適用中：${monthAgeFilterSummaryLabel()}`
-            : "全年齢";
-    }
+    updateGlobalAgeFilterUi();
 
     if (note) {
-        if (activeKey === "month") {
-            note.textContent = currentViewerMonthAgeFilter.mode === "custom"
-                ? `応募年月別に比較します。表示対象年齢：${monthAgeFilterSummaryLabel()}。`
-                : "応募年月別に比較します。表示対象年齢は全年齢です。";
-        } else {
-            note.textContent = `年代別に比較します。ターゲット年齢：${targetAgeSummaryLabel()}。`;
-        }
+        note.textContent = activeKey === "month"
+            ? `応募年月別に比較します。共通フィルター年齢：${globalAgeFilterSummaryLabel()}。`
+            : `年代別に比較します。共通フィルター年齢：${globalAgeFilterSummaryLabel()} ／ ターゲット年齢：${targetAgeSummaryLabel()}。`;
     }
 
     const chartNote = document.querySelector("#viewerGlobalAnalysisBar .analysis-chart-toggle-note");
@@ -3997,13 +4062,6 @@ function renderBasicColumnAxisControl(basicColumnAxis) {
             ? "各表の月次推移を折れ線で可視化"
             : "各表の量とターゲット率を可視化";
     }
-}
-
-function ensureMonthAgeCustomSeeded() {
-    if (currentViewerMonthAgeFilter.seeded) return;
-    currentViewerMonthAgeFilter.min = currentViewerTargetAge.min;
-    currentViewerMonthAgeFilter.max = currentViewerTargetAge.max;
-    currentViewerMonthAgeFilter.seeded = true;
 }
 
 function initializeBasicColumnAxisControl() {
@@ -4017,25 +4075,6 @@ function initializeBasicColumnAxisControl() {
             if (currentViewerData) renderReport(currentViewerData);
         });
     });
-
-    const allButton = document.getElementById("viewerMonthAgeAllBtn");
-    if (allButton && allButton.dataset.bound !== "1") {
-        allButton.dataset.bound = "1";
-        allButton.addEventListener("click", () => {
-            if (currentViewerMonthAgeFilter.mode === "all") return;
-            currentViewerMonthAgeFilter.mode = "all";
-            if (currentViewerData) renderReport(currentViewerData);
-        });
-    }
-
-    const customButton = document.getElementById("viewerMonthAgeCustomBtn");
-    if (customButton && customButton.dataset.bound !== "1") {
-        customButton.dataset.bound = "1";
-        customButton.addEventListener("click", () => {
-            ensureMonthAgeCustomSeeded();
-            openAgePicker("month");
-        });
-    }
 }
 
 function updateAnalysisChartToggleUi() {
@@ -6565,18 +6604,16 @@ function recentMetricHeaderHtml(label, labels) {
     return `<th><span class="target-header"><span class="target-header-main">${escapeHtml(label)}</span>${range ? `<span class="target-header-age">${escapeHtml(range)}</span>` : ""}</span></th>`;
 }
 
-function monthAgeFilterBadgeHtml() {
-    const label = escapeHtml(monthAgeFilterSummaryLabel());
-    if (currentViewerMonthAgeFilter.mode === "custom") {
-        return `<span class="month-age-filter-badge active" title="この表は表示対象年齢で絞り込まれています">年齢フィルター適用中 <strong>${label}</strong></span>`;
+function globalAgeFilterBadgeHtml() {
+    const label = escapeHtml(globalAgeFilterSummaryLabel());
+    if (globalAgeFilterActive()) {
+        return `<span class="month-age-filter-badge active" title="Viewer全体をこの年齢範囲の応募に絞り込んでいます">年齢フィルター <strong>${label}</strong></span>`;
     }
-    return `<span class="month-age-filter-badge">表示対象年齢 <strong>全年齢</strong></span>`;
+    return `<span class="month-age-filter-badge">年齢 <strong>全年齢</strong></span>`;
 }
 
 function basicTableAgeFilterSuffix() {
-    return currentViewerBasicColumnAxis === "month"
-        ? ` ／ ${monthAgeFilterBadgeHtml()}`
-        : "";
+    return ` ／ ${globalAgeFilterBadgeHtml()}`;
 }
 
 
@@ -6665,7 +6702,7 @@ function analysisChartPanelHtml(tableId, label, rows, options = {}) {
         kind: options.kind || analysisChartKind(tableId),
         recentLabel: options.recentLabel || "直近3ヶ月応募数",
         recentRange: options.recentRange || "",
-        filterLabel: options.filterLabel || (mode === "month" ? monthAgeFilterSummaryLabel() : targetAgeSummaryLabel()),
+        filterLabel: options.filterLabel || (mode === "month" ? globalAgeFilterSummaryLabel() : targetAgeSummaryLabel()),
         monthLabels: Array.isArray(options.monthLabels) ? options.monthLabels.map(String) : [],
         rows: (Array.isArray(rows) ? rows : []).map(row => ({
             label: String(row?.label || "（未設定）"),
@@ -6925,7 +6962,7 @@ function buildMonthModeHorizontalRows(rows, metric, maxValue, fillClass) {
 function buildAnalysisMonthHorizontalCharts(rows, config, summarized) {
     const maxValue = Math.max(1, ...rows.map(row => row.total));
     const recentTitle = config.recentLabel || "直近3ヶ月応募数";
-    const recentSub = [config.recentRange, `表示対象年齢：${config.filterLabel || "全年齢"}`]
+    const recentSub = [config.recentRange, `年齢フィルター：${config.filterLabel || "全年齢"}`]
         .filter(Boolean)
         .join(" ／ ");
 
@@ -6933,12 +6970,12 @@ function buildAnalysisMonthHorizontalCharts(rows, config, summarized) {
         <div class="analysis-chart-grid">
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">期間応募数</div>
-                <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。集計期間全体の応募量を区分別に比較します。</div>
+                <div class="analysis-chart-subtitle">年齢フィルター：${escapeHtml(config.filterLabel || "全年齢")}。集計期間全体の応募量を区分別に比較します。</div>
                 <div class="analysis-hbar-list">${buildMonthModeHorizontalRows(rows, "total", maxValue, "analysis-hbar-period")}</div>
             </div>
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">${escapeHtml(recentTitle)}</div>
-                <div class="analysis-chart-subtitle">${escapeHtml(recentSub || `表示対象年齢：${config.filterLabel || "全年齢"}`)}。左と同じスケールで直近の応募量を確認します。</div>
+                <div class="analysis-chart-subtitle">${escapeHtml(recentSub || `年齢フィルター：${config.filterLabel || "全年齢"}`)}。左と同じスケールで直近の応募量を確認します。</div>
                 <div class="analysis-hbar-list">${buildMonthModeHorizontalRows(rows, "recent", maxValue, "analysis-hbar-recent")}</div>
             </div>
         </div>
@@ -7007,7 +7044,7 @@ function buildAnalysisMonthOrderedCharts(rows, config) {
             <div class="analysis-chart-grid single">
                 <div class="analysis-chart-card">
                     <div class="analysis-chart-title">応募数の月次推移</div>
-                    <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。選択期間内の実応募数を月順で表示します。</div>
+                    <div class="analysis-chart-subtitle">年齢フィルター：${escapeHtml(config.filterLabel || "全年齢")}。選択期間内の実応募数を月順で表示します。</div>
                     <div class="analysis-chart-scroll">${buildAnalysisMonthOrderedSvg(rows, "total", "line")}</div>
                 </div>
             </div>
@@ -7016,7 +7053,7 @@ function buildAnalysisMonthOrderedCharts(rows, config) {
 
     const scale = analysisChartNiceScale(Math.max(1, ...rows.map(row => row.total)), 4);
     const recentTitle = config.recentLabel || "直近3ヶ月応募数";
-    const recentSub = [config.recentRange, `表示対象年齢：${config.filterLabel || "全年齢"}`]
+    const recentSub = [config.recentRange, `年齢フィルター：${config.filterLabel || "全年齢"}`]
         .filter(Boolean)
         .join(" ／ ");
 
@@ -7024,12 +7061,12 @@ function buildAnalysisMonthOrderedCharts(rows, config) {
         <div class="analysis-chart-grid">
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">期間応募数</div>
-                <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。軸の順序を保って期間全体の応募量を確認します。</div>
+                <div class="analysis-chart-subtitle">年齢フィルター：${escapeHtml(config.filterLabel || "全年齢")}。軸の順序を保って期間全体の応募量を確認します。</div>
                 <div class="analysis-chart-scroll">${buildAnalysisMonthOrderedSvg(rows, "total", "bars", scale)}</div>
             </div>
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">${escapeHtml(recentTitle)}</div>
-                <div class="analysis-chart-subtitle">${escapeHtml(recentSub || `表示対象年齢：${config.filterLabel || "全年齢"}`)}。左と同じY軸スケールで直近の分布を確認します。</div>
+                <div class="analysis-chart-subtitle">${escapeHtml(recentSub || `年齢フィルター：${config.filterLabel || "全年齢"}`)}。左と同じY軸スケールで直近の分布を確認します。</div>
                 <div class="analysis-chart-scroll">${buildAnalysisMonthOrderedSvg(rows, "recent", "bars", scale)}</div>
             </div>
         </div>
@@ -7195,7 +7232,7 @@ function buildAnalysisMonthTimeSeriesChart(config) {
             <div class="analysis-chart-grid single">
                 <div class="analysis-chart-card">
                     <div class="analysis-chart-title">応募数の月次推移</div>
-                    <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。選択期間内の実応募数を月順で表示します。</div>
+                    <div class="analysis-chart-subtitle">年齢フィルター：${escapeHtml(config.filterLabel || "全年齢")}。選択期間内の実応募数を月順で表示します。</div>
                     ${analysisMonthSeriesLegendHtml(totalSeries)}
                     <div class="analysis-chart-scroll">${buildAnalysisMonthSeriesSvg(monthLabels, totalSeries)}</div>
                 </div>
@@ -7214,7 +7251,7 @@ function buildAnalysisMonthTimeSeriesChart(config) {
         <div class="analysis-chart-grid single">
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">${escapeHtml(config.label || "区分別")}・応募数の月次推移</div>
-                <div class="analysis-chart-subtitle">表示対象年齢：${escapeHtml(config.filterLabel || "全年齢")}。${escapeHtml(modeLabel)}を同じ時間軸で比較します。</div>
+                <div class="analysis-chart-subtitle">年齢フィルター：${escapeHtml(config.filterLabel || "全年齢")}。${escapeHtml(modeLabel)}を同じ時間軸で比較します。</div>
                 ${analysisMonthSeriesControlsHtml(config, state, allSeries)}
                 ${analysisMonthSeriesLegendHtml(selected)}
                 <div class="analysis-chart-scroll">${buildAnalysisMonthSeriesSvg(monthLabels, selected)}</div>
@@ -7535,7 +7572,7 @@ function renderCrossTable(table, core) {
                     mode: monthMode ? "month" : "target",
                     recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
                     recentRange: recentMonthRangeText(recentLabels),
-                    filterLabel: monthAgeFilterSummaryLabel(),
+                    filterLabel: globalAgeFilterSummaryLabel(),
                     monthLabels: monthMode ? columnLabels : []
                 }
             )}
@@ -7624,7 +7661,7 @@ function renderBasicDistributionTable(table, core) {
                 analysisChartRowsFromGroups(agg.groups),
                 {
                     mode: monthMode ? "month" : "target",
-                    filterLabel: monthAgeFilterSummaryLabel()
+                    filterLabel: globalAgeFilterSummaryLabel()
                 }
             )}
             <div class="table-wrap">
@@ -7785,8 +7822,8 @@ function renderNoteDetail(detail, core) {
     const note = document.getElementById("noteDetailNote");
     if (note) {
         note.innerHTML = noteMonthMode
-            ? `求人備考の最初の1行（&lt;BR&gt;等より前）で集計 ／ 求人突合済応募 ${core.formatNumber(detail.aggregate.baseTotal)}件 ／ 基本列：応募年月 ／ ${monthAgeFilterBadgeHtml()}`
-            : "求人備考の最初の1行（&lt;BR&gt;等より前）で集計";
+            ? `求人備考の最初の1行（&lt;BR&gt;等より前）で集計 ／ 求人突合済応募 ${core.formatNumber(detail.aggregate.baseTotal)}件 ／ 基本列：応募年月 ／ ${globalAgeFilterBadgeHtml()}`
+            : `求人備考の最初の1行（&lt;BR&gt;等より前）で集計 ／ 求人突合済応募 ${core.formatNumber(detail.aggregate.baseTotal)}件 ／ ${globalAgeFilterBadgeHtml()}`;
     }
     document.getElementById("noteDetailBody").innerHTML =
         analysisChartPanelHtml(
@@ -7798,7 +7835,7 @@ function renderNoteDetail(detail, core) {
                 mode: noteMonthMode ? "month" : "target",
                 recentLabel: recentMonthMetricLabel(noteRecentLabels, "応募数"),
                 recentRange: recentMonthRangeText(noteRecentLabels),
-                filterLabel: monthAgeFilterSummaryLabel(),
+                filterLabel: globalAgeFilterSummaryLabel(),
                 monthLabels: noteMonthMode ? (detail.aggregate.columnLabels || []) : []
             }
         ) +
@@ -7919,7 +7956,7 @@ function renderIndeedTagDetail(detail, core) {
     const baseRecent = monthMode ? baseRecentMonthCount(detail, recentLabels) : 0;
 
     document.getElementById("indeedTagDetailNote").innerHTML =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${escapeHtml(limitLabel)} ／ 1応募は複数タグへ重複集計${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${escapeHtml(detail.columnAxisLabel)}` : ""}${monthMode ? ` ／ ${monthAgeFilterBadgeHtml()}` : ""}`;
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${escapeHtml(limitLabel)} ／ 1応募は複数タグへ重複集計${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${escapeHtml(detail.columnAxisLabel)}` : ""}${` ／ ${globalAgeFilterBadgeHtml()}`}`;
 
     const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
     const isAgeAxis = !Array.isArray(detail.columnLabels);
@@ -7977,7 +8014,7 @@ function renderIndeedTagDetail(detail, core) {
                 mode: monthMode ? "month" : "target",
                 recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
                 recentRange: recentMonthRangeText(recentLabels),
-                filterLabel: monthAgeFilterSummaryLabel(),
+                filterLabel: globalAgeFilterSummaryLabel(),
                 monthLabels: monthMode ? columns : []
             }
         )}
@@ -8025,7 +8062,7 @@ function renderTopImageDetail(detail, core) {
     const baseRecent = monthMode ? baseRecentMonthCount(detail, recentLabels) : 0;
 
     document.getElementById("topImageDetailNote").innerHTML =
-        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${escapeHtml(limitLabel)} ／ URL未取得でも数値分析には含みます${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${escapeHtml(detail.columnAxisLabel)}` : ""}${monthMode ? ` ／ ${monthAgeFilterBadgeHtml()}` : ""}`;
+        `求人突合済応募 ${core.formatNumber(detail.baseTotal)}件 ／ 表示 ${escapeHtml(limitLabel)} ／ URL未取得でも数値分析には含みます${detail.columnAxisLabel && detail.columnAxisLabel !== "年齢" ? ` ／ 基本列：${escapeHtml(detail.columnAxisLabel)}` : ""}${` ／ ${globalAgeFilterBadgeHtml()}`}`;
 
     const columns = Array.isArray(detail.columnLabels) ? detail.columnLabels : detail.ageCols;
     const isAgeAxis = !Array.isArray(detail.columnLabels);
@@ -8093,7 +8130,7 @@ function renderTopImageDetail(detail, core) {
                 mode: monthMode ? "month" : "target",
                 recentLabel: recentMonthMetricLabel(recentLabels, "応募数"),
                 recentRange: recentMonthRangeText(recentLabels),
-                filterLabel: monthAgeFilterSummaryLabel(),
+                filterLabel: globalAgeFilterSummaryLabel(),
                 monthLabels: monthMode ? columns : []
             }
         )}
@@ -8406,32 +8443,13 @@ let currentCustomAnalysisState = {
     initialized: false,
     userTouched: false,
     rowAxes: [],
-    colAxis: "",
-    ageMin: "",
-    ageMax: ""
+    colAxis: ""
 };
 let currentCustomContext = null;
 let currentCustomCore = null;
 let currentCustomAxisOptions = [];
 let customAnalysisTimer = null;
 
-function customOptionalNumber(value) {
-    if (value === null || value === undefined || String(value).trim() === "") return null;
-    const number = Number(value);
-    return Number.isFinite(number) ? number : null;
-}
-function customAgeSummaryLabel() {
-    const min = customOptionalNumber(currentCustomAnalysisState.ageMin);
-    const max = customOptionalNumber(currentCustomAnalysisState.ageMax);
-    if (min === null && max === null) return "全年齢";
-    if (min !== null && max !== null) return `${min}～${max}歳`;
-    if (min !== null) return `${min}歳以上`;
-    return `${max}歳以下`;
-}
-function updateCustomAgeSummary() {
-    const element = document.getElementById("customAgeSummary");
-    if (element) element.textContent = customAgeSummaryLabel();
-}
 function normalizeCustomState(options) {
     const allowed = new Set(options);
     const result = [];
@@ -8451,9 +8469,7 @@ function initializeCustomStateFromDefaults(data, options) {
     currentCustomAnalysisState = {
         initialized:true, userTouched:false,
         rowAxes: defaultRows.map(item => String(item || "").trim()).filter(Boolean).slice(0,3),
-        colAxis: String(defaults.colAxis || "").trim(),
-        ageMin: defaults.ageFilterMode === "指定範囲" ? (defaults.ageMin ?? "") : "",
-        ageMax: defaults.ageFilterMode === "指定範囲" ? (defaults.ageMax ?? "") : ""
+        colAxis: String(defaults.colAxis || "").trim()
     };
     normalizeCustomState(options);
 }
@@ -8483,7 +8499,6 @@ function renderCustomAxisControls() {
         setCustomAxisSelectOptions(document.getElementById(id), currentCustomAxisOptions, rowAxes[index] || "", {allowEmpty:index>0, ownValue:rowAxes[index] || ""});
     });
     setCustomAxisSelectOptions(document.getElementById("customColAxis"), currentCustomAxisOptions, currentCustomAnalysisState.colAxis, {ownValue:currentCustomAnalysisState.colAxis});
-    updateCustomAgeSummary();
 }
 function customRowAxisValuesFromDom() {
     return ["customRowAxis1","customRowAxis2","customRowAxis3"].map(id => document.getElementById(id)?.value).map(value => String(value || "").trim()).filter(Boolean);
@@ -8494,9 +8509,9 @@ function runCustomAnalysisNow() {
     const custom = currentCustomCore.aggregateCustom(currentCustomContext, {
         rowAxes: currentCustomAnalysisState.rowAxes,
         colAxis: currentCustomAnalysisState.colAxis,
-        ageFilterMode: (currentCustomAnalysisState.ageMin !== "" || currentCustomAnalysisState.ageMax !== "") ? "指定範囲" : "全年齢",
-        ageMin: currentCustomAnalysisState.ageMin,
-        ageMax: currentCustomAnalysisState.ageMax
+        ageFilterMode: "全年齢",
+        ageMin: "",
+        ageMax: ""
     });
     renderCustomResult(custom, currentCustomCore);
 }
@@ -8685,8 +8700,8 @@ function renderCustomResult(result, core) {
         if (message) { message.textContent = messages[result.reason] || "カスタム分析を表示できません。"; message.classList.remove("hidden"); }
         return;
     }
-    const ageLabel = result.ageFilterMode === "指定範囲" ? core.targetLabel(result.ageMin,result.ageMax) : "全年齢";
-    if (meta) { meta.textContent = `行軸: ${result.rowAxes.map(customAxisDisplayLabel).join(" > ")} ／ 列軸: ${customAxisDisplayLabel(result.colAxis)} ／ 集計対象年齢: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`; meta.classList.remove("hidden"); }
+    const ageLabel = globalAgeFilterSummaryLabel();
+    if (meta) { meta.textContent = `行軸: ${result.rowAxes.map(customAxisDisplayLabel).join(" > ")} ／ 列軸: ${customAxisDisplayLabel(result.colAxis)} ／ 共通年齢フィルター: ${ageLabel} ／ 集計対象: ${core.formatNumber(result.applicationCount)}応募`; meta.classList.remove("hidden"); }
     const rowHeaders=result.rowAxes.map((axis,index)=>`<th class="custom-row-axis-col" data-row-axis-index="${index}" title="${escapeHtml(customAxisDisplayLabel(axis))}">${escapeHtml(customAxisDisplayLabel(axis))}</th>`).join("");
     const headers=result.colLabels.map(label=>`<th title="列軸：${escapeHtml(customAxisDisplayLabel(result.colAxis))}">${escapeHtml(label)}</th>`).join("");
     const rows=result.rowEntries.map((entry,index)=>{const previous=result.rowEntries[index-1];const rowMap=result.matrix.get(entry.key)||new Map();const rowAxisCells=entry.labels.map((label,axisIndex)=>{
@@ -8722,13 +8737,13 @@ function initializeCustomAnalysis(data, viewerResult, core) {
     currentCustomAxisOptions = Array.isArray(viewerResult.customAxisOptions) ? viewerResult.customAxisOptions : [];
     const message = document.getElementById("customMessage");
     if (currentCustomAxisOptions.length < 2) {
-        ["customRowAxis1","customRowAxis2","customRowAxis3","customColAxis","customAgePickerBtn"].map(id => document.getElementById(id)).forEach(control => { if (control) control.disabled = true; });
+        ["customRowAxis1","customRowAxis2","customRowAxis3","customColAxis"].map(id => document.getElementById(id)).forEach(control => { if (control) control.disabled = true; });
         if (message) { message.textContent = "カスタム分析には、分析レポート表示設定でONになっている分析軸が2種類以上必要です。"; message.classList.remove("hidden"); }
         document.getElementById("customMeta")?.classList.add("hidden");
         const output = document.getElementById("customResult"); if (output) output.innerHTML = "";
         return;
     }
-    ["customRowAxis1","customRowAxis2","customRowAxis3","customColAxis","customAgePickerBtn"].map(id => document.getElementById(id)).forEach(control => { if (control) control.disabled = false; });
+    ["customRowAxis1","customRowAxis2","customRowAxis3","customColAxis"].map(id => document.getElementById(id)).forEach(control => { if (control) control.disabled = false; });
     initializeCustomStateFromDefaults(data,currentCustomAxisOptions);
     renderCustomAxisControls();
     bindCustomAnalysisControls();
@@ -8756,14 +8771,7 @@ let currentViewerTargetAge = {
     max: ""
 };
 
-let currentViewerMonthAgeFilter = {
-    mode: "all",
-    min: "",
-    max: "",
-    seeded: false
-};
-
-let currentViewerProgressAge = {
+let currentViewerGlobalAgeFilter = {
     min: "",
     max: ""
 };
@@ -9160,31 +9168,21 @@ function dataForCurrentViewerPeriod(
             "ターゲット年齢上限":
                 currentViewerTargetAge
                     .max,
-            "応募進捗年齢下限":
-                currentViewerProgressAge
+            "集計対象年齢下限":
+                currentViewerGlobalAgeFilter
                     .min,
-            "応募進捗年齢上限":
-                currentViewerProgressAge
+            "集計対象年齢上限":
+                currentViewerGlobalAgeFilter
                     .max,
+            "応募進捗年齢下限": "",
+            "応募進捗年齢上限": "",
             "応募進捗表示モード":
                 currentViewerMonthProgressMode,
             "基本表列軸":
                 currentViewerBasicColumnAxis,
-            "基本表示年齢モード":
-                currentViewerBasicColumnAxis === "month" &&
-                currentViewerMonthAgeFilter.mode === "custom"
-                    ? "指定範囲"
-                    : "全年齢",
-            "基本表示年齢下限":
-                currentViewerBasicColumnAxis === "month" &&
-                currentViewerMonthAgeFilter.mode === "custom"
-                    ? currentViewerMonthAgeFilter.min
-                    : "",
-            "基本表示年齢上限":
-                currentViewerBasicColumnAxis === "month" &&
-                currentViewerMonthAgeFilter.mode === "custom"
-                    ? currentViewerMonthAgeFilter.max
-                    : ""
+            "基本表示年齢モード": "全年齢",
+            "基本表示年齢下限": "",
+            "基本表示年齢上限": ""
         }
     };
 }
@@ -9314,84 +9312,22 @@ function targetAgeSummaryLabel() {
     return `${max}歳以下`;
 }
 
-function progressAgeSummaryLabel() {
-    const min =
-        viewerOptionalNumber(
-            currentViewerProgressAge
-                .min
-        );
-
-    const max =
-        viewerOptionalNumber(
-            currentViewerProgressAge
-                .max
-        );
-
-    if (
-        min === null &&
-        max === null
-    ) {
-        return "全年齢";
-    }
-
-    if (
-        min !== null &&
-        max !== null
-    ) {
-        return `${min}～${max}歳`;
-    }
-
-    if (
-        min !== null
-    ) {
-        return `${min}歳以上`;
-    }
-
-    return `${max}歳以下`;
-}
-
 function updateViewerConditionSummaries() {
-    const period =
-        document.getElementById(
-            "viewerPeriodSummary"
-        );
+    const period = document.getElementById("viewerPeriodSummary");
+    if (period) period.textContent = periodSummaryLabel();
 
-    if (period) {
-        period.textContent =
-            periodSummaryLabel();
-    }
+    const target = document.getElementById("viewerTargetAgeSummary");
+    if (target) target.textContent = targetAgeSummaryLabel();
 
-    const age =
-        document.getElementById(
-            "viewerTargetAgeSummary"
-        );
+    const globalAge = document.getElementById("viewerGlobalAgeSummary");
+    if (globalAge) globalAge.textContent = globalAgeFilterSummaryLabel();
 
-    if (age) {
-        age.textContent =
-            targetAgeSummaryLabel();
-    }
-
-    const monthAgeSummary = document.getElementById("viewerMonthAgeFilterSummary");
-    if (monthAgeSummary) monthAgeSummary.textContent = monthAgeFilterSummaryLabel();
+    updateGlobalAgeFilterUi();
 
     const reportAgeLabel = document.getElementById("reportAgeConditionLabel");
     const reportAgeValue = document.getElementById("reportTargetAgeCondition");
-    if (reportAgeLabel) {
-        reportAgeLabel.textContent = currentViewerBasicColumnAxis === "month" ? "表の対象年齢" : "ターゲット年齢";
-    }
-    if (reportAgeValue) {
-        reportAgeValue.textContent = currentViewerBasicColumnAxis === "month" ? monthAgeFilterSummaryLabel() : targetAgeSummaryLabel();
-    }
-
-    const progressAge =
-        document.getElementById(
-            "progressAgeSummary"
-        );
-
-    if (progressAge) {
-        progressAge.textContent =
-            progressAgeSummaryLabel();
-    }
+    if (reportAgeLabel) reportAgeLabel.textContent = "集計対象年齢";
+    if (reportAgeValue) reportAgeValue.textContent = globalAgeFilterSummaryLabel();
 }
 
 function closeViewerModal(
@@ -10099,9 +10035,12 @@ function ageBandIndexForMax(
 }
 
 function agePickerSourceRange(context) {
-    if (context === "custom") return { min: currentCustomAnalysisState.ageMin, max: currentCustomAnalysisState.ageMax };
-    if (context === "progress") return { min: currentViewerProgressAge.min, max: currentViewerProgressAge.max };
-    if (context === "month") return { min: currentViewerMonthAgeFilter.min, max: currentViewerMonthAgeFilter.max };
+    if (context === "filter") {
+        return {
+            min: currentViewerGlobalAgeFilter.min,
+            max: currentViewerGlobalAgeFilter.max
+        };
+    }
     return { min: currentViewerTargetAge.min, max: currentViewerTargetAge.max };
 }
 
@@ -10109,33 +10048,29 @@ function configureAgePickerModal(context) {
     const title = document.getElementById("viewerTargetAgeModalTitle");
     const note = document.getElementById("viewerAgeModalNote");
     const apply = document.getElementById("viewerAgeApplyBtn");
-    if (context === "custom") {
+
+    if (context === "filter") {
         if (title) title.textContent = "集計対象年齢を選択";
-        if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。カスタム分析の集計対象だけを絞り込みます。";
-        if (apply) apply.textContent = "この年齢範囲で集計";
-    } else if (context === "progress") {
-        if (title) title.textContent = "月間応募進捗の集計対象年齢を選択";
-        if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。月間応募進捗グラフだけを絞り込みます。";
-        if (apply) apply.textContent = "この年齢範囲で集計";
-    } else if (context === "month") {
-        if (title) title.textContent = "応募年月別の表示対象年齢を選択";
-        if (note) note.textContent = "5歳刻みで表示対象年齢を選択します。応募年月別の基本表・詳細表を、この年齢範囲の応募に絞り込みます。";
-        if (apply) apply.textContent = "この年齢範囲を選択";
+        if (note) note.textContent = "この年齢範囲がViewer全体の共通フィルターになります。KPI・応募進捗・基本分析・詳細分析・カスタム分析のすべてを同じ母集団で集計します。";
+        if (apply) apply.textContent = "この年齢範囲で全体を絞り込む";
     } else {
         if (title) title.textContent = "ターゲット年齢を選択";
-        if (note) note.textContent = "5歳刻みで1点目を選び、次にもう1点を選択します。前後どちら向きにも選べます。ターゲット応募数・率の定義を変更します。";
-        if (apply) apply.textContent = "この年齢範囲を適用";
+        if (note) note.textContent = "共通フィルターで絞り込んだ応募の中から、ターゲット応募数・ターゲット率として評価する年齢範囲を指定します。";
+        if (apply) apply.textContent = "このターゲット年齢を適用";
     }
 }
 
 function openAgePicker(context = "target") {
-    viewerAgePickerContext = context === "custom" ? "custom" : context === "progress" ? "progress" : context === "month" ? "month" : "target";
+    viewerAgePickerContext = context === "filter" ? "filter" : "target";
     configureAgePickerModal(viewerAgePickerContext);
     const range = agePickerSourceRange(viewerAgePickerContext);
     let startIndex = ageBandIndexForMin(range.min);
     let endIndex = ageBandIndexForMax(range.max);
     if (startIndex !== null && startIndex < 0) startIndex = null;
     if (endIndex !== null && endIndex < 0) endIndex = null;
+    if (startIndex !== null && endIndex === null && String(range.max ?? "").trim() === "") {
+        endIndex = VIEWER_AGE_BANDS.length - 1;
+    }
     viewerAgePickerState = { phase:"start", startIndex, endIndex, hoverIndex:null };
     openViewerModal("viewerTargetAgeModal");
     renderAgePicker();
@@ -10149,9 +10084,8 @@ function initializeViewerAnalysisPickers() {
         openPeriodPicker
     );
 
+    document.getElementById("viewerGlobalAgePickerBtn")?.addEventListener("click", () => openAgePicker("filter"));
     document.getElementById("viewerTargetAgePickerBtn")?.addEventListener("click", () => openAgePicker("target"));
-    document.getElementById("customAgePickerBtn")?.addEventListener("click", () => openAgePicker("custom"));
-    document.getElementById("progressAgePickerBtn")?.addEventListener("click", () => openAgePicker("progress"));
 
     document.querySelectorAll("[data-progress-mode]").forEach(button => {
         if (button.dataset.progressModeBound === "1") return;
@@ -10438,30 +10372,15 @@ function initializeViewerAnalysisPickers() {
                 );
 
             if (ageQuick?.dataset.ageQuick === "all") {
-                if (viewerAgePickerContext === "custom") {
-                    currentCustomAnalysisState.ageMin = "";
-                    currentCustomAnalysisState.ageMax = "";
-                    currentCustomAnalysisState.userTouched = true;
-                    updateCustomAgeSummary();
-                    closeViewerModal("viewerTargetAgeModal");
-                    scheduleCustomAnalysisRun();
-                } else if (viewerAgePickerContext === "progress") {
-                    currentViewerProgressAge = { min:"", max:"" };
-                    closeViewerModal("viewerTargetAgeModal");
-                    updateViewerConditionSummaries();
-                    renderReport(currentViewerData);
-                } else if (viewerAgePickerContext === "month") {
-                    currentViewerMonthAgeFilter = { mode:"all", min:currentViewerMonthAgeFilter.min, max:currentViewerMonthAgeFilter.max, seeded:currentViewerMonthAgeFilter.seeded };
-                    closeViewerModal("viewerTargetAgeModal");
-                    updateViewerConditionSummaries();
-                    renderReport(currentViewerData);
+                if (viewerAgePickerContext === "filter") {
+                    currentViewerGlobalAgeFilter = { min:"", max:"" };
                 } else {
                     currentViewerTargetAge = { min:"", max:"" };
                     viewerTargetAgeTouched = true;
-                    closeViewerModal("viewerTargetAgeModal");
-                    updateViewerConditionSummaries();
-                    renderReport(currentViewerData);
                 }
+                closeViewerModal("viewerTargetAgeModal");
+                updateViewerConditionSummaries();
+                renderReport(currentViewerData);
             }
         }
     );
@@ -10637,30 +10556,15 @@ function initializeViewerAnalysisPickers() {
                     state.endIndex
                 ];
 
-            if (viewerAgePickerContext === "custom") {
-                currentCustomAnalysisState.ageMin = startBand.min;
-                currentCustomAnalysisState.ageMax = endBand.max ?? "";
-                currentCustomAnalysisState.userTouched = true;
-                closeViewerModal("viewerTargetAgeModal");
-                updateCustomAgeSummary();
-                scheduleCustomAnalysisRun();
-            } else if (viewerAgePickerContext === "progress") {
-                currentViewerProgressAge = { min:startBand.min, max:endBand.max ?? "" };
-                closeViewerModal("viewerTargetAgeModal");
-                updateViewerConditionSummaries();
-                renderReport(currentViewerData);
-            } else if (viewerAgePickerContext === "month") {
-                currentViewerMonthAgeFilter = { mode:"custom", min:startBand.min, max:endBand.max ?? "", seeded:true };
-                closeViewerModal("viewerTargetAgeModal");
-                updateViewerConditionSummaries();
-                renderReport(currentViewerData);
+            if (viewerAgePickerContext === "filter") {
+                currentViewerGlobalAgeFilter = { min:startBand.min, max:endBand.max ?? "" };
             } else {
                 currentViewerTargetAge = { min:startBand.min, max:endBand.max ?? "" };
                 viewerTargetAgeTouched = true;
-                closeViewerModal("viewerTargetAgeModal");
-                updateViewerConditionSummaries();
-                renderReport(currentViewerData);
             }
+            closeViewerModal("viewerTargetAgeModal");
+            updateViewerConditionSummaries();
+            renderReport(currentViewerData);
         }
     );
 
@@ -10729,14 +10633,7 @@ function initializeViewerPeriod(
     viewerTargetAgeTouched =
         false;
 
-    currentViewerMonthAgeFilter = {
-        mode: "all",
-        min: "",
-        max: "",
-        seeded: false
-    };
-
-    currentViewerProgressAge = {
+    currentViewerGlobalAgeFilter = {
         min: "",
         max: ""
     };
@@ -10752,7 +10649,7 @@ function initializeViewerPeriod(
     analysisMonthSeriesState.clear();
     updateAnalysisChartToggleUi();
     currentViewerBasicColumnAxis = "age";
-    currentCustomAnalysisState = { initialized:false, userTouched:false, rowAxes:[], colAxis:"", ageMin:"", ageMax:"" };
+    currentCustomAnalysisState = { initialized:false, userTouched:false, rowAxes:[], colAxis:"" };
     currentCustomPivotLayout = { result:null, output:null, widths:[] };
     updateViewerConditionSummaries();
 }
@@ -10836,26 +10733,25 @@ function renderReport(data) {
     const reportPeriodCondition = document.getElementById("reportPeriodCondition");
     if (reportPeriodCondition) reportPeriodCondition.textContent = periodSummaryLabel();
     const reportTargetAgeCondition = document.getElementById("reportTargetAgeCondition");
-    if (reportTargetAgeCondition) {
-        reportTargetAgeCondition.textContent = currentViewerBasicColumnAxis === "month"
-            ? monthAgeFilterSummaryLabel()
-            : result.targetLabel;
-    }
+    if (reportTargetAgeCondition) reportTargetAgeCondition.textContent = globalAgeFilterSummaryLabel();
     const reportAgeConditionLabel = document.getElementById("reportAgeConditionLabel");
-    if (reportAgeConditionLabel) {
-        reportAgeConditionLabel.textContent = currentViewerBasicColumnAxis === "month"
-            ? "表の対象年齢"
-            : "ターゲット年齢";
-    }
+    if (reportAgeConditionLabel) reportAgeConditionLabel.textContent = "集計対象年齢";
 
     document.getElementById("kpiTotal").textContent =
         core.formatNumber(result.totalCount);
+
+    const kpiTotalLabel = document.getElementById("kpiTotalLabel");
+    if (kpiTotalLabel) {
+        kpiTotalLabel.textContent = globalAgeFilterActive()
+            ? `選択期間内 ／ 年齢 ${globalAgeFilterSummaryLabel()}`
+            : "選択期間内 ／ 全年齢";
+    }
 
     document.getElementById("kpiTarget").textContent =
         core.formatNumber(result.targetCount);
 
     document.getElementById("kpiTargetLabel").textContent =
-        `ターゲット：${result.targetLabel}`;
+        `ターゲット：${result.targetLabel}${globalAgeFilterActive() ? "（共通フィルター内）" : ""}`;
 
     document.getElementById("kpiTargetRate").textContent =
         core.formatPercent(result.targetRate);
@@ -10872,7 +10768,7 @@ function renderReport(data) {
     );
 
     document.getElementById("ageModeNote").textContent =
-        `年齢区分：${result.ageMode}`;
+        `年齢区分：${result.ageMode} ／ 共通年齢フィルター：${globalAgeFilterSummaryLabel()}`;
 
     const ageBody =
         document.getElementById("ageTableBody");

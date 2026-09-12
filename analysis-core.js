@@ -179,6 +179,71 @@
         return "その他";
     }
 
+    function filteredAgeBucketDefinitions(mode, minAge, maxAge) {
+        const min = n(minAge);
+        const max = n(maxAge);
+        const active = min !== null || max !== null;
+
+        if (!active) {
+            return ageBuckets(mode).map(label => ({ label, originalLabel: label }));
+        }
+
+        const base = mode === "年代（5歳ずらし）"
+            ? [
+                { min: 15, max: 25, label: "15-25歳" },
+                { min: 26, max: 35, label: "26-35歳" },
+                { min: 36, max: 45, label: "36-45歳" },
+                { min: 46, max: 55, label: "46-55歳" },
+                { min: 56, max: 65, label: "56-65歳" },
+                { min: 66, max: 75, label: "66-75歳" },
+                { min: 76, max: 85, label: "76-85歳" },
+                { min: 86, max: null, label: "86歳以上" }
+            ]
+            : [
+                { min: 10, max: 19, label: "10代" },
+                { min: 20, max: 29, label: "20代" },
+                { min: 30, max: 39, label: "30代" },
+                { min: 40, max: 49, label: "40代" },
+                { min: 50, max: 59, label: "50代" },
+                { min: 60, max: 69, label: "60代" },
+                { min: 70, max: 79, label: "70代" },
+                { min: 80, max: null, label: "80歳以上" }
+            ];
+
+        return base.flatMap(def => {
+            const start = min === null ? def.min : Math.max(def.min, min);
+            const endBase = def.max;
+            const end = max === null
+                ? endBase
+                : (endBase === null ? max : Math.min(endBase, max));
+
+            if (end !== null && start > end) return [];
+            if (max !== null && start > max) return [];
+
+            const fullStart = start === def.min;
+            const fullEnd = (endBase === null && end === null) || end === endBase;
+            let label = def.label;
+
+            if (!(fullStart && fullEnd)) {
+                if (end === null) label = `${start}歳以上`;
+                else if (start === end) label = `${start}歳`;
+                else label = `${start}～${end}歳`;
+            }
+
+            return [{ ...def, start, end, label, originalLabel: def.label }];
+        });
+    }
+
+    function filteredAgeBucket(age, mode, definitions, filterActive) {
+        if (!filterActive) return ageBucket(age, mode);
+        const value = n(age);
+        if (value === null) return "";
+        const match = (definitions || []).find(def =>
+            value >= def.start && (def.end === null || value <= def.end)
+        );
+        return match?.label || "";
+    }
+
     function isTargetAge(age, minAge, maxAge) {
         const a = n(age);
         if (a === null) return false;
@@ -364,13 +429,15 @@ function buildImageMap(dataset) {
         const endKey = dateKey(parseDate(settings["集計終了日"]));
         const targetAgeMin = settings["ターゲット年齢下限"];
         const targetAgeMax = settings["ターゲット年齢上限"];
+        const globalAgeMin = settings["集計対象年齢下限"];
+        const globalAgeMax = settings["集計対象年齢上限"];
+        const globalAgeFilterActive = n(globalAgeMin) !== null || n(globalAgeMax) !== null;
+        const globalAgeFilterLabel = globalAgeFilterActive
+            ? targetLabel(globalAgeMin, globalAgeMax)
+            : "全年齢";
+        const ageBucketDefs = filteredAgeBucketDefinitions(ageMode, globalAgeMin, globalAgeMax);
+        const visibleAgeCols = ageBucketDefs.map(def => def.label);
         const basicColumnKey = s(settings["基本表列軸"]) || "age";
-        const basicAgeFilterMode =
-            s(settings["基本表示年齢モード"]) === "指定範囲"
-                ? "指定範囲"
-                : "全年齢";
-        const basicAgeMin = settings["基本表示年齢下限"];
-        const basicAgeMax = settings["基本表示年齢上限"];
 
         const widths = {
             monthDay: positiveInt(settings["月内応募日幅"], 7),
@@ -430,6 +497,7 @@ function buildImageMap(dataset) {
         );
 
         const timelineRecords = [];
+        const filteredTimelineRecords = [];
         const recordsAll = [];
         const recordsMatched = [];
 
@@ -437,17 +505,20 @@ function buildImageMap(dataset) {
             const appDate = parseDate(app["応募日時"]);
             const age = n(app["年齢"]);
 
+            const globalAgeIncluded = !globalAgeFilterActive ||
+                isTargetAge(age, globalAgeMin, globalAgeMax);
+
             if (appDate && !Number.isNaN(appDate.getTime())) {
-                timelineRecords.push({
-                    appDate,
-                    age
-                });
+                const timelineRecord = { appDate, age };
+                timelineRecords.push(timelineRecord);
+                if (globalAgeIncluded) filteredTimelineRecords.push(timelineRecord);
             }
 
             const key = dateKey(appDate);
 
             if (startKey !== null && (key === null || key < startKey)) return;
             if (endKey !== null && (key === null || key > endKey)) return;
+            if (!globalAgeIncluded) return;
 
             const jobRefId = s(app["求人参照ID"]);
             const matchedFlag = truthy(app["求人データ突合フラグ"]);
@@ -484,7 +555,12 @@ function buildImageMap(dataset) {
                 jobRefId,
                 appDate,
                 age,
-                ageBucket: ageBucket(age, ageMode),
+                ageBucket: filteredAgeBucket(
+                    age,
+                    ageMode,
+                    ageBucketDefs,
+                    globalAgeFilterActive
+                ),
                 isTarget: isTargetAge(age, targetAgeMin, targetAgeMax),
                 enterpriseId,
                 enterpriseLabel,
@@ -497,33 +573,22 @@ function buildImageMap(dataset) {
             if (record.matched) recordsMatched.push(record);
         });
 
-        const basicAgeFilterActive =
-            basicColumnKey === "month" &&
-            basicAgeFilterMode === "指定範囲";
-        const basicRecordsAll = basicAgeFilterActive
-            ? recordsAll.filter(record =>
-                isTargetAge(record.age, basicAgeMin, basicAgeMax)
-            )
-            : recordsAll;
-        const basicRecordsMatched = basicAgeFilterActive
-            ? recordsMatched.filter(record =>
-                isTargetAge(record.age, basicAgeMin, basicAgeMax)
-            )
-            : recordsMatched;
+        const basicAgeFilterActive = false;
+        const basicRecordsAll = recordsAll;
+        const basicRecordsMatched = recordsMatched;
 
         return {
             settings,
             ageMode,
-            ageCols: ageBuckets(ageMode),
+            ageCols: visibleAgeCols,
             targetAgeMin,
             targetAgeMax,
-            basicAgeFilterMode,
-            basicAgeMin,
-            basicAgeMax,
+            globalAgeMin,
+            globalAgeMax,
+            globalAgeFilterActive,
+            globalAgeFilterLabel,
             basicAgeFilterActive,
-            basicAgeFilterLabel: basicAgeFilterActive
-                ? targetLabel(basicAgeMin, basicAgeMax)
-                : "全年齢",
+            basicAgeFilterLabel: globalAgeFilterLabel,
             widths,
             keywordMaster,
             tagMaster,
@@ -532,6 +597,7 @@ function buildImageMap(dataset) {
             topImageLimit,
             enterpriseInfo,
             timelineRecords,
+            filteredTimelineRecords,
             recordsAll,
             recordsMatched,
             basicRecordsAll,
@@ -1686,13 +1752,12 @@ function aggregateTopImages(context, basicColumnState) {
 }
 
 function buildMonthProgress(context) {
-    const minAge = context.settings?.["応募進捗年齢下限"] ?? "";
-    const maxAge = context.settings?.["応募進捗年齢上限"] ?? "";
     const displayMode = s(context.settings?.["応募進捗表示モード"]) || "cumulative";
-    const ageFilterLabel = targetLabel(minAge, maxAge);
+    const ageFilterLabel = context.globalAgeFilterLabel || "全年齢";
     const selectedStartDate = parseDate(context.settings?.["集計開始日"]);
     const selectedEndDate = parseDate(context.settings?.["集計終了日"]);
     const allTimeline = context.timelineRecords || [];
+    const filteredTimeline = context.filteredTimelineRecords || allTimeline;
     const dataStartDate = allTimeline.reduce(
         (earliest, record) => !earliest || record.appDate < earliest ? record.appDate : earliest,
         null
@@ -1700,14 +1765,14 @@ function buildMonthProgress(context) {
     const dataEndDate = maxDate(allTimeline);
     const startDate = selectedStartDate || dataStartDate;
     const endDate = selectedEndDate || dataEndDate;
-    const filteredTimeline = allTimeline.filter(record =>
-        isTargetAge(record.age, minAge, maxAge)
+    const observedPeriodRecords = allTimeline.filter(record =>
+        inDateRange(record.appDate, startDate, endDate)
     );
     const periodRecords = filteredTimeline.filter(record =>
         inDateRange(record.appDate, startDate, endDate)
     );
 
-    if (!periodRecords.length) {
+    if (!observedPeriodRecords.length) {
         return {
             visible: false,
             ageFilterLabel,
@@ -1715,7 +1780,7 @@ function buildMonthProgress(context) {
         };
     }
 
-    const latestDate = maxDate(periodRecords);
+    const latestDate = maxDate(observedPeriodRecords);
     const latestMonthKey = monthKeyFromDate(latestDate);
     const latestMonthLabel = monthLabelFromDate(latestDate);
     const totalDays = daysInMonth(latestDate);
