@@ -3636,7 +3636,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.12-viewer-ui-v30.9-month-series-filter-emphasis";
+    "2026.09.12-viewer-ui-v30.10-sidebar-scrollspy-position";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -4104,36 +4104,54 @@ function updateViewerSidebarFromScroll() {
     const guideLine =
         38;
 
-    let current =
-        null;
-
-    targets.forEach(item => {
-        const top =
-            item.target
-                .getBoundingClientRect()
-                .top;
-
-        if (
-            top <= guideLine
-        ) {
-            current =
-                item;
-        }
-    });
-
-    if (!current) {
-        current =
-            targets.find(item =>
+    const positionedTargets =
+        targets.map(item => ({
+            item,
+            top:
                 item.target
                     .getBoundingClientRect()
-                    .top >
+                    .top
+        }));
+
+    const passedTargets =
+        positionedTargets.filter(
+            entry =>
+                entry.top <=
                 guideLine
-            ) ||
-            targets[0];
+        );
+
+    let currentEntry =
+        null;
+
+    if (
+        passedTargets.length
+    ) {
+        currentEntry =
+            passedTargets.reduce(
+                (nearest, entry) =>
+                    !nearest ||
+                    entry.top >
+                        nearest.top
+                        ? entry
+                        : nearest,
+                null
+            );
+    } else {
+        currentEntry =
+            positionedTargets.reduce(
+                (nearest, entry) =>
+                    !nearest ||
+                    entry.top <
+                        nearest.top
+                        ? entry
+                        : nearest,
+                null
+            );
     }
 
     setActiveSidebarTarget(
-        current?.button
+        currentEntry?.item
+            ?.button
             ?.dataset
             ?.target ||
         ""
