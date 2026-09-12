@@ -208,10 +208,10 @@
             font-weight: 800;
         }
         .month-age-filter-badge.active {
-            border-color: rgba(20,142,204,.27);
-            background: var(--viewer-brand-blue-soft);
-            color: var(--viewer-brand-blue-dark);
-            box-shadow: inset 3px 0 0 var(--viewer-accent-yellow);
+            border-color: var(--viewer-state-filter-border);
+            background: var(--viewer-state-filter-soft);
+            color: var(--viewer-state-filter);
+            box-shadow: inset 3px 0 0 var(--viewer-state-filter);
         }
         .month-age-filter-badge.active::before {
             content: "";
@@ -219,11 +219,11 @@
             height: 7px;
             flex: 0 0 7px;
             border-radius: 50%;
-            background: var(--viewer-accent-yellow);
-            box-shadow: 0 0 0 1px rgba(13,103,149,.16);
+            background: var(--viewer-state-filter);
+            box-shadow: 0 0 0 2px rgba(124,58,237,.10);
         }
         .month-age-filter-badge.active strong {
-            color: var(--viewer-brand-blue-dark);
+            color: var(--viewer-state-filter);
         }
         .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; min-width: 620px; background: white; }
@@ -644,6 +644,14 @@
             --viewer-brand-blue-dark: #0d6795;
             --viewer-brand-blue-soft: #edf8fd;
             --viewer-accent-yellow: #eeff16;
+            --viewer-state-filter: #7c3aed;
+            --viewer-state-filter-soft: #f5f3ff;
+            --viewer-state-filter-border: rgba(124,58,237,.28);
+            --viewer-state-positive: #15803d;
+            --viewer-state-positive-soft: #f0fdf4;
+            --viewer-state-positive-border: rgba(21,128,61,.24);
+            --viewer-state-warning: #b45309;
+            --viewer-state-warning-soft: #fffbeb;
             --viewer-row-label-width: 210px;
         }
         .report-app { min-height:100vh; width:100%; }
@@ -911,16 +919,16 @@
         .month-age-filter-control.filter-active {
             margin-top: 8px;
             padding: 8px;
-            border: 1px solid rgba(20,142,204,.24);
+            border: 1px solid var(--viewer-state-filter-border);
             border-radius: 9px;
-            background: linear-gradient(90deg, rgba(238,255,22,.13), rgba(237,248,253,.82) 28%, #fff 100%);
+            background: var(--viewer-state-filter-soft);
         }
 
         .month-age-filter-control.filter-active .month-age-filter-summary {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            color: var(--viewer-brand-blue-dark);
+            color: var(--viewer-state-filter);
             font-weight: 800;
         }
 
@@ -930,8 +938,8 @@
             height: 7px;
             flex: 0 0 7px;
             border-radius: 50%;
-            background: var(--viewer-accent-yellow);
-            box-shadow: 0 0 0 1px rgba(13,103,149,.16);
+            background: var(--viewer-state-filter);
+            box-shadow: 0 0 0 2px rgba(124,58,237,.10);
         }
 
         .basic-column-axis-note {
@@ -2943,6 +2951,68 @@
         .analysis-chart-svg .point-period { fill: #0f6795; stroke: #fff; stroke-width: 1.5; }
         .analysis-chart-svg .month-series-line { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
         .analysis-chart-svg .month-series-point { stroke: #fff; stroke-width: 1.4; }
+        .analysis-chart-svg .analysis-month-hover-guide {
+            stroke: rgba(71,85,105,.42);
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+            pointer-events: none;
+        }
+        .analysis-chart-svg .analysis-month-hover-guide.hidden { display: none; }
+        .analysis-month-tooltip {
+            position: fixed;
+            z-index: 140;
+            min-width: 170px;
+            max-width: min(320px, calc(100vw - 24px));
+            pointer-events: none;
+            padding: 9px 10px;
+            border: 1px solid rgba(15,23,42,.10);
+            border-radius: 10px;
+            background: rgba(23,48,67,.97);
+            color: #fff;
+            box-shadow: 0 12px 28px rgba(15,23,42,.20);
+            opacity: 0;
+            transform: translateY(3px);
+            transition: opacity .08s ease, transform .08s ease;
+        }
+        .analysis-month-tooltip.visible { opacity: 1; transform: translateY(0); }
+        .analysis-month-tooltip-title {
+            margin-bottom: 6px;
+            font-size: 11px;
+            font-weight: 900;
+        }
+        .analysis-month-tooltip-row {
+            display: grid;
+            grid-template-columns: 9px minmax(0,1fr) auto;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 0;
+            font-size: 10px;
+            line-height: 1.35;
+        }
+        .analysis-month-tooltip-dot { width: 7px; height: 7px; border-radius: 999px; }
+        .analysis-month-tooltip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .analysis-month-tooltip-value { font-variant-numeric: tabular-nums; font-weight: 800; }
+        .target-rate-cell { font-variant-numeric: tabular-nums; }
+        .target-rate-value {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 5px;
+            min-width: 54px;
+        }
+        .target-rate-cell.target-rate-high {
+            background: var(--viewer-state-positive-soft);
+            color: var(--viewer-state-positive);
+            font-weight: 850;
+        }
+        .target-rate-marker {
+            width: 7px;
+            height: 7px;
+            flex: 0 0 7px;
+            border-radius: 999px;
+            background: var(--viewer-state-positive);
+            box-shadow: 0 0 0 2px rgba(21,128,61,.10);
+        }
         .analysis-chart-svg .point-total { fill: #71808c; }
         .analysis-chart-svg .point-target,
         .analysis-chart-svg .point-rate { fill: #0f6795; stroke: #fff; stroke-width: 1.5; }
@@ -3029,10 +3099,28 @@
             font-weight: 800;
         }
         #viewerGlobalAgePickerBtn.filter-active {
-            border-color: rgba(20,142,204,.34);
-            background: linear-gradient(90deg,rgba(238,255,22,.16),rgba(237,248,253,.92) 34%,#fff 100%);
-            box-shadow: inset 3px 0 0 var(--viewer-accent-yellow);
+            border-color: var(--viewer-state-filter-border);
+            background: var(--viewer-state-filter-soft);
+            box-shadow: inset 3px 0 0 var(--viewer-state-filter);
         }
+        #viewerGlobalAgePickerBtn.filter-active .viewer-condition-value {
+            color: var(--viewer-state-filter);
+        }
+        .viewer-filter-status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 18px;
+            padding: 2px 5px;
+            border: 1px solid var(--viewer-state-filter-border);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--viewer-state-filter);
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: .04em;
+            line-height: 1;
+        }
+        .viewer-filter-status.hidden { display: none; }
         #viewerGlobalAgePickerBtn.filter-active .viewer-condition-value::before {
             content: "";
             display: inline-block;
@@ -3040,8 +3128,8 @@
             height: 7px;
             margin-right: 5px;
             border-radius: 50%;
-            background: var(--viewer-accent-yellow);
-            box-shadow: 0 0 0 1px rgba(13,103,149,.18);
+            background: var(--viewer-state-filter);
+            box-shadow: 0 0 0 2px rgba(124,58,237,.10);
             vertical-align: 1px;
         }
         .viewer-target-overlap-status {
@@ -3253,6 +3341,7 @@
             <button id="viewerGlobalAgePickerBtn" type="button" class="viewer-condition-button viewer-global-condition-button viewer-global-age-filter-button" title="集計対象年齢を変更">
                 <span class="viewer-condition-label">年齢</span>
                 <span id="viewerGlobalAgeSummary" class="viewer-condition-value">全年齢</span>
+                <span id="viewerGlobalAgeFilterStatus" class="viewer-filter-status hidden" aria-hidden="true">FILTER</span>
                 <span class="viewer-global-chevron" aria-hidden="true">›</span>
             </button>
             <div class="viewer-global-mode-control">
@@ -3838,7 +3927,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.12-viewer-ui-v30.14-global-age-filter";
+    "2026.09.13-viewer-ui-v30.15-chart-tooltip-target-rate";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -4009,6 +4098,7 @@ function updateGlobalAgeFilterUi() {
     const active = globalAgeFilterActive();
 
     button?.classList.toggle("filter-active", active);
+    document.getElementById("viewerGlobalAgeFilterStatus")?.classList.toggle("hidden", !active);
     if (summary) summary.textContent = globalAgeFilterSummaryLabel();
     if (button) {
         button.title = active
@@ -6547,6 +6637,14 @@ function targetMetricHeaderHtml(label) {
     return `<th><span class="target-header"><span class="target-header-main">${escapeHtml(label)}</span><span class="target-header-age">${escapeHtml(currentViewerTargetDisplayLabel)}</span></span></th>`;
 }
 
+function targetRateCellHtml(rate, core) {
+    const numeric = Number(rate);
+    const safeRate = Number.isFinite(numeric) ? Math.max(0, numeric) : 0;
+    const high = safeRate >= 0.5;
+    const title = high ? ' title="ターゲット率50%以上"' : '';
+    return `<td class="target-rate-cell${high ? " target-rate-high" : ""}" data-sort-value="${safeRate}"${title}><span class="target-rate-value">${high ? '<span class="target-rate-marker" aria-hidden="true"></span>' : ''}${core.formatPercent(safeRate)}</span></td>`;
+}
+
 function formatCountMaybeDecimal(value, core) {
     const number = Number(value);
     if (!Number.isFinite(number)) return "—";
@@ -7201,7 +7299,7 @@ function buildAnalysisMonthSeriesSvg(monthLabels, series) {
             parts.push(`<polyline class="month-series-line" style="stroke:${color}" points="${points.map(point => `${point.x},${point.y}`).join(" ")}"></polyline>`);
         }
         points.forEach(point => {
-            parts.push(`<circle class="month-series-point" style="fill:${color}" cx="${point.x}" cy="${point.y}" r="3.8"><title>${escapeHtml(`${row.label} ／ ${point.label}：${point.value.toLocaleString("ja-JP")}件`)}</title></circle>`);
+            parts.push(`<circle class="month-series-point" style="fill:${color}" cx="${point.x}" cy="${point.y}" r="3.8"></circle>`);
         });
     });
 
@@ -7216,6 +7314,7 @@ function buildAnalysisMonthSeriesSvg(monthLabels, series) {
         }
     });
     parts.push(`<line class="axis-line" x1="${pad.left}" y1="${baseline}" x2="${pad.left + plotWidth}" y2="${baseline}"></line>`);
+    parts.push(`<line class="analysis-month-hover-guide hidden" x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${baseline}"></line>`);
     return `<svg class="analysis-chart-svg" viewBox="0 0 ${width} ${height}" style="width:${width}px;height:${height}px" role="img" aria-label="応募数の月次推移">${parts.join("")}</svg>`;
 }
 
@@ -7258,6 +7357,90 @@ function buildAnalysisMonthTimeSeriesChart(config) {
                 <div class="analysis-chart-footnote">線は期間応募数の多い順を基準に選びます。任意選択は最大10系列です。</div>
             </div>
         </div>`;
+}
+
+function analysisMonthTooltipElement() {
+    let tooltip = document.getElementById("analysisMonthTooltip");
+    if (tooltip) return tooltip;
+    tooltip = document.createElement("div");
+    tooltip.id = "analysisMonthTooltip";
+    tooltip.className = "analysis-month-tooltip";
+    tooltip.setAttribute("role", "tooltip");
+    document.body.appendChild(tooltip);
+    return tooltip;
+}
+
+function analysisMonthTooltipData(config) {
+    if (config?.tableId === "month") {
+        const monthRows = (Array.isArray(config.rows) ? config.rows : []).slice();
+        return {
+            labels: monthRows.map(row => String(row.label || "")),
+            series: [{
+                label: "応募数",
+                monthCounts: Object.fromEntries(monthRows.map(row => [String(row.label || ""), Math.max(0, Number(row.total || 0))]))
+            }]
+        };
+    }
+    return {
+        labels: Array.isArray(config?.monthLabels) ? config.monthLabels : [],
+        series: analysisMonthSelectedSeries(config, analysisMonthSeriesStateFor(config))
+    };
+}
+
+function bindAnalysisMonthSeriesTooltip(panel, config) {
+    const svg = panel?.querySelector?.(".analysis-chart-svg");
+    if (!svg) return;
+    const guide = svg.querySelector(".analysis-month-hover-guide");
+    const tooltip = analysisMonthTooltipElement();
+    const { labels, series } = analysisMonthTooltipData(config);
+    if (!labels.length || !series.length) return;
+
+    const viewWidth = Number(svg.viewBox?.baseVal?.width || svg.getAttribute("viewBox")?.split(/\s+/)?.[2] || 0);
+    const padLeft = 52;
+    const padRight = 20;
+    const plotWidth = Math.max(1, viewWidth - padLeft - padRight);
+    const stepX = labels.length > 1 ? plotWidth / (labels.length - 1) : 0;
+
+    const hide = () => {
+        guide?.classList.add("hidden");
+        tooltip.classList.remove("visible");
+    };
+
+    const moveTooltip = event => {
+        const width = tooltip.offsetWidth || 210;
+        const height = tooltip.offsetHeight || 120;
+        const margin = 10;
+        let left = event.clientX + 14;
+        let top = event.clientY + 14;
+        if (left + width > window.innerWidth - margin) left = event.clientX - width - 14;
+        if (top + height > window.innerHeight - margin) top = event.clientY - height - 14;
+        tooltip.style.left = `${Math.max(margin, left)}px`;
+        tooltip.style.top = `${Math.max(margin, top)}px`;
+    };
+
+    svg.addEventListener("pointermove", event => {
+        const rect = svg.getBoundingClientRect();
+        if (!rect.width || !viewWidth) return;
+        const xInViewBox = (event.clientX - rect.left) / rect.width * viewWidth;
+        let index = labels.length === 1 ? 0 : Math.round((xInViewBox - padLeft) / stepX);
+        index = Math.max(0, Math.min(labels.length - 1, index));
+        const x = labels.length > 1 ? padLeft + stepX * index : padLeft + plotWidth / 2;
+        const label = labels[index];
+        if (guide) {
+            guide.setAttribute("x1", String(x));
+            guide.setAttribute("x2", String(x));
+            guide.classList.remove("hidden");
+        }
+        const rows = series.map((row, seriesIndex) => ({
+            label: String(row?.label || ""),
+            value: Math.max(0, Number(row?.monthCounts?.[label] || 0)),
+            color: ANALYSIS_MONTH_SERIES_COLORS[seriesIndex % ANALYSIS_MONTH_SERIES_COLORS.length]
+        }));
+        tooltip.innerHTML = `<div class="analysis-month-tooltip-title">${escapeHtml(label)}</div>${rows.map(row => `<div class="analysis-month-tooltip-row"><span class="analysis-month-tooltip-dot" style="background:${row.color}"></span><span class="analysis-month-tooltip-label">${escapeHtml(row.label)}</span><span class="analysis-month-tooltip-value">${row.value.toLocaleString("ja-JP")}件</span></div>`).join("")}`;
+        tooltip.classList.add("visible");
+        moveTooltip(event);
+    });
+    svg.addEventListener("pointerleave", hide);
 }
 
 function rerenderAnalysisMonthPanel(panel) {
@@ -7356,6 +7539,7 @@ function renderAnalysisChartPanel(panel) {
         config.rows = prepared.rows;
         panel.innerHTML = buildAnalysisMonthTimeSeriesChart(config);
         bindAnalysisMonthSeriesControls(panel, config);
+        bindAnalysisMonthSeriesTooltip(panel, config);
     } else {
         panel.innerHTML = config.kind === "horizontal"
             ? buildAnalysisHorizontalCharts(prepared.rows, prepared.summarized)
@@ -7497,7 +7681,7 @@ function renderCrossTable(table, core) {
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
                 <td>${core.formatNumber(group.target)}</td>
-                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
+                ${targetRateCellHtml(group.total ? group.target / group.total : 0, core)}
                 <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>`;
         const baseRow = `
             <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}" data-chart-recent="${recentCount}">
@@ -7614,7 +7798,7 @@ function renderBasicDistributionTable(table, core) {
             ? ""
             : `
                 <td>${core.formatNumber(group.target)}</td>
-                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
+                ${targetRateCellHtml(group.total ? group.target / group.total : 0, core)}
                 <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>`;
         const baseRow = `
             <tr data-row-key="${escapeHtml(rowKey)}" data-chart-label="${escapeHtml(group.label)}" data-chart-total="${group.total}" data-chart-target="${group.target}" data-chart-recent="0">
@@ -7759,7 +7943,7 @@ function renderStandaloneCross(agg, core, firstHeader) {
                 <td>${core.formatNumber(group.total)}</td>
                 <td>${core.formatPercent(agg.baseTotal ? group.total / agg.baseTotal : 0)}</td>
                 <td>${core.formatNumber(group.target)}</td>
-                <td>${core.formatPercent(group.total ? group.target / group.total : 0)}</td>
+                ${targetRateCellHtml(group.total ? group.target / group.total : 0, core)}
                 <td>${core.formatPercent(agg.baseTarget ? group.target / agg.baseTarget : 0)}</td>`;
 
         return `
@@ -7981,7 +8165,7 @@ function renderIndeedTagDetail(detail, core) {
                 <td>${core.formatPercent(baseRecent ? recentCount / baseRecent : 0)}</td>`
             : `
                 <td>${core.formatNumber(row.target)}</td>
-                <td>${core.formatPercent(row.targetRate)}</td>
+                ${targetRateCellHtml(row.targetRate, core)}
                 <td>${core.formatPercent(row.targetCoverRate)}</td>`;
 
         return `
@@ -8096,7 +8280,7 @@ function renderTopImageDetail(detail, core) {
                 <td>${core.formatPercent(baseRecent ? recentCount / baseRecent : 0)}</td>`
             : `
                 <td>${core.formatNumber(row.target)}</td>
-                <td>${core.formatPercent(row.targetRate)}</td>
+                ${targetRateCellHtml(row.targetRate, core)}
                 <td>${core.formatPercent(row.targetShare)}</td>`;
 
         return `
