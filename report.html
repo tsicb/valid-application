@@ -3854,6 +3854,177 @@
             border-color: rgba(180,83,9,.22);
         }
 
+
+        /* =========================================================
+           Viewer UI v30.18
+           Chart theme: data-first palette / branded interaction
+           ========================================================= */
+        :root {
+            --viewer-chart-primary: var(--viewer-brand-blue);
+            --viewer-chart-primary-deep: var(--viewer-brand-blue-dark);
+            --viewer-chart-secondary: #78bddc;
+            --viewer-chart-neutral: #607483;
+            --viewer-chart-neutral-soft: #a8b8c2;
+            --viewer-chart-other: #dbe6eb;
+            --viewer-chart-grid: rgba(20,142,204,.12);
+            --viewer-chart-axis: #a8bac4;
+            --viewer-chart-surface: #fbfdfe;
+            --viewer-chart-hover: #b7c500;
+            --viewer-chart-hover-soft: rgba(238,255,22,.22);
+            --viewer-chart-comparison-1: #5f7180;
+            --viewer-chart-comparison-2: #9eafb9;
+            --viewer-chart-comparison-year: #7b6aa6;
+
+            /* Multi-series colors are analytical, not semantic states. */
+            --viewer-chart-series-1: #148ecc;
+            --viewer-chart-series-2: #5d78b8;
+            --viewer-chart-series-3: #8868b0;
+            --viewer-chart-series-4: #bc6680;
+            --viewer-chart-series-5: #b77a45;
+            --viewer-chart-series-6: #4e8e91;
+            --viewer-chart-series-7: #806c9f;
+            --viewer-chart-series-8: #5d8197;
+            --viewer-chart-series-9: #a26767;
+            --viewer-chart-series-10: #71865f;
+        }
+
+        /* Chart cards remain quiet; a small signature ties them to the Viewer. */
+        .analysis-chart-card {
+            position: relative;
+            overflow: hidden;
+            border-color: var(--viewer-table-border);
+            background: linear-gradient(180deg, #fff 0%, var(--viewer-chart-surface) 100%);
+            box-shadow: 0 10px 24px -26px rgba(13,103,149,.55);
+        }
+        .analysis-chart-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto;
+            height: 2px;
+            background: linear-gradient(90deg, var(--viewer-chart-primary) 0 94%, var(--viewer-accent-yellow) 94% 100%);
+        }
+        .analysis-chart-title {
+            color: var(--viewer-brand-blue-deep);
+        }
+        .analysis-chart-subtitle,
+        .analysis-chart-footnote {
+            color: var(--viewer-text-secondary);
+        }
+        .analysis-chart-legend,
+        .analysis-month-series-legend-item {
+            color: #5f7381;
+        }
+        .analysis-chart-legend-swatch.target { background: var(--viewer-chart-primary); }
+        .analysis-chart-legend-swatch.other { background: var(--viewer-chart-other); }
+        .analysis-chart-legend-swatch.total-line { background: var(--viewer-chart-neutral); }
+        .analysis-chart-legend-swatch.target-line { background: var(--viewer-chart-primary); }
+
+        /* Bar/rate charts: brand blue carries the focal measure, neutral carries context. */
+        .analysis-hbar-track { background: #edf3f6; }
+        .analysis-hbar-target { background: var(--viewer-chart-primary); }
+        .analysis-hbar-other { background: var(--viewer-chart-other); }
+        .analysis-hbar-period { background: var(--viewer-chart-primary-deep); }
+        .analysis-hbar-recent { background: var(--viewer-chart-secondary); }
+        .analysis-hbar-label,
+        .analysis-hbar-value { color: #526a79; }
+        .analysis-rate-track { background: #e9f0f3; }
+        .analysis-rate-fill,
+        .analysis-rate-dot { background: var(--viewer-chart-primary); }
+        .analysis-rate-dot {
+            border-color: #fff;
+            box-shadow: 0 1px 5px rgba(20,142,204,.28);
+        }
+
+        /* Shared SVG grammar. */
+        .analysis-chart-svg .grid-line {
+            stroke: var(--viewer-chart-grid);
+        }
+        .analysis-chart-svg .axis-line {
+            stroke: var(--viewer-chart-axis);
+        }
+        .analysis-chart-svg .axis-text {
+            fill: #718491;
+        }
+        .analysis-chart-svg .bar-target { fill: var(--viewer-chart-primary); }
+        .analysis-chart-svg .bar-other { fill: var(--viewer-chart-other); }
+        .analysis-chart-svg .bar-period { fill: var(--viewer-chart-primary-deep); }
+        .analysis-chart-svg .bar-recent { fill: var(--viewer-chart-secondary); }
+        .analysis-chart-svg .line-total { stroke: var(--viewer-chart-neutral); }
+        .analysis-chart-svg .line-target,
+        .analysis-chart-svg .line-rate,
+        .analysis-chart-svg .line-period { stroke: var(--viewer-chart-primary); }
+        .analysis-chart-svg .point-total { fill: var(--viewer-chart-neutral); }
+        .analysis-chart-svg .point-target,
+        .analysis-chart-svg .point-rate,
+        .analysis-chart-svg .point-period {
+            fill: var(--viewer-chart-primary);
+            stroke: #fff;
+        }
+        .analysis-chart-svg .month-series-line {
+            opacity: .96;
+        }
+        .analysis-chart-svg .month-series-point {
+            stroke: #fff;
+            stroke-width: 1.6;
+        }
+        .analysis-chart-svg .analysis-month-hover-guide {
+            stroke: var(--viewer-chart-hover);
+            stroke-width: 1.5;
+            stroke-dasharray: 3 4;
+        }
+        .analysis-chart-scroll {
+            scrollbar-color: #8fb8c8 #eff5f7;
+        }
+        .analysis-chart-scroll::-webkit-scrollbar-track { background: #eff5f7; }
+        .analysis-chart-scroll::-webkit-scrollbar-thumb { background: #8fb8c8; }
+
+        /* Mouse-follow tooltip gets one small yellow signature without becoming a warning. */
+        .analysis-month-tooltip,
+        .month-progress-tooltip {
+            border-color: rgba(20,142,204,.34);
+            box-shadow: 0 16px 34px rgba(13,38,55,.24), inset 0 2px 0 rgba(238,255,22,.92);
+        }
+        .analysis-month-tooltip-dot {
+            box-shadow: 0 0 0 1px rgba(255,255,255,.72);
+        }
+
+        /* Monthly progress uses the same chart grammar but keeps comparison lines neutral. */
+        .month-progress-chart-wrap {
+            margin-top: 10px;
+            padding: 6px 7px 0;
+            border: 1px solid var(--viewer-chart-grid);
+            border-radius: 12px;
+            background: linear-gradient(180deg, #fff 0%, var(--viewer-chart-surface) 100%);
+        }
+        .month-progress-axis-label,
+        .month-progress-grid-label {
+            fill: #718491;
+        }
+        .month-progress-legend {
+            color: #5f7381;
+        }
+        .month-progress-legend-swatch {
+            background: var(--viewer-chart-primary);
+        }
+        .month-progress-legend-line {
+            border-top-color: var(--viewer-chart-comparison-1);
+        }
+        .month-progress-legend-line.prev2 {
+            border-top-color: var(--viewer-chart-comparison-2);
+        }
+        .month-progress-legend-line.lastYearSameMonth {
+            border-top-color: var(--viewer-chart-comparison-year);
+        }
+        .month-progress-legend-line.projection {
+            border-top-color: var(--viewer-chart-primary);
+        }
+        .month-progress-empty,
+        .analysis-chart-loading {
+            border-color: var(--viewer-table-border);
+            background: var(--viewer-chart-surface);
+            color: var(--viewer-text-secondary);
+        }
+
 </style>
 </head>
 <body>
@@ -4518,7 +4689,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.13-viewer-ui-v30.17-analysis-ui-theme";
+    "2026.09.13-viewer-ui-v30.18-chart-theme";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -7763,8 +7934,11 @@ function buildAnalysisMonthOrderedCharts(rows, config) {
 }
 
 const ANALYSIS_MONTH_SERIES_COLORS = Object.freeze([
-    "#148ecc", "#0d6f78", "#8255b5", "#cf7b24", "#4b7f35",
-    "#c84f6a", "#4364a8", "#8a6c22", "#5d6f7b", "#15958d"
+    "var(--viewer-chart-series-1)", "var(--viewer-chart-series-2)",
+    "var(--viewer-chart-series-3)", "var(--viewer-chart-series-4)",
+    "var(--viewer-chart-series-5)", "var(--viewer-chart-series-6)",
+    "var(--viewer-chart-series-7)", "var(--viewer-chart-series-8)",
+    "var(--viewer-chart-series-9)", "var(--viewer-chart-series-10)"
 ]);
 
 const analysisMonthSeriesState = new Map();
@@ -9104,7 +9278,7 @@ function buildMonthProgressChartHtml(progress, core) {
 
     axis.ticks.forEach(value => {
         const y = baselineY - (plotHeight * (value / topValue));
-        svgParts.push(`<line x1="${padding.left}" y1="${y}" x2="${padding.left + plotWidth}" y2="${y}" stroke="#e6eef2" stroke-width="1"></line>`);
+        svgParts.push(`<line x1="${padding.left}" y1="${y}" x2="${padding.left + plotWidth}" y2="${y}" stroke="var(--viewer-chart-grid)" stroke-width="1"></line>`);
         svgParts.push(`<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" class="month-progress-grid-label">${escapeHtml(core.formatNumber(value))}</text>`);
     });
 
@@ -9114,8 +9288,12 @@ function buildMonthProgressChartHtml(progress, core) {
         svgParts.push(`<text x="${x}" y="${viewBoxHeight - 14}" text-anchor="middle" class="month-progress-axis-label">${day}</text>`);
     });
 
-    const barColor = "#0f6795";
-    const lineColors = { prev1: "#475569", prev2: "#94a3b8", lastYearSameMonth: "#10b981" };
+    const barColor = "var(--viewer-chart-primary)";
+    const lineColors = {
+        prev1: "var(--viewer-chart-comparison-1)",
+        prev2: "var(--viewer-chart-comparison-2)",
+        lastYearSameMonth: "var(--viewer-chart-comparison-year)"
+    };
     const currentActualValues = mode === "daily" ? (currentSeries.daily || []) : (currentSeries.cumulative || []);
 
     currentActualValues.forEach((value, index) => {
@@ -9149,11 +9327,11 @@ function buildMonthProgressChartHtml(progress, core) {
             path += path ? ` L ${x} ${y}` : `M ${x} ${y}`;
         });
         if (path) {
-            svgParts.push(`<path d="${path}" fill="none" stroke="${lineColors[series.kind] || "#64748b"}" stroke-width="2.5"></path>`);
+            svgParts.push(`<path d="${path}" fill="none" stroke="${lineColors[series.kind] || "var(--viewer-chart-neutral)"}" stroke-width="2.5"></path>`);
         }
     });
 
-    svgParts.push(`<line x1="${padding.left}" y1="${baselineY}" x2="${padding.left + plotWidth}" y2="${baselineY}" stroke="#cfdbe3" stroke-width="1.2"></line>`);
+    svgParts.push(`<line x1="${padding.left}" y1="${baselineY}" x2="${padding.left + plotWidth}" y2="${baselineY}" stroke="var(--viewer-chart-axis)" stroke-width="1.2"></line>`);
 
     const overlayRects = Array.from({ length: 31 }, (_, index) => {
         const x = padding.left + stepX * index;
