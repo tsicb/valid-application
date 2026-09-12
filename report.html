@@ -2967,6 +2967,183 @@
             .analysis-chart-grid { grid-template-columns: 1fr; }
         }
 
+
+        /* =========================================================
+           Viewer UI v30.11
+           Global sticky analysis bar + navigation-only sidebar
+           ========================================================= */
+        .viewer-global-analysis-bar {
+            position: sticky;
+            top: 0;
+            z-index: 85;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 50px;
+            margin: 0 0 14px;
+            padding: 6px 8px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            overscroll-behavior-x: contain;
+            scrollbar-width: none;
+            border: 1px solid rgba(20,142,204,.18);
+            border-left: 3px solid var(--viewer-brand-blue);
+            border-radius: 11px;
+            background: rgba(247,251,253,.97);
+            box-shadow: 0 9px 22px -19px rgba(13,103,149,.72);
+            backdrop-filter: blur(10px);
+        }
+        .viewer-global-analysis-bar::-webkit-scrollbar { display: none; }
+        .viewer-global-analysis-title {
+            flex: 0 0 auto;
+            padding: 0 3px 0 1px;
+            color: var(--viewer-brand-blue-dark);
+            font-size: 10.5px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        .viewer-global-analysis-bar .viewer-condition-button.viewer-global-condition-button {
+            width: auto;
+            min-width: 0;
+            min-height: 36px;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 8px;
+            border-radius: 9px;
+            background: #fff;
+            white-space: nowrap;
+        }
+        .viewer-global-analysis-bar .viewer-condition-label,
+        .viewer-global-control-label {
+            color: #718292;
+            font-size: 9px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .viewer-global-analysis-bar .viewer-condition-value {
+            max-width: 235px;
+            color: var(--viewer-brand-blue-dark);
+            font-size: 10.5px;
+            font-weight: 800;
+        }
+        .viewer-global-chevron {
+            color: #7a8d9d;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .viewer-global-mode-control {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 36px;
+            padding: 4px 5px 4px 7px;
+            border: 1px solid #d7e5ec;
+            border-radius: 9px;
+            background: #fff;
+        }
+        .viewer-global-analysis-bar .basic-display-segmented {
+            display: inline-flex;
+            grid-template-columns: none;
+            gap: 2px;
+            padding: 2px;
+            border-radius: 7px;
+        }
+        .viewer-global-analysis-bar .basic-display-segmented button {
+            padding: 5px 8px;
+            font-size: 9.8px;
+            white-space: nowrap;
+        }
+        #viewerGlobalAnalysisBar .viewer-global-month-age {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 36px;
+            margin: 0;
+            padding: 4px 6px;
+            border: 1px solid #d7e5ec;
+            border-radius: 9px;
+            background: #fff;
+            white-space: nowrap;
+        }
+        #viewerGlobalAnalysisBar .viewer-global-month-age.hidden { display: none; }
+        #viewerGlobalAnalysisBar .viewer-global-month-age .month-age-filter-label {
+            margin: 0;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+        #viewerGlobalAnalysisBar .viewer-global-month-age .month-age-filter-actions {
+            display: inline-flex;
+            gap: 3px;
+        }
+        #viewerGlobalAnalysisBar .viewer-global-month-age .month-age-filter-actions button {
+            padding: 5px 7px;
+            font-size: 9.5px;
+            white-space: nowrap;
+        }
+        #viewerGlobalAnalysisBar .viewer-global-month-age .month-age-filter-summary {
+            display: none;
+            margin: 0;
+            padding: 4px 6px;
+            border-radius: 999px;
+            font-size: 9.2px;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        #viewerGlobalAnalysisBar .viewer-global-month-age.filter-active {
+            border-color: rgba(20,142,204,.28);
+            background: linear-gradient(90deg,rgba(238,255,22,.16),rgba(237,248,253,.88) 38%,#fff 100%);
+        }
+        #viewerGlobalAnalysisBar .viewer-global-month-age.filter-active .month-age-filter-summary {
+            display: inline-flex;
+        }
+        #viewerGlobalAnalysisBar .viewer-global-chart-toggle {
+            flex: 0 0 auto;
+            min-height: 36px;
+            margin: 0;
+            padding: 4px 6px 4px 8px;
+            gap: 6px;
+            border-radius: 9px;
+            background: #fff;
+        }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle-label {
+            font-size: 9.5px;
+            white-space: nowrap;
+        }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle-note,
+        #viewerGlobalAnalysisBar .viewer-global-analysis-note {
+            display: none;
+        }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle {
+            width: 58px;
+            height: 28px;
+            flex-basis: 58px;
+        }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle-knob {
+            width: 20px;
+            height: 20px;
+        }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle[aria-checked="true"] .analysis-chart-toggle-knob {
+            transform: translateX(29px);
+        }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle-state { left: 26px; }
+        #viewerGlobalAnalysisBar .analysis-chart-toggle[aria-checked="true"] .analysis-chart-toggle-state { left: 8px; }
+        .report-main > .topbar { margin-bottom: 12px; }
+        .report-sidebar .sidebar-content { padding-top: 13px; }
+        @media (max-width: 1180px) {
+            .viewer-global-analysis-bar .viewer-condition-value { max-width: 190px; }
+            .viewer-global-analysis-title { display: none; }
+        }
+        @media (max-width: 980px) {
+            .viewer-global-analysis-bar {
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
+        }
+
 </style>
 </head>
 <body>
@@ -3006,51 +3183,12 @@
     <div id="errorView" class="error hidden"></div>
 
     <main id="reportView" class="report-app hidden">
-        <aside id="reportSidebar" class="report-sidebar" aria-label="分析レポート操作">
+        <aside id="reportSidebar" class="report-sidebar" aria-label="分析ナビゲーション">
             <div class="sidebar-header">
-                <div class="sidebar-brand"><div class="sidebar-brand-main">分析レポート</div><div class="sidebar-brand-sub">分析ナビ・操作</div></div>
+                <div class="sidebar-brand"><div class="sidebar-brand-main">分析レポート</div><div class="sidebar-brand-sub">分析ナビ</div></div>
                 <button id="viewerSidebarToggle" type="button" class="sidebar-toggle" aria-label="サイドバーを折りたたむ" aria-expanded="true" title="サイドバーを折りたたむ">‹</button>
             </div>
             <div class="sidebar-content">
-                <section id="analysisConditionSidebarGroup" class="sidebar-group">
-                    <div class="sidebar-group-title">分析設定</div>
-                    <div class="viewer-condition-stack">
-                        <button id="viewerPeriodPickerBtn" type="button" class="viewer-condition-button">
-                            <span class="viewer-condition-label">集計期間</span>
-                            <span id="viewerPeriodSummary" class="viewer-condition-value">全期間</span>
-                        </button>
-                    </div>
-                    <div class="basic-column-axis-control">
-                        <label>基本表示</label>
-                        <div class="basic-display-segmented" role="group" aria-label="基本表示">
-                            <button id="viewerBasicModeAge" type="button" data-basic-display-mode="age" class="active">年代別</button>
-                            <button id="viewerBasicModeMonth" type="button" data-basic-display-mode="month">応募年月別</button>
-                        </div>
-                        <button id="viewerTargetAgePickerBtn" type="button" class="viewer-condition-button" style="margin-top:8px;">
-                            <span class="viewer-condition-label">ターゲット年齢</span>
-                            <span id="viewerTargetAgeSummary" class="viewer-condition-value">全年齢</span>
-                        </button>
-                        <div id="viewerMonthAgeFilterControl" class="month-age-filter-control hidden">
-                            <div class="month-age-filter-label">表示対象年齢</div>
-                            <div class="month-age-filter-actions" role="group" aria-label="応募年月別の表示対象年齢">
-                                <button id="viewerMonthAgeAllBtn" type="button" data-month-age-mode="all" class="active">全年齢</button>
-                                <button id="viewerMonthAgeCustomBtn" type="button" data-month-age-mode="custom">自由指定</button>
-                            </div>
-                            <div id="viewerMonthAgeFilterSummary" class="month-age-filter-summary">全年齢</div>
-                        </div>
-                        <div id="viewerBasicColumnAxisNote" class="basic-column-axis-note">各分析表を年代別に比較します。</div>
-                    </div>
-                    <div class="analysis-chart-toggle-row">
-                        <div>
-                            <div class="analysis-chart-toggle-label">グラフ表示</div>
-                            <div class="analysis-chart-toggle-note">各表の量とターゲット率を可視化</div>
-                        </div>
-                        <button id="viewerAnalysisChartToggle" type="button" class="analysis-chart-toggle" role="switch" aria-checked="false" title="各分析表のグラフを表示">
-                            <span class="analysis-chart-toggle-state">OFF</span>
-                            <span class="analysis-chart-toggle-knob" aria-hidden="true"></span>
-                        </button>
-                    </div>
-                </section>
                 <section class="sidebar-group"><div class="sidebar-group-title">概要</div><nav class="sidebar-nav" aria-label="概要">
                     <button type="button" class="sidebar-nav-button" data-target="reportOverview" title="レポート概要">概要</button>
                     <button type="button" class="sidebar-nav-button" data-target="kpiSection" title="主要指標">主要指標</button>
@@ -3069,13 +3207,49 @@
                 <div class="eyebrow">Valid Application Analysis</div>
                 <h1 id="reportTitle">有効応募分析レポート</h1>
                 <div id="reportSubtitle" class="subtitle"></div>
-                <div class="report-condition-summary" aria-label="現在の分析条件">
-                    <span class="report-condition-chip">集計期間 <strong id="reportPeriodCondition">全期間</strong></span>
-                    <span class="report-condition-chip"><span id="reportAgeConditionLabel">ターゲット年齢</span> <strong id="reportTargetAgeCondition">全年齢</strong></span>
-                </div>
             </div>
             <button id="reloadBtn" type="button" class="reload">データを再読み込み</button>
         </div>
+
+        <section id="viewerGlobalAnalysisBar" class="viewer-global-analysis-bar" aria-label="分析設定">
+            <div class="viewer-global-analysis-title">分析設定</div>
+            <button id="viewerPeriodPickerBtn" type="button" class="viewer-condition-button viewer-global-condition-button" title="集計期間を変更">
+                <span class="viewer-condition-label">期間</span>
+                <span id="viewerPeriodSummary" class="viewer-condition-value">全期間</span>
+                <span class="viewer-global-chevron" aria-hidden="true">›</span>
+            </button>
+            <div class="viewer-global-mode-control">
+                <span class="viewer-global-control-label">表示</span>
+                <div class="basic-display-segmented" role="group" aria-label="基本表示">
+                    <button id="viewerBasicModeAge" type="button" data-basic-display-mode="age" class="active">年代別</button>
+                    <button id="viewerBasicModeMonth" type="button" data-basic-display-mode="month">応募年月別</button>
+                </div>
+            </div>
+            <button id="viewerTargetAgePickerBtn" type="button" class="viewer-condition-button viewer-global-condition-button viewer-global-age-button" title="ターゲット年齢を変更">
+                <span class="viewer-condition-label">ターゲット</span>
+                <span id="viewerTargetAgeSummary" class="viewer-condition-value">全年齢</span>
+                <span class="viewer-global-chevron" aria-hidden="true">›</span>
+            </button>
+            <div id="viewerMonthAgeFilterControl" class="month-age-filter-control viewer-global-month-age hidden">
+                <div class="month-age-filter-label">表示対象年齢</div>
+                <div class="month-age-filter-actions" role="group" aria-label="応募年月別の表示対象年齢">
+                    <button id="viewerMonthAgeAllBtn" type="button" data-month-age-mode="all" class="active">全年齢</button>
+                    <button id="viewerMonthAgeCustomBtn" type="button" data-month-age-mode="custom">自由指定</button>
+                </div>
+                <div id="viewerMonthAgeFilterSummary" class="month-age-filter-summary">全年齢</div>
+            </div>
+            <div class="analysis-chart-toggle-row viewer-global-chart-toggle">
+                <div>
+                    <div class="analysis-chart-toggle-label">グラフ</div>
+                    <div class="analysis-chart-toggle-note">各表の量とターゲット率を可視化</div>
+                </div>
+                <button id="viewerAnalysisChartToggle" type="button" class="analysis-chart-toggle" role="switch" aria-checked="false" title="各分析表のグラフを表示">
+                    <span class="analysis-chart-toggle-state">OFF</span>
+                    <span class="analysis-chart-toggle-knob" aria-hidden="true"></span>
+                </button>
+            </div>
+            <div id="viewerBasicColumnAxisNote" class="basic-column-axis-note viewer-global-analysis-note">各分析表を年代別に比較します。</div>
+        </section>
 
         <div id="fastHandoffBanner" class="fast-handoff-banner hidden">
             <strong id="fastHandoffTitle">
@@ -3091,7 +3265,7 @@
                 <div class="share-guard-label">共有先確認</div>
                 <div id="shareTargetName" class="share-guard-name">確認中...</div>
             </div>
-            <div id="shareReadyBadge" class="share-ok">企業共有用</div>
+            <div id="shareReadyBadge" class="share-ok">企業様共有用</div>
         </div>
 
         <div id="shareNameWarning" class="share-warning hidden"></div>
@@ -3636,7 +3810,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.12-viewer-ui-v30.10-sidebar-scrollspy-position";
+    "2026.09.12-viewer-ui-v30.11-global-analysis-bar";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -3816,7 +3990,7 @@ function renderBasicColumnAxisControl(basicColumnAxis) {
         }
     }
 
-    const chartNote = document.querySelector("#analysisConditionSidebarGroup .analysis-chart-toggle-note");
+    const chartNote = document.querySelector("#viewerGlobalAnalysisBar .analysis-chart-toggle-note");
     if (chartNote) {
         chartNote.textContent = activeKey === "month"
             ? "各表の月次推移を折れ線で可視化"
@@ -4102,7 +4276,8 @@ function updateViewerSidebarFromScroll() {
     if (!targets.length) return;
 
     const guideLine =
-        38;
+        stickyHeaderTopOffset() +
+        14;
 
     const positionedTargets =
         targets.map(item => ({
@@ -4261,6 +4436,7 @@ function initializeViewerSidebar() {
                 target.getBoundingClientRect()
                     .top +
                 window.scrollY -
+                stickyHeaderTopOffset() -
                 12;
 
             window.scrollTo({
@@ -5090,6 +5266,11 @@ function initializeViewerLayoutObserver() {
             "reportMain"
         );
 
+    const globalAnalysisBar =
+        document.getElementById(
+            "viewerGlobalAnalysisBar"
+        );
+
     if (
         "ResizeObserver" in
         window
@@ -5110,7 +5291,8 @@ function initializeViewerLayoutObserver() {
 
         [
             sidebar,
-            main
+            main,
+            globalAnalysisBar
         ]
             .filter(Boolean)
             .forEach(
@@ -5240,7 +5422,9 @@ let stickyTableScrollRaf =
     0;
 
 function stickyHeaderTopOffset() {
-    return 0;
+    const bar = document.getElementById("viewerGlobalAnalysisBar");
+    if (!bar || bar.classList.contains("hidden")) return 0;
+    return Math.max(0, Math.ceil(bar.getBoundingClientRect().height));
 }
 
 function cleanupStickyTableControllers() {
@@ -5574,6 +5758,8 @@ function updateStickyHeaderVisibility(
         wrapRect.bottom >
             top +
             headerHeight;
+
+    overlay.style.top = `${top}px`;
 
     overlay.classList.toggle(
         "visible",
@@ -11400,7 +11586,7 @@ function setFastHandoffBanner(
     if (shareBadge) {
         shareBadge.textContent =
             state === "ready"
-                ? "企業共有用"
+                ? "企業様共有用"
                 : state === "error"
                     ? "保存失敗・共有不可"
                     : "保存中・共有不可";
