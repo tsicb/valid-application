@@ -1997,13 +1997,13 @@
         body {
             width: 100%;
             max-width: 100%;
-            overflow-x: hidden;
+            overflow-x: clip;
         }
 
         .report-app {
             width: 100%;
             max-width: 100%;
-            overflow-x: hidden;
+            overflow-x: clip;
         }
 
         .report-main {
@@ -2019,7 +2019,7 @@
                 );
             min-width: 0;
             box-sizing: border-box;
-            overflow-x: hidden;
+            overflow-x: clip;
         }
 
         .report-app.sidebar-collapsed
@@ -2049,7 +2049,7 @@
         }
 
         .section {
-            overflow-x: hidden;
+            overflow-x: clip;
         }
 
         .table-wrap {
@@ -2969,8 +2969,8 @@
 
 
         /* =========================================================
-           Viewer UI v30.11
-           Global sticky analysis bar + navigation-only sidebar
+           Viewer UI v30.12
+           Sticky analysis bar overflow-container fix
            ========================================================= */
         .viewer-global-analysis-bar {
             position: sticky;
@@ -3810,7 +3810,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.12-viewer-ui-v30.11-global-analysis-bar";
+    "2026.09.12-viewer-ui-v30.12-sticky-analysis-bar-fix";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
