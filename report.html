@@ -3858,7 +3858,7 @@
 
 
         /* =========================================================
-           Viewer UI v30.19
+           Viewer UI v30.20
            Chart theme: data-first palette / branded interaction
            ========================================================= */
         :root {
@@ -4691,7 +4691,7 @@
 
 
 const VIEWER_UI_RELEASE =
-    "2026.09.13-viewer-ui-v30.19-opaque-analysis-bar";
+    "2026.09.13-viewer-ui-v30.20-report-settings";
 const VIEWER_SIDEBAR_STATE_KEY =
     "validApplicationAnalysis.viewerSidebarCollapsed.v1";
 
@@ -7469,7 +7469,7 @@ function recentMetricHeaderHtml(label, labels) {
 function globalAgeFilterBadgeHtml() {
     const label = escapeHtml(globalAgeFilterSummaryLabel());
     if (globalAgeFilterActive()) {
-        return `<span class="month-age-filter-badge active" title="Viewer全体をこの年齢範囲の応募に絞り込んでいます">年齢フィルター <strong>${label}</strong></span>`;
+        return `<span class="month-age-filter-badge active" title="分析レポート全体をこの年齢範囲の応募に絞り込んでいます">年齢フィルター <strong>${label}</strong></span>`;
     }
     return `<span class="month-age-filter-badge">年齢 <strong>全年齢</strong></span>`;
 }
@@ -9145,7 +9145,7 @@ function updateMonthProgressModeButtons() {
     });
 }
 
-function renderMonthProgressSection(progress, core) {
+function renderMonthProgressSection(progress, core, displayEnabled = true) {
     const section = document.getElementById("monthProgressSection");
     const note = document.getElementById("monthProgressNote");
     const summary = document.getElementById("monthProgressSummary");
@@ -9154,7 +9154,7 @@ function renderMonthProgressSection(progress, core) {
     updateMonthProgressModeButtons();
     updateViewerConditionSummaries();
 
-    if (!progress?.visible) {
+    if (!displayEnabled || !progress?.visible) {
         section?.classList.add("hidden");
         if (summary) summary.innerHTML = "";
         if (body) body.innerHTML = "";
@@ -11006,7 +11006,7 @@ function configureAgePickerModal(context) {
 
     if (context === "filter") {
         if (title) title.textContent = "集計対象年齢を選択";
-        if (note) note.textContent = "この年齢範囲がViewer全体の共通フィルターになります。KPI・応募進捗・基本分析・詳細分析・カスタム分析のすべてを同じ母集団で集計します。";
+        if (note) note.textContent = "この年齢範囲が分析レポート全体の共通フィルターになります。KPI・応募進捗・基本分析・詳細分析・カスタム分析のすべてを同じ母集団で集計します。";
         if (apply) apply.textContent = "この年齢範囲で全体を絞り込む";
     } else {
         if (title) title.textContent = "ターゲット年齢を選択";
@@ -11717,13 +11717,27 @@ function renderReport(data) {
     document.getElementById("kpiMatched").textContent =
         `${core.formatNumber(result.matchedCount)} / ${core.formatNumber(result.totalCount)} 応募`;
 
+    const monthProgressVisible =
+        viewerDisplayEnabled(
+            displayMap,
+            "month-progress"
+        );
+
+    document.querySelector(
+        '#reportSidebar button[data-target="monthProgressSection"]'
+    )?.classList.toggle(
+        "hidden",
+        !monthProgressVisible
+    );
+
     renderMonthProgressSection(
         result.monthProgress,
-        core
+        core,
+        monthProgressVisible
     );
 
     document.getElementById("ageModeNote").textContent =
-        `年齢区分：${result.ageMode} ／ 共通年齢フィルター：${globalAgeFilterSummaryLabel()}`;
+        `年代区分：ターゲット年齢上限に合わせて自動 ／ 共通年齢フィルター：${globalAgeFilterSummaryLabel()}`;
 
     const ageBody =
         document.getElementById("ageTableBody");
@@ -11950,7 +11964,7 @@ function renderViewerPerformance(
 
     body.innerHTML = [
         viewerPerfRow(
-            "Viewer全体",
+            "分析レポート全体",
             client.totalLoadMs
         ),
         viewerPerfRow(
@@ -11958,7 +11972,7 @@ function renderViewerPerformance(
             client.fetchAndParseMs
         ),
         viewerPerfTextRow(
-            "Viewer応答transport",
+            "分析レポート応答transport",
             (
                 client.transportMode ||
                 "PLAIN_JSON"
@@ -12016,7 +12030,7 @@ function renderViewerPerformance(
             server.workbookValidationMs
         ),
         viewerPerfRow(
-            "GAS Viewer認証state",
+            "GAS 分析レポート認証state",
             server.stateAuthMs
         ),
         viewerPerfTextRow(

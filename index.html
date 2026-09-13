@@ -2976,7 +2976,6 @@ function buildSheetsPayloadV3(accessKey = "", requestId = "", targetSpreadsheetU
             analysisEndDate: "",
             targetAgeMin: "",
             targetAgeMax: "",
-            ageMode: "年代",
             jobNameKeywords
         },
         datasets: {
@@ -3767,7 +3766,7 @@ function mapSheetsApiError(data) {
 
     const messages = {
         AUTH_INVALID:
-            "アクセスキーが正しくありません。画面上部のViewer連携アクセスキーを確認してください。",
+            "アクセスキーが正しくありません。画面上部の分析レポート連携アクセスキーを確認してください。",
         SCHEMA_MISMATCH:
             "Pages側とAPI GAS側のデータ仕様が一致していません。API GASのSCHEMA_VERSIONが3.0か確認してください。",
         PAGES_VERSION_MISMATCH:
@@ -3799,21 +3798,21 @@ function mapSheetsApiError(data) {
         MANAGE_LOAD_ERROR:
             "既存レポートの設定読み込み中にエラーが発生しました。",
         MANAGE_LIST_ERROR:
-            "個社Viewer一覧の取得中にエラーが発生しました。",
+            "個社分析レポート一覧の取得中にエラーが発生しました。",
         MANAGE_DIAGNOSTICS_ERROR:
             "システム診断の実行中にエラーが発生しました。",
         MANAGE_SAVE_ERROR:
             "設定・マスタの保存中にエラーが発生しました。",
         REPORT_NAME_REQUIRED:
-            "Viewer名を入力してください。",
+            "分析レポート名を入力してください。",
         IMAGE_RETRY_ERROR:
             "画像URLの再取得中にエラーが発生しました。",
         VIEWER_ACCESS_UPDATE_ERROR:
-            "企業向けViewerの閲覧状態変更中にエラーが発生しました。",
+            "企業向け分析レポートの閲覧状態変更中にエラーが発生しました。",
         VIEWER_ROTATE_ERROR:
-            "企業向けViewer URLの再発行中にエラーが発生しました。",
+            "企業向け分析レポートURLの再発行中にエラーが発生しました。",
         VIEWER_SHARE_STATUS_ERROR:
-            "企業向けViewerの共有状態更新中にエラーが発生しました。",
+            "企業向け分析レポートの共有状態更新中にエラーが発生しました。",
         INTERNAL_ERROR:
             "API GAS内部でエラーが発生しました。同じボタンから再試行できます。"
     };
@@ -4454,7 +4453,7 @@ function renderEtlPerformance(apiData = null) {
                 : "対象なし"
         ),
         perfRow(
-            "GAS：Viewer/メタ情報確定",
+            "GAS：分析レポート/メタ情報確定",
             server.finalizeViewerMs
         ),
         perfRow(
@@ -4466,7 +4465,7 @@ function renderEtlPerformance(apiData = null) {
             server.finalizeCustomAnalysisEnsureMs
         ),
         perfRow(
-            "     ├ 35Viewer表示設定確認",
+            "     ├ 35分析レポート表示項目確認",
             server.finalizeDisplaySettingsEnsureMs
         ),
         perfRow(
@@ -4482,19 +4481,19 @@ function renderEtlPerformance(apiData = null) {
             server.finalizeStateWriteMs
         ),
         perfRow(
-            "  └ Viewerアクセス確定",
+            "  └ 分析レポートアクセス確定",
             server.ensureViewerAccessMs
         ),
         perfRow(
-            "     ├ Viewer状態再書込",
+            "     ├ 分析レポート状態再書込",
             server.viewerAccessStateWriteMs
         ),
         perfRow(
-            "     ├ Viewer mapping読込",
+            "     ├ 分析レポート紐付け読込",
             server.viewerAccessMappingReadMs
         ),
         perfRow(
-            "     ├ Viewer mapping保存",
+            "     ├ 分析レポート紐付け保存",
             server.viewerAccessMappingWriteMs
         ),
         perfRow(
@@ -4543,7 +4542,7 @@ function renderEtlPerformance(apiData = null) {
         ),
         datasetRows,
         perfRow(
-            "クリック→Viewer反映完了",
+            "クリック→分析レポート反映完了",
             trace.totalMs
         )
     ]
@@ -4575,8 +4574,8 @@ function sheetsStageLabel(data) {
         CREATED: "新規Spreadsheet作成完了",
         OPENED: "保存領域を準備しました",
         DATA_WRITTEN: "分析データ保存完了",
-        REPORT_DONE: "Viewer反映準備完了",
-        READY: "Viewer反映完了"
+        REPORT_DONE: "分析レポート反映準備完了",
+        READY: "分析レポート反映完了"
     };
 
     if (labels[stage]) {
@@ -4584,10 +4583,10 @@ function sheetsStageLabel(data) {
     }
 
     if (status === "PROCESSING") {
-        return "Viewer反映処理中";
+        return "分析レポート反映処理中";
     }
 
-    return "Viewer反映処理中";
+    return "分析レポート反映処理中";
 }
 
 async function postSheetsPayloadUntilReady(
@@ -5830,7 +5829,6 @@ function buildFastViewerSettings() {
         "集計終了日": "",
         "ターゲット年齢下限": "",
         "ターゲット年齢上限": "",
-        "年齢区分": "年代",
         "月内応募日幅": 7,
         "応募時間帯幅": 6,
         "求人原稿文字数幅": 300,
@@ -5974,13 +5972,12 @@ function buildFastViewerPreviewData({
             rowAxis:
                 "対応状況",
             colAxis:
-                "応募媒体",
-            ageFilterMode:
-                "全年齢",
-            ageMin: "",
-            ageMax: ""
+                "応募媒体"
         },
-        displaySettings: [],
+        displaySettings: [
+            { id: "month-progress", visible: true },
+            { id: "enterprise", visible: false }
+        ],
         commonMasterVersion:
             COMMON_MASTER_VERSION,
         datasets: {
@@ -6223,7 +6220,7 @@ async function createGoogleSpreadsheet({
 
     if (!accessKey) {
         setSheetsCreateStatus(
-            "Viewer連携アクセスキーが未設定です。先にアクセスキーを保存してください。",
+            "分析レポート連携アクセスキーが未設定です。先にアクセスキーを保存してください。",
             "warning"
         );
 
@@ -6251,7 +6248,7 @@ async function createGoogleSpreadsheet({
         const proceed =
             window.confirm(
                 "求人CSVは読み込まれていますが、応募データとの求人突合が0件です。\n\n" +
-                "このまま「応募データのみ」でViewerへ反映しますか？"
+                "このまま「応募データのみ」で分析レポートへ反映しますか？"
             );
 
         if (!proceed) {
@@ -6376,7 +6373,7 @@ async function createGoogleSpreadsheet({
         );
 
         setSheetsCreateStatus(
-            "Viewer反映用データを準備しています...",
+            "分析レポート反映用データを準備しています...",
             "info"
         );
 
@@ -6436,8 +6433,8 @@ async function createGoogleSpreadsheet({
             `送信サイズ: ${transportNote}\n` +
             (
                 targetSpreadsheetId
-                    ? "既存Viewerへの反映完了を待っています..."
-                    : "新しい個社SheetとViewerを作成しています..."
+                    ? "既存分析レポートへの反映完了を待っています..."
+                    : "新しい個社Sheetと分析レポートを作成しています..."
             ),
             "info"
         );
@@ -6470,7 +6467,7 @@ async function createGoogleSpreadsheet({
 
                     if (runLabel) {
                         runLabel.textContent =
-                            "Viewerへ反映しています...";
+                            "分析レポートへ反映しています...";
                     }
                 },
                 transport
@@ -6558,7 +6555,7 @@ async function createGoogleSpreadsheet({
             );
 
         const message =
-            "Viewer反映処理を完了できませんでした。\n" +
+            "分析レポート反映処理を完了できませんでした。\n" +
             (
                 error?.message ||
                 String(error)
@@ -6784,14 +6781,14 @@ function setWorkflowMode(
     if (hint) {
         hint.textContent =
             nextMode === "manage"
-                ? "現在：個社Viewerの設定・共有管理モード（CSV不要）"
-                : "現在：データ取込・Viewer反映モード";
+                ? "現在：個社分析レポートの設定・共有管理モード（CSV不要）"
+                : "現在：データ取込・分析レポート反映モード";
     }
 
     if (quickStep1) {
         quickStep1.textContent =
             nextMode === "manage"
-                ? "個社Viewerを選ぶ"
+                ? "個社分析レポートを選ぶ"
                 : "CSVを選ぶ";
     }
 
@@ -6804,7 +6801,7 @@ function setWorkflowMode(
 
     if (quickStep3) {
         quickStep3.textContent =
-            "Viewerへ反映・確認";
+            "分析レポートへ反映・確認";
     }
 
     if (persist) {
@@ -7421,11 +7418,11 @@ function renderManagedOpsDashboard() {
 
         } else if (attention > 0) {
             hint.textContent =
-                `要確認：要再共有 ${summary.reshareRequired}件 / Viewer停止 ${summary.viewerStopped}件 / ${threshold}日以上未更新 ${summary.stale}件。状態は重複する場合があります。`;
+                `要確認：要再共有 ${summary.reshareRequired}件 / 分析レポート停止 ${summary.viewerStopped}件 / ${threshold}日以上未更新 ${summary.stale}件。状態は重複する場合があります。`;
 
         } else {
             hint.textContent =
-                "要再共有・Viewer停止・更新要確認のレポートはありません。";
+                "要再共有・分析レポート停止・更新要確認のレポートはありません。";
         }
     }
 
@@ -7860,7 +7857,7 @@ function renderManagedReportList() {
                 <td colspan="6" class="p-5 text-center text-slate-400">
                     ${
                         managedReportListLoaded
-                            ? "該当するViewerはありません。"
+                            ? "該当する分析レポートはありません。"
                             : "「一覧を更新」でレポートを読み込みます。"
                     }
                 </td>
@@ -8005,7 +8002,7 @@ function renderManagedReportList() {
                                 class="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-[10px] font-extrabold text-blue-700 hover:bg-blue-100 disabled:opacity-40"
                                 ${report.viewerUrl && enabled ? "" : "disabled"}
                             >
-                                Viewer
+                                分析レポート
                             </button>
 
                             <button
@@ -8160,8 +8157,8 @@ async function setReportListShareStatus(
     const message =
         next === "SHARED"
             ? current === "RESHARE_REQUIRED"
-                ? `「${label}」を再共有済みとして記録します。実際に新しいViewer URLを企業へ再案内済みであることを確認してください。`
-                : `「${label}」を共有済みとして記録します。実際に企業へViewer URLを案内済みであることを確認してください。`
+                ? `「${label}」を再共有済みとして記録します。実際に新しい分析レポートURLを企業へ再案内済みであることを確認してください。`
+                : `「${label}」を共有済みとして記録します。実際に企業へ分析レポートURLを案内済みであることを確認してください。`
             : `「${label}」を未共有へ戻します。`;
 
     if (
@@ -8235,7 +8232,7 @@ async function loadManagedReportList(
     if (!getStoredSheetsAccessKey()) {
         if (!silent) {
             setManagedReportListMessage(
-                "個社Viewer一覧の取得には社内用アクセスキーが必要です。右上の詳細設定から保存してください。",
+                "個社分析レポート一覧の取得には社内用アクセスキーが必要です。右上の詳細設定から保存してください。",
                 "warning"
             );
 
@@ -8330,7 +8327,7 @@ async function loadManagedReportList(
     } catch (error) {
         setManagedReportListMessage(
             error?.name === "AbortError"
-                ? "個社Viewer一覧の取得がタイムアウトしました。もう一度お試しください。"
+                ? "個社分析レポート一覧の取得がタイムアウトしました。もう一度お試しください。"
                 : (
                     error?.message ||
                     String(error)
@@ -8513,22 +8510,6 @@ function renderManagedSettings(rows) {
         const key = normalizeString(row.key);
         const value = row.value ?? "";
         const description = normalizeString(row.description);
-
-        if (key === "年齢区分") {
-            return `
-                <label class="block rounded-lg border border-gray-200 bg-gray-50 p-3">
-                    <div class="text-[11px] font-extrabold text-gray-700">${manageEscapeHtml(key)}</div>
-                    <select
-                        data-managed-setting-key="${manageEscapeHtml(key)}"
-                        class="mt-2 w-full border border-gray-300 rounded-lg p-2 text-xs bg-white"
-                    >
-                        <option value="年代"${String(value) === "年代" ? " selected" : ""}>年代</option>
-                        <option value="年代（5歳ずらし）"${String(value) === "年代（5歳ずらし）" ? " selected" : ""}>年代（5歳ずらし）</option>
-                    </select>
-                    <div class="mt-1 text-[10px] text-gray-500">${manageEscapeHtml(description)}</div>
-                </label>
-            `;
-        }
 
         if (
             key === "Indeedタグ表示件数" ||
@@ -8758,10 +8739,6 @@ function renderManagedCustom(custom = {}) {
 
     const row = document.getElementById("managedCustomRowAxis");
     const col = document.getElementById("managedCustomColAxis");
-    const mode = document.getElementById("managedCustomAgeMode");
-    const min = document.getElementById("managedCustomAgeMin");
-    const max = document.getElementById("managedCustomAgeMax");
-
     const axes = managedCustomAxesFromKeywordText();
 
     if (row) {
@@ -8777,16 +8754,6 @@ function renderManagedCustom(custom = {}) {
                 ? custom.colAxis
                 : "応募媒体";
     }
-
-    if (mode) {
-        mode.value =
-            custom.ageFilterMode === "指定範囲"
-                ? "指定範囲"
-                : "全年齢";
-    }
-
-    if (min) min.value = custom.ageMin ?? "";
-    if (max) max.value = custom.ageMax ?? "";
 
     if (textarea) {
         textarea.oninput =
@@ -8876,8 +8843,8 @@ function renderManagedViewerAccess(
 
         toggleBtn.textContent =
             enabled
-                ? "Viewerを停止"
-                : "Viewerを再開";
+                ? "分析レポートを停止"
+                : "分析レポートを再開";
     }
 
     if (rotateBtn) {
@@ -8941,7 +8908,7 @@ function renderManagedViewerAccess(
             "RESHARE_REQUIRED"
         ) {
             shareNote.textContent =
-                `要再共有：${metadata.viewerReshareReason || "Viewer情報が変更されました。"} 新しい企業向けURLを再案内後、「再共有済みに記録」を押してください。`;
+                `要再共有：${metadata.viewerReshareReason || "分析レポート情報が変更されました。"} 新しい企業向けURLを再案内後、「再共有済みに記録」を押してください。`;
 
         } else if (
             shareStatus ===
@@ -8949,7 +8916,7 @@ function renderManagedViewerAccess(
         ) {
             shareNote.textContent =
                 sharedAt === "-"
-                    ? "企業向けViewerは共有済みとして記録されています。"
+                    ? "企業向け分析レポートは共有済みとして記録されています。"
                     : `最終共有記録：${sharedAt}`;
 
         } else {
@@ -8970,7 +8937,7 @@ async function copyManagedViewerShareLink() {
 
     if (!viewerUrl) {
         setManagedReportStatus(
-            "企業向けViewer URLがありません。",
+            "企業向け分析レポートURLがありません。",
             "warning"
         );
         return;
@@ -8991,7 +8958,7 @@ async function copyManagedViewerShareLink() {
         );
 
         setManagedReportStatus(
-            `「${reportName}」の企業共有用Viewerリンクをコピーしました。送付前に企業名をご確認ください。`,
+            `「${reportName}」の企業共有用分析レポートリンクをコピーしました。送付前に企業名をご確認ください。`,
             "success"
         );
 
@@ -9031,8 +8998,8 @@ async function setManagedViewerEnabled(
     const confirmed =
         window.confirm(
             enabled
-                ? `「${fileName}」の企業向けViewerを再開します。現在のViewer URLが再び利用可能になります。`
-                : `「${fileName}」の企業向けViewerを停止します。企業は現在のViewer URLを開けなくなります。`
+                ? `「${fileName}」の企業向け分析レポートを再開します。現在の分析レポートURLが再び利用可能になります。`
+                : `「${fileName}」の企業向け分析レポートを停止します。企業は現在の分析レポートURLを開けなくなります。`
         );
 
     if (!confirmed) return;
@@ -9041,8 +9008,8 @@ async function setManagedViewerEnabled(
 
     setManagedReportStatus(
         enabled
-            ? `「${fileName}」のViewerを再開しています...`
-            : `「${fileName}」のViewerを停止しています...`,
+            ? `「${fileName}」の分析レポートを再開しています...`
+            : `「${fileName}」の分析レポートを停止しています...`,
         "info"
     );
 
@@ -9066,8 +9033,8 @@ async function setManagedViewerEnabled(
             data.message ||
                 (
                     enabled
-                        ? "Viewerを再開しました。"
-                        : "Viewerを停止しました。"
+                        ? "分析レポートを再開しました。"
+                        : "分析レポートを停止しました。"
                 ),
             "success"
         );
@@ -9123,8 +9090,8 @@ async function setManagedViewerShareStatus() {
         window.confirm(
             next === "SHARED"
                 ? current === "RESHARE_REQUIRED"
-                    ? `「${fileName}」を再共有済みとして記録します。\n\n新しいViewer URLを企業へ再案内済みであることを確認してください。`
-                    : `「${fileName}」を共有済みとして記録します。\n\n企業へViewer URLを実際に案内済みであることを確認してください。`
+                    ? `「${fileName}」を再共有済みとして記録します。\n\n新しい分析レポートURLを企業へ再案内済みであることを確認してください。`
+                    : `「${fileName}」を共有済みとして記録します。\n\n企業へ分析レポートURLを実際に案内済みであることを確認してください。`
                 : `「${fileName}」を未共有へ戻します。`
         );
 
@@ -9209,7 +9176,7 @@ async function rotateManagedViewerUrl() {
 
     const confirmed =
         window.confirm(
-            `「${fileName}」の企業向けViewer URLを再発行します。\n\n以前のViewer URLは直ちに無効になります。企業へすでに送付済みの場合は、新しいURLを再案内する必要があります。`
+            `「${fileName}」の企業向け分析レポートURLを再発行します。\n\n以前の分析レポートURLは直ちに無効になります。企業へすでに送付済みの場合は、新しいURLを再案内する必要があります。`
         );
 
     if (!confirmed) return;
@@ -9217,7 +9184,7 @@ async function rotateManagedViewerUrl() {
     setManagedReportBusy(true);
 
     setManagedReportStatus(
-        `「${fileName}」のViewer URLを再発行しています...`,
+        `「${fileName}」の分析レポートURLを再発行しています...`,
         "info"
     );
 
@@ -9237,7 +9204,7 @@ async function rotateManagedViewerUrl() {
 
         setManagedReportStatus(
             data.message ||
-                "Viewer URLを再発行しました。",
+                "分析レポートURLを再発行しました。",
             "success"
         );
 
@@ -9792,13 +9759,7 @@ function collectManagedCustom() {
         rowAxis:
             document.getElementById("managedCustomRowAxis")?.value || "対応状況",
         colAxis:
-            document.getElementById("managedCustomColAxis")?.value || "応募媒体",
-        ageFilterMode:
-            document.getElementById("managedCustomAgeMode")?.value || "全年齢",
-        ageMin:
-            document.getElementById("managedCustomAgeMin")?.value || "",
-        ageMax:
-            document.getElementById("managedCustomAgeMax")?.value || ""
+            document.getElementById("managedCustomColAxis")?.value || "応募媒体"
     };
 }
 
@@ -9912,7 +9873,7 @@ async function saveManagedReportState() {
         spreadsheetId !== loadedId
     ) {
         setManagedReportStatus(
-            "反映前に、現在の個社Viewerをもう一度読み込んでください。",
+            "反映前に、現在の個社分析レポートをもう一度読み込んでください。",
             "warning"
         );
         return;
@@ -9929,7 +9890,7 @@ async function saveManagedReportState() {
 
     if (!requestedName) {
         setManagedReportStatus(
-            "Viewer名を入力してください。",
+            "分析レポート名を入力してください。",
             "warning"
         );
         document.getElementById("managedReportNameInput")?.focus();
@@ -9938,18 +9899,18 @@ async function saveManagedReportState() {
 
     const renameNote =
         requestedName !== fileName
-            ? `\n\nViewer名を「${fileName}」から「${requestedName}」へ変更します。`
+            ? `\n\n分析レポート名を「${fileName}」から「${requestedName}」へ変更します。`
             : "";
 
     const confirmed = window.confirm(
-        `「${fileName}」の設定変更をViewerへ反映します。\n\n共有先・編集対象が正しいことを確認してください。${renameNote}`
+        `「${fileName}」の設定変更を分析レポートへ反映します。\n\n共有先・編集対象が正しいことを確認してください。${renameNote}`
     );
 
     if (!confirmed) return;
 
     const viewerTab =
         reserveViewerTab(
-            "設定変更をViewerへ反映しています。完了すると自動で表示します。"
+            "設定変更を分析レポートへ反映しています。完了すると自動で表示します。"
         );
 
     setManagedReportBusy(true);
@@ -10746,7 +10707,7 @@ if (!accessKey) {
     openSheetsSettingsAndFocus();
 
     msgEl.textContent =
-        "実行前にViewer連携アクセスキーを保存してください。";
+        "実行前に分析レポート連携アクセスキーを保存してください。";
 
     msgEl.className =
         "mt-5 text-center text-sm font-bold text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200 block";
@@ -10756,7 +10717,7 @@ if (!accessKey) {
 
 if (!globalAccessKeyVerified) {
     msgEl.textContent =
-        "Viewer連携アクセスキーの接続確認を完了してください。";
+        "分析レポート連携アクセスキーの接続確認を完了してください。";
 
     msgEl.className =
         "mt-5 text-center text-sm font-bold text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200 block";
@@ -10778,7 +10739,7 @@ runLabel.textContent =
 const viewerTab =
     reserveViewerTab(
         targetSpreadsheetId
-            ? "CSVを処理し、既存Viewerへ反映しています。"
+            ? "CSVを処理し、既存分析レポートへ反映しています。"
             : "CSVを処理し、新しい分析レポートを準備しています。"
     );
 
@@ -11077,7 +11038,7 @@ const viewerTab =
 
 msgEl.innerHTML = `
             <div class="flex flex-col items-center">
-                <span class="text-base font-extrabold">分析データを作成しました。Viewerへ反映しています...</span>
+                <span class="text-base font-extrabold">分析データを作成しました。分析レポートへ反映しています...</span>
                 <span class="mt-1 text-sm text-slate-600">
                     ${globalFinalData.length.toLocaleString()}応募 ／ 求人突合 ${matchCount.toLocaleString()}応募（${joinRate}%）
                 </span>
@@ -11123,8 +11084,8 @@ msgEl.innerHTML = `
 
         runLabel.textContent =
             targetSpreadsheetId
-                ? "Viewerを更新しています..."
-                : "Viewerを作成しています...";
+                ? "分析レポートを更新しています..."
+                : "分析レポートを作成しています...";
 
         const published =
             await createGoogleSpreadsheet({
@@ -11134,7 +11095,7 @@ msgEl.innerHTML = `
         if (published) {
             updateEtlProcessingStage(
                 "viewer",
-                "保存が完了しました。Viewerを表示する準備をしています。"
+                "保存が完了しました。分析レポートを表示する準備をしています。"
             );
 
             globalPerformanceTrace.totalMs =
@@ -11162,7 +11123,7 @@ msgEl.innerHTML = `
             });
         } else {
             msgEl.textContent =
-                "分析データは作成済みです。Viewerへの反映は完了していません。表示されているメッセージをご確認ください。";
+                "分析データは作成済みです。分析レポートへの反映は完了していません。表示されているメッセージをご確認ください。";
 
             msgEl.className =
                 "mt-5 text-center text-sm font-bold text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200 block";
@@ -11220,8 +11181,8 @@ msgEl.innerHTML = `
         // ==========================================
         // 管理Pages lean build
         // ==========================================
-        // 旧ブラウザ分析ダッシュボードは企業向けViewerへ正式移行済み。
-        // ETL / CSV download / Viewer反映 / 個社管理のみを保持。
+        // 旧ブラウザ分析ダッシュボードは企業向け分析レポートへ正式移行済み。
+        // ETL / CSV download / 分析レポート反映 / 個社管理のみを保持。
     </script>
 
 <div id="etlProcessingOverlay" class="hidden fixed inset-0 z-[9999] bg-slate-950/30 backdrop-blur-[1px] items-center justify-center p-4" aria-live="polite" aria-busy="true">
@@ -11269,7 +11230,7 @@ msgEl.innerHTML = `
                 </div>
                 <div id="etlStageViewer" class="etl-stage-row flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-400">
                     <span class="etl-stage-mark flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[10px] font-extrabold">5</span>
-                    <span class="font-bold">Viewerを準備</span>
+                    <span class="font-bold">分析レポートを準備</span>
                 </div>
             </div>
 

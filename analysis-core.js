@@ -420,15 +420,16 @@ function buildImageMap(dataset) {
 
     function buildViewerContext(viewerResponse) {
         const settings = viewerResponse?.settings || {};
-        const ageMode =
-            s(settings["年齢区分"]) === "年代（5歳ずらし）"
-                ? "年代（5歳ずらし）"
-                : "年代";
-
         const startKey = dateKey(parseDate(settings["集計開始日"]));
         const endKey = dateKey(parseDate(settings["集計終了日"]));
         const targetAgeMin = settings["ターゲット年齢下限"];
         const targetAgeMax = settings["ターゲット年齢上限"];
+        const targetAgeMaxNumber = n(targetAgeMax);
+        const ageMode =
+            targetAgeMaxNumber !== null &&
+            Math.abs(Math.trunc(targetAgeMaxNumber)) % 10 === 5
+                ? "年代（5歳ずらし）"
+                : "年代";
         const globalAgeMin = settings["集計対象年齢下限"];
         const globalAgeMax = settings["集計対象年齢上限"];
         const globalAgeFilterActive = n(globalAgeMin) !== null || n(globalAgeMax) !== null;
